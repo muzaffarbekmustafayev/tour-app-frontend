@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import api from '../services/api';
 import BackButton from '../components/BackButton';
+import { FiSearch, FiFilter, FiX } from 'react-icons/fi';
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -34,7 +35,7 @@ const SearchPage = () => {
       filters.stars.forEach(s => params.append('stars', s));
       filters.accessibility.forEach(a => params.append('accessibility', a));
       const res = await api.get(`/hotels?${params.toString()}`);
-      const data = Array.isArray(res.data) ? res.data : (res.data.hotels || []);
+      const data = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
       setHotels(data);
       setTotalHotels(data.length);
     } catch (err) {
@@ -83,11 +84,11 @@ const SearchPage = () => {
       <div className="mb-4"><BackButton /></div>
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input type="text" placeholder="Mehmonxona yoki shahar qidiring..." value={filters.search} onChange={(e) => handleFilterChange('search', e.target.value)} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-2xl font-semibold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition" />
         </div>
         <button onClick={() => setShowFilters(true)} className="md:hidden flex items-center justify-center bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 px-5 py-3 rounded-2xl font-semibold relative">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <FiFilter className="mr-2 w-5 h-5" />
           Filtrlar
           {activeFiltersCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 text-white text-[10px] font-black rounded-full flex items-center justify-center">{activeFiltersCount}</span>}
         </button>
@@ -100,7 +101,7 @@ const SearchPage = () => {
             <div className="flex items-center space-x-3">
               {activeFiltersCount > 0 && <button onClick={clearFilters} className="text-xs text-red-500 font-bold hover:underline">Tozalash</button>}
               <button onClick={() => setShowFilters(false)} className="md:hidden p-2 bg-gray-100 dark:bg-slate-800 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <FiX className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -182,7 +183,7 @@ const SearchPage = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800">
-              <p className="text-5xl mb-4">🔍</p>
+              <FiSearch className="mx-auto w-16 h-16 text-gray-300 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Mehmonxona topilmadi</h3>
               <p className="text-gray-500 mb-6 text-center max-w-sm">Filtrlarni o'zgartirib ko'ring yoki tozalang.</p>
               <button onClick={clearFilters} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold active:scale-95 transition-transform">Filtrlarni tozalash</button>

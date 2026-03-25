@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
+import { FiLock, FiMail } from 'react-icons/fi';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -47,7 +48,7 @@ const Login = () => {
         <div className="bg-white dark:bg-[#1e293b] p-8 md:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800">
           <div className="text-center mb-10">
             <div className="inline-block bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 dark:shadow-none mb-6 group hover:scale-110 transition-transform cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <FiLock className="w-8 h-8 text-white mx-auto" strokeWidth={2.5} />
             </div>
             <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Xush kelibsiz!</h1>
             <p className="text-gray-500 dark:text-gray-400 font-medium">Bronlar va sevimlilarni boshqarish uchun kiring.</p>
@@ -63,7 +64,7 @@ const Login = () => {
               <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">Email manzil</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  <FiMail className="w-5 h-5" />
                 </div>
                 <input
                   type="email"
@@ -83,7 +84,7 @@ const Login = () => {
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <FiLock className="w-5 h-5" />
                 </div>
                 <input
                   type="password"

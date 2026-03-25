@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { FiBell, FiInbox } from 'react-icons/fi';
 
 const NotificationBell = () => {
   const { user } = useContext(AuthContext);
@@ -25,10 +26,10 @@ const NotificationBell = () => {
 
   const getBookingMessage = (b) => {
     const name = b.hotel?.name || 'Mehmonxona';
-    if (b.status === 'confirmed') return `${name} — broningiz tasdiqlandi! ✅`;
-    if (b.status === 'cancelled') return `${name} — bron bekor qilindi ❌`;
-    if (b.status === 'completed') return `${name} — broningiz yakunlandi 🏁`;
-    return `${name} — bron kutilmoqda ⏳`;
+    if (b.status === 'confirmed') return `${name} — broningiz tasdiqlandi!`;
+    if (b.status === 'cancelled') return `${name} — bron bekor qilindi`;
+    if (b.status === 'completed') return `${name} — broningiz yakunlandi`;
+    return `${name} — bron kutilmoqda`;
   };
 
   const unreadCount = notifications.filter(n => n.unread).length;
@@ -41,9 +42,7 @@ const NotificationBell = () => {
         onClick={() => setShow(!show)}
         className="relative bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:scale-110 transition-transform active:scale-95 group focus:ring-2 focus:ring-blue-500/50 outline-none"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-        </svg>
+        <FiBell className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
         {unreadCount > 0 && (
           <span className="absolute top-2.5 right-2.5 bg-red-500 text-white w-4 h-4 flex items-center justify-center rounded-full text-[8px] font-black border-2 border-white dark:border-slate-800 animate-pulse">
             {unreadCount}
@@ -69,7 +68,7 @@ const NotificationBell = () => {
                 </div>
               )) : (
                 <div className="p-10 text-center">
-                  <div className="text-4xl mb-3 opacity-30">📭</div>
+                  <FiInbox className="w-12 h-12 mb-3 mx-auto text-gray-300 dark:text-gray-600" />
                   <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Bildirishnoma yo'q</p>
                 </div>
               )}

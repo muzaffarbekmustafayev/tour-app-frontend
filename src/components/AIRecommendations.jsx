@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { FiStar, FiAward } from 'react-icons/fi';
 
 const AIRecommendations = () => {
   const [hotels, setHotels] = useState([]);
@@ -9,7 +10,7 @@ const AIRecommendations = () => {
   useEffect(() => {
     api.get('/hotels?minRating=0&limit=3&sortBy=rating&order=desc')
       .then(res => {
-        const data = Array.isArray(res.data) ? res.data : [];
+        const data = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
         setHotels(data.slice(0, 3));
       })
       .catch(() => {});
@@ -22,7 +23,7 @@ const AIRecommendations = () => {
       <div className="relative z-10">
         <div className="flex items-center mb-4">
           <div className="bg-white/20 p-2 rounded-lg mr-3 backdrop-blur-sm">
-            <span className="text-lg">✨</span>
+            <FiStar className="text-xl text-yellow-300 fill-current" />
           </div>
           <h2 className="text-xl font-bold">Tavsiya etilgan mehmonxonalar</h2>
         </div>
@@ -35,10 +36,10 @@ const AIRecommendations = () => {
               className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all text-left active:scale-95"
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold bg-green-400 text-green-900 px-2 py-0.5 rounded-full">
-                  {i === 0 ? '🥇 Top' : i === 1 ? '🥈 2-o\'rin' : '🥉 3-o\'rin'}
+                <span className="text-xs font-bold bg-green-400 text-green-900 px-2 py-0.5 rounded-full flex items-center">
+                  <FiAward className="mr-1 w-3 h-3" /> {i === 0 ? 'Top' : i === 1 ? '2-o\'rin' : '3-o\'rin'}
                 </span>
-                <span className="text-xs font-bold text-yellow-300">★ {hotel.rating?.toFixed(1) || '—'}</span>
+                <span className="text-xs font-bold text-yellow-300 flex items-center gap-1"><FiStar className="fill-current w-3 h-3" /> {hotel.rating?.toFixed(1) || '—'}</span>
               </div>
               {hotel.images?.[0] && (
                 <img src={hotel.images[0]} alt={hotel.name} className="w-full h-20 object-cover rounded-xl mb-2 opacity-90" />

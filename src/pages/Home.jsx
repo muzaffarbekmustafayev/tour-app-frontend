@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import AIRecommendations from '../components/AIRecommendations';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
+import { FiSearch, FiAward, FiSun, FiDollarSign, FiUsers, FiHome, FiBriefcase, FiMapPin, FiCalendar, FiMap, FiStar, FiTrendingUp, FiFrown, FiMoon } from 'react-icons/fi';
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -12,14 +14,15 @@ const Home = () => {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const navigate = useNavigate();
+  const { darkMode, setDarkMode } = useContext(AuthContext);
 
   const categories = [
-    { name: 'Hashamatli', icon: '💎', query: 'luxury' },
-    { name: 'Resort', icon: '🏖️', query: 'resort' },
-    { name: 'Arzon', icon: '💰', query: 'budget' },
-    { name: 'Oilaviy', icon: '👨‍👩‍👧‍👦', query: 'family' },
-    { name: 'Butik', icon: '🏠', query: 'boutique' },
-    { name: 'Biznes', icon: '💼', query: 'business' },
+    { name: 'Hashamatli', icon: <FiAward />, query: 'luxury' },
+    { name: 'Resort', icon: <FiSun />, query: 'resort' },
+    { name: 'Arzon', icon: <FiDollarSign />, query: 'budget' },
+    { name: 'Oilaviy', icon: <FiUsers />, query: 'family' },
+    { name: 'Butik', icon: <FiHome />, query: 'boutique' },
+    { name: 'Biznes', icon: <FiBriefcase />, query: 'business' },
   ];
 
   const fetchHotels = useCallback(async () => {
@@ -27,7 +30,7 @@ const Home = () => {
     setError(null);
     try {
       const res = await api.get('/hotels');
-      setHotels(Array.isArray(res.data) ? res.data : []);
+      setHotels(Array.isArray(res.data) ? res.data : (res.data.data || []));
     } catch (err) {
       console.error(err);
       setError('Mehmonxonalarni yuklashda xatolik. Backend ishlaayotganini tekshiring.');
@@ -58,43 +61,47 @@ const Home = () => {
           <img src="https://marakandatravel.asia/wp-content/uploads/2019/11/p5111803-5-844x473.jpg" onError={(e) => { e.target.style.display = 'none'; }} alt="Hero" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-yellow-400 font-bold text-sm uppercase tracking-widest mb-3">🏨 NavaiTour</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg leading-tight">
-            Ideal mehmonxonangizni<br />toping
+          <p className="text-yellow-400 font-black text-sm uppercase tracking-widest mb-3 flex items-center justify-center drop-shadow-md"><FiMap className="inline mr-2" /> NavaiTour</p>
+          <h1 className="text-[2rem] sm:text-4xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg leading-tight tracking-tight">
+            Ideal mehmonxona <br className="sm:hidden" />kutmoqda
           </h1>
-          <p className="text-white/80 text-base mb-8 max-w-md">
-            Navoi bo'ylab eng yaxshi mehmonxonalarni qidiring va band qiling.
+          <p className="text-white/90 text-sm sm:text-base font-medium mb-10 max-w-md drop-shadow max-w-[90%] mx-auto">
+            O'zbekiston bo'ylab eng sara mehmonxonalarni oson band qiling.
           </p>
-          <form onSubmit={handleSearch} className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-yellow-400">
-            <div className="flex flex-col md:flex-row">
-              <div className="flex-1 flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-3 text-blue-600 flex-shrink-0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-                <div className="flex-1">
-                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">Manzil</label>
-                  <input type="text" placeholder="Qayerga borasiz?" className="w-full bg-transparent border-none focus:ring-0 text-gray-900 font-bold text-sm outline-none placeholder-gray-400" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          
+          <form onSubmit={handleSearch} className="w-[95%] sm:w-full max-w-4xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2rem] sm:rounded-full shadow-2xl p-2 mx-auto border border-white/20 dark:border-gray-700/50">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 flex items-center px-5 py-3 sm:py-4 bg-gray-50/80 dark:bg-slate-800/80 rounded-3xl sm:rounded-full hover:bg-gray-100 dark:hover:bg-slate-700/80 transition-colors">
+                <FiMapPin className="mr-3 text-blue-600 dark:text-blue-400 flex-shrink-0 w-6 h-6" />
+                <div className="flex-1 text-left">
+                  <label className="block text-[10px] uppercase font-black text-gray-500 mb-0.5 tracking-wider">Manzil yoki Nomi</label>
+                  <input type="text" placeholder="Qayerga ketyapsiz?" className="w-full bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white font-bold text-sm sm:text-base outline-none placeholder-gray-400 truncate" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </div>
               </div>
-              <div className="flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-3 text-blue-600 flex-shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">Kirish</label>
-                  <input type="date" min={today} className="bg-transparent border-none focus:ring-0 text-gray-900 font-bold text-sm outline-none w-full" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+              
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center px-4 sm:px-5 py-3 sm:py-4 bg-gray-50/80 dark:bg-slate-800/80 rounded-3xl sm:rounded-full hover:bg-gray-100 dark:hover:bg-slate-700/80 transition-colors shrink-0">
+                  <FiCalendar className="mr-2 sm:mr-3 text-indigo-500 flex-shrink-0 w-5 h-5" />
+                  <div className="text-left w-full">
+                    <label className="block text-[9px] sm:text-[10px] uppercase font-black text-gray-500 mb-0.5 tracking-wider">Kirish</label>
+                    <input type="date" min={today} className="bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white font-bold text-[13px] sm:text-base outline-none w-full p-0" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+                  </div>
+                </div>
+                
+                <div className="flex-1 flex items-center px-4 sm:px-5 py-3 sm:py-4 bg-gray-50/80 dark:bg-slate-800/80 rounded-3xl sm:rounded-full hover:bg-gray-100 dark:hover:bg-slate-700/80 transition-colors shrink-0">
+                  <FiCalendar className="mr-2 sm:mr-3 text-rose-500 flex-shrink-0 w-5 h-5" />
+                  <div className="text-left w-full">
+                    <label className="block text-[9px] sm:text-[10px] uppercase font-black text-gray-500 mb-0.5 tracking-wider">Chiqish</label>
+                    <input type="date" min={checkIn || today} className="bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white font-bold text-[13px] sm:text-base outline-none w-full p-0" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-3 text-blue-600 flex-shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-0.5">Chiqish</label>
-                  <input type="date" min={checkIn || today} className="bg-transparent border-none focus:ring-0 text-gray-900 font-bold text-sm outline-none w-full" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
-                </div>
-              </div>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 transition-all active:scale-95 text-sm uppercase tracking-wide">
-                Qidirish
+              
+              <button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-8 py-4 rounded-full transition-all shadow-lg shadow-blue-500/30 active:scale-95 flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto mt-2 sm:mt-0">
+                <FiSearch className="w-5 h-5" /> Topish
               </button>
             </div>
           </form>
-        </div>
       </div>
 
       <div className="px-4 max-w-7xl mx-auto">
@@ -103,12 +110,12 @@ const Home = () => {
         {!loading && hotels.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mb-10">
             {[
-              { icon: '🏨', value: hotels.length + '+', label: 'Mehmonxona' },
-              { icon: '🌆', value: [...new Set(hotels.map(h => h.city).filter(Boolean))].length + '+', label: 'Shahar' },
-              { icon: '⭐', value: (hotels.reduce((s, h) => s + (h.rating || 0), 0) / hotels.length).toFixed(1), label: "O'rtacha reyting" },
+              { icon: <FiHome />, value: hotels.length + '+', label: 'Mehmonxona' },
+              { icon: <FiMapPin />, value: [...new Set(hotels.map(h => h.city).filter(Boolean))].length + '+', label: 'Shahar' },
+              { icon: <FiStar />, value: (hotels.reduce((s, h) => s + (h.rating || 0), 0) / hotels.length).toFixed(1), label: "O'rtacha reyting" },
             ].map(s => (
-              <div key={s.label} className="bg-white dark:bg-[#1e293b] rounded-2xl p-4 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
-                <p className="text-2xl mb-1">{s.icon}</p>
+              <div key={s.label} className="bg-white dark:bg-[#1e293b] rounded-2xl p-4 text-center border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center">
+                <div className="text-2xl mb-1 text-gray-400 dark:text-gray-500">{s.icon}</div>
                 <p className="text-xl font-black text-blue-600 dark:text-blue-400">{s.value}</p>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
               </div>
@@ -119,14 +126,14 @@ const Home = () => {
         {/* Kategoriyalar */}
         <div className="mb-10">
           <div className="flex justify-between items-center mb-5">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Kategoriya bo'yicha</h2>
-            <button onClick={() => navigate('/search')} className="text-blue-600 text-sm font-semibold hover:underline">Barchasi</button>
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">Kategoriyalar</h2>
+            <button onClick={() => navigate('/search')} className="text-blue-600 dark:text-blue-400 text-[13px] sm:text-sm font-bold hover:underline bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full">Barchasi</button>
           </div>
-          <div className="flex space-x-3 overflow-x-auto hide-scrollbar pb-2">
+          <div className="flex space-x-3 sm:space-x-4 overflow-x-auto hide-scrollbar pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
             {categories.map((cat) => (
-              <button key={cat.name} onClick={() => navigate(`/search?q=${cat.query}`)} className="flex-shrink-0 bg-white dark:bg-[#1e293b] border border-gray-100 dark:border-gray-800 px-6 py-4 rounded-2xl flex flex-col items-center min-w-[100px] shadow-sm hover:border-blue-500 hover:shadow-md transition-all group">
-                <span className="text-2xl mb-2 group-hover:scale-125 transition-transform">{cat.icon}</span>
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{cat.name}</span>
+              <button key={cat.name} onClick={() => navigate(`/search?q=${cat.query}`)} className="flex-shrink-0 bg-white dark:bg-slate-800/80 border border-gray-100 dark:border-gray-800 w-[105px] h-[100px] sm:w-auto sm:px-8 sm:py-5 rounded-[1.5rem] flex flex-col items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.03)] hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg transition-all group active:scale-95">
+                <span className="text-[28px] sm:text-3xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform text-blue-500">{cat.icon}</span>
+                <span className="text-[12px] sm:text-sm font-bold text-gray-700 dark:text-gray-300">{cat.name}</span>
               </button>
             ))}
           </div>
@@ -139,7 +146,7 @@ const Home = () => {
         {/* Mashhur mehmonxonalar */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
-            <span className="mr-2">🔥</span> Mashhur mehmonxonalar
+            <FiTrendingUp className="mr-2 text-red-500" /> Mashhur mehmonxonalar
           </h2>
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-2xl p-5 mb-6">
@@ -157,7 +164,7 @@ const Home = () => {
             </div>
           ) : !error ? (
             <div className="text-center py-16 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800">
-              <p className="text-5xl mb-4">🏨</p>
+              <FiFrown className="mx-auto w-16 h-16 mb-4 text-gray-300" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Mehmonxonalar yo'q</h3>
               <p className="text-gray-500 mb-6">Namuna ma'lumotlar qo'shish uchun <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded font-mono text-sm">npm run seed</code> ni ishga tushiring.</p>
             </div>

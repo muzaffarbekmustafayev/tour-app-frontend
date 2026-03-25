@@ -3,9 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
+import Loader from '../components/Loader';
+import { 
+  FiCalendar, FiHeart, FiHome, FiSettings, 
+  FiSun, FiMoon, FiLogOut, FiChevronRight 
+} from 'react-icons/fi';
 
 const Profile = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, darkMode, setDarkMode } = useContext(AuthContext);
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,18 +21,7 @@ const Profile = () => {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  const toggleDarkMode = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
-  };
-  const isDark = document.documentElement.classList.contains('dark');
-
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader message="Profil yuklanmoqda" /></div>;
 
   const profile = profileData || user;
   const roleColors = {
@@ -39,10 +33,10 @@ const Profile = () => {
   const roleLabels = { ADMIN: 'Administrator', HOTEL_OWNER: 'Mehmonxona egasi', CUSTOMER: 'Mijoz', GUEST: 'Mehmon' };
 
   const menuItems = [
-    { icon: '🗓️', label: 'Bronlarim', path: '/bookings', roles: ['CUSTOMER', 'ADMIN'] },
-    { icon: '❤️', label: 'Sevimlilar', path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
-    { icon: '🏨', label: 'Mehmonxonalarim', path: '/owner', roles: ['HOTEL_OWNER'] },
-    { icon: '⚙️', label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },
+    { icon: <FiCalendar className="text-blue-500 w-5 h-5" />, label: 'Bronlarim', path: '/bookings', roles: ['CUSTOMER', 'ADMIN'] },
+    { icon: <FiHeart className="text-red-500 w-5 h-5" />, label: 'Sevimlilar', path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
+    { icon: <FiHome className="text-emerald-500 w-5 h-5" />, label: 'Mehmonxonalarim', path: '/owner', roles: ['HOTEL_OWNER'] },
+    { icon: <FiSettings className="text-gray-500 dark:text-gray-400 w-5 h-5" />, label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },
   ].filter(item => !item.roles || item.roles.includes(profile?.role));
 
   return (
@@ -85,26 +79,28 @@ const Profile = () => {
                 <span className="text-xl">{item.icon}</span>
                 <span className="font-bold text-gray-900 dark:text-white">{item.label}</span>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-400"><path d="m9 18 6-6-6-6"/></svg>
+              <FiChevronRight className="w-5 h-5 text-gray-400" />
             </Link>
           ))}
         </div>
       )}
 
       <div className="bg-white dark:bg-[#1e293b] rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden mb-4 shadow-sm">
-        <button onClick={toggleDarkMode} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+        <button onClick={() => setDarkMode(!darkMode)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
           <div className="flex items-center space-x-4">
-            <span className="text-xl">{isDark ? '🌞' : '🌙'}</span>
-            <span className="font-bold text-gray-900 dark:text-white">{isDark ? 'Kunduzgi rejim' : 'Tungi rejim'}</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800">
+              {darkMode ? <FiSun className="w-4 h-4 text-yellow-500" /> : <FiMoon className="w-4 h-4 text-indigo-500" />}
+            </span>
+            <span className="font-bold text-gray-900 dark:text-white">{darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'}</span>
           </div>
-          <div className={`w-12 h-6 rounded-full transition-colors ${isDark ? 'bg-blue-600' : 'bg-gray-200'} relative`}>
-            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isDark ? 'translate-x-7' : 'translate-x-1'}`} />
+          <div className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-blue-600' : 'bg-gray-200'} relative`}>
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-7' : 'translate-x-1'}`} />
           </div>
         </button>
       </div>
 
       <button onClick={handleLogout} className="w-full bg-white dark:bg-[#1e293b] text-red-500 font-bold py-4 rounded-[2rem] border border-red-100 dark:border-red-900/30 flex items-center justify-center space-x-3 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <FiLogOut className="w-5 h-5" />
         <span>Chiqish</span>
       </button>
 
