@@ -135,7 +135,7 @@ const AvailabilityChecker = ({ hotel }) => {
           {hotel.name} · {selectedRoom?.name} · {nights} tun
         </p>
         <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mb-6">
-          {new Intl.NumberFormat('uz-UZ').format(grandTotal)} UZS
+          {new Intl.NumberFormat('uz-UZ').format(Number(grandTotal) || 0)} UZS
         </p>
         <button
           onClick={() => navigate('/bookings')}
@@ -154,7 +154,7 @@ const AvailabilityChecker = ({ hotel }) => {
       <div className="flex justify-between items-baseline mb-6">
         <div>
           <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
-            {new Intl.NumberFormat('uz-UZ').format(selectedRoom?.pricePerNight || hotel?.basePricePerNight || 0)}
+            {new Intl.NumberFormat('uz-UZ').format(Number(selectedRoom?.pricePerNight || hotel?.basePricePerNight || 0) || 0)}
           </span>
           <span className="text-gray-400 dark:text-gray-500 text-sm ml-1 font-medium">UZS/tun</span>
         </div>
@@ -266,17 +266,17 @@ const AvailabilityChecker = ({ hotel }) => {
         <div className="mt-6 space-y-3">
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Room Total ({nights} tun)</span>
-            <span className="font-bold text-gray-900 dark:text-white">{new Intl.NumberFormat('uz-UZ').format(roomTotal)} UZS</span>
+            <span className="font-bold text-gray-900 dark:text-white">{new Intl.NumberFormat('uz-UZ').format(Number(roomTotal) || 0)} UZS</span>
           </div>
           {grandTotal - roomTotal > 0 && (
             <div className="flex justify-between text-sm text-blue-600 dark:text-blue-400">
                 <span>Qo'shimcha xizmatlar</span>
-                <span className="font-bold">+{new Intl.NumberFormat('uz-UZ').format(grandTotal - roomTotal)} UZS</span>
+                <span className="font-bold">+{new Intl.NumberFormat('uz-UZ').format(Number(grandTotal - roomTotal) || 0)} UZS</span>
             </div>
           )}
           <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center mb-4">
             <span className="font-bold text-gray-900 dark:text-white">Jami Summa</span>
-            <span className="text-xl font-black text-gray-900 dark:text-white">{new Intl.NumberFormat('uz-UZ').format(grandTotal)} UZS</span>
+            <span className="text-xl font-black text-gray-900 dark:text-white">{new Intl.NumberFormat('uz-UZ').format(Number(grandTotal) || 0)} UZS</span>
           </div>
           
           <button 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
-import { FiMapPin, FiInbox, FiMessageCircle } from 'react-icons/fi';
+import { FiMapPin, FiInbox, FiMessageCircle, FiHome, FiCoffee, FiNavigation, FiPlusSquare } from 'react-icons/fi';
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -115,7 +115,7 @@ const Bookings = () => {
                   {hotel.images?.[0] ? (
                     <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">🏨</div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-400"><FiHome className="w-12 h-12" /></div>
                   )}
                   {/* Status Badges Overlaid on Mobile */}
                   <div className="absolute top-3 right-3 md:hidden">
@@ -133,7 +133,7 @@ const Bookings = () => {
                         <p className="text-sm font-bold text-gray-500 flex items-center mt-1">
                           <FiMapPin className="mr-1.5 w-4 h-4 text-blue-500" />
                           {hotel.city || 'Belgilanmagan'}
-                          {hotel.stars && <span className="ml-3 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-[10px]">{hotel.stars} Yulduzli</span>}
+
                         </p>
                       </div>
                       {/* Desktop Status Badge */}
@@ -172,9 +172,9 @@ const Bookings = () => {
                     {/* Upsells Display if any */}
                     {(booking.upsells?.breakfast || booking.upsells?.airportTransfer || booking.upsells?.extraBed) && (
                        <div className="flex gap-2 mb-4 flex-wrap">
-                          {booking.upsells.breakfast && <span className="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800/50">☕ Nonushta</span>}
-                          {booking.upsells.airportTransfer && <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800/50">✈️ Transfer</span>}
-                          {booking.upsells.extraBed && <span className="bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-teal-100 dark:border-teal-800/50">🛏️ Qo'sh. yotoq</span>}
+                          {booking.upsells.breakfast && <span className="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800/50 flex items-center gap-1.5"><FiCoffee /> Nonushta</span>}
+                          {booking.upsells.airportTransfer && <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5"><FiNavigation /> Transfer</span>}
+                          {booking.upsells.extraBed && <span className="bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-teal-100 dark:border-teal-800/50 flex items-center gap-1.5"><FiPlusSquare /> Qo'sh. yotoq</span>}
                        </div>
                     )}
                   </div>
@@ -183,7 +183,7 @@ const Bookings = () => {
                     <div>
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Jami To'lov summasi</span>
                       <span className="text-xl font-black text-gray-900 dark:text-white">
-                        {new Intl.NumberFormat('uz-UZ').format(booking.totalPrice)} UZS
+                        {new Intl.NumberFormat('uz-UZ').format(Number(booking.totalPrice || 0) || 0)} UZS
                       </span>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">

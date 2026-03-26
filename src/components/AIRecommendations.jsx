@@ -45,7 +45,7 @@ const AIRecommendations = () => {
                 <img src={hotel.images[0]} alt={hotel.name} className="w-full h-20 object-cover rounded-xl mb-2 opacity-90" />
               )}
               <h3 className="font-bold text-sm mb-1 line-clamp-1">{hotel.name}</h3>
-              <p className="text-xs text-white/70">{hotel.city} · {new Intl.NumberFormat('uz-UZ').format(hotel.pricePerNight)} UZS/tun</p>
+              <p className="text-xs text-white/70">{hotel.city} · {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || hotel.basePricePerNight || 0) || 0)} UZS/tun</p>
             </button>
           ))}
         </div>

@@ -154,9 +154,6 @@ const HotelDetail = () => {
                   <span className="text-[10px] font-black uppercase tracking-widest bg-blue-600 dark:bg-blue-500 text-white px-4 py-1.5 rounded-full shadow-md shadow-blue-500/20">
                     {hotel.category || 'Hotel'}
                   </span>
-                  <div className="flex items-center space-x-1">
-                    {[...Array(hotel.stars || 0)].map((_, i) => <FiStar key={i} className="fill-current text-yellow-400 w-4 h-4" />)}
-                  </div>
                 </div>
                 
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight tracking-tight">
@@ -320,7 +317,7 @@ const HotelDetail = () => {
                       <div className="text-left md:text-right w-full">
                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bir kecha uchun</p>
                          <div className="flex items-baseline md:justify-end">
-                           <span className="font-black text-gray-900 dark:text-white text-3xl">{new Intl.NumberFormat('uz-UZ').format(rt.pricePerNight)}</span>
+                           <span className="font-black text-gray-900 dark:text-white text-3xl">{new Intl.NumberFormat('uz-UZ').format(Number(rt.pricePerNight || 0) || 0)}</span>
                            <span className="text-sm text-gray-400 ml-1.5 font-bold">UZS</span>
                          </div>
                       </div>
@@ -483,10 +480,10 @@ const HotelDetail = () => {
       <div className="lg:hidden fixed bottom-[72px] left-0 right-0 p-4 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800/80 flex justify-between items-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
         <div>
            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5">Narxlar</p>
-           <div className="flex items-baseline">
-              <span className="font-extrabold text-gray-900 dark:text-white text-xl">{new Intl.NumberFormat('uz-UZ').format(hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0)}</span>
-              <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">UZS / tun</span>
-           </div>
+            <div className="flex items-baseline">
+               <span className="font-extrabold text-gray-900 dark:text-white text-xl">{new Intl.NumberFormat('uz-UZ').format(Number(hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)}</span>
+               <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">UZS / tun</span>
+            </div>
         </div>
         <button onClick={() => {
             const widget = document.getElementById('booking-widget');

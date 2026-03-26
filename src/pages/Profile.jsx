@@ -6,7 +6,8 @@ import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import { 
   FiCalendar, FiHeart, FiHome, FiSettings, 
-  FiSun, FiMoon, FiLogOut, FiChevronRight 
+  FiSun, FiMoon, FiLogOut, FiChevronRight,
+  FiCheckCircle, FiLock
 } from 'react-icons/fi';
 
 const Profile = () => {
@@ -60,7 +61,7 @@ const Profile = () => {
         <div className="relative z-10 grid grid-cols-3 gap-3">
           {[
             { label: "A'zo bo'lgan", value: profile?.createdAt ? new Date(profile.createdAt).getFullYear() : '—' },
-            { label: 'Holat', value: profile?.blocked ? '🚫 Bloklangan' : '✅ Faol' },
+            { label: 'Holat', value: <span className="flex items-center justify-center gap-1">{profile?.blocked ? <><FiLock className="text-red-400 w-3 h-3"/> Bloklangan</> : <><FiCheckCircle className="text-green-400 w-3 h-3"/> Faol</>}</span> },
             { label: 'Rol', value: roleLabels[profile?.role] || 'Mehmon' },
           ].map(stat => (
             <div key={stat.label} className="bg-white/10 p-3 rounded-2xl text-center backdrop-blur-sm">

@@ -21,8 +21,7 @@ const accessibilityList = [
 const emptyHotel = {
   name: '', description: '', shortDescription: '',
   city: '', country: 'Uzbekistan', address: '',
-  category: 'hotel', stars: 3,
-  pricePerNight: '', roomsAvailable: '', totalRooms: '', maxGuests: '',
+  category: 'hotel', pricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [], images: [''],
   accessibility: {},
@@ -39,6 +38,7 @@ const OwnerDashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
+  const [form, setForm] = useState(emptyHotel);
   const [uploadingIdx, setUploadingIdx] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [bookingFilter, setBookingFilter] = useState('all');
@@ -128,9 +128,8 @@ const OwnerDashboard = () => {
       country: hotel.country || 'Uzbekistan',
       address: hotel.address || '',
       category: hotel.category || 'hotel',
-      stars: hotel.stars || 3,
-      pricePerNight: hotel.pricePerNight || '',
-      roomsAvailable: hotel.roomsAvailable || '',
+      pricePerNight: hotel.pricePerNight || 500000,
+      roomsAvailable: hotel.roomsAvailable || 10,
       totalRooms: hotel.totalRooms || '',
       maxGuests: hotel.maxGuests || '',
       checkInTime: hotel.checkInTime || '14:00',
@@ -205,7 +204,6 @@ const OwnerDashboard = () => {
 
     const payload = {
       ...form,
-      stars: Number(form.stars),
       pricePerNight: Number(form.pricePerNight),
       roomsAvailable: Number(form.roomsAvailable),
       totalRooms: Number(form.totalRooms),
@@ -260,7 +258,7 @@ const OwnerDashboard = () => {
           </button>
           <div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-              {editingId ? 'Edit Hotel' : hotels.length === 0 ? <><FiHome className="inline mr-2" /> Birinchi mehmonxonangizni qo'shing</> : 'Add New Hotel'}
+              {editingId ? 'Mehmonxonani Tahrirlash' : hotels.length === 0 ? <><FiHome className="inline mr-2" /> Birinchi mehmonxonangizni qo'shing</> : 'Yangi Mehmonxona Qo\'shish'}
             </h1>
             {!editingId && hotels.length === 0 && (
               <p className="text-sm text-gray-500 mt-1">Bronlarni qabul qilish uchun kamida bitta mehmonxona kiriting.</p>
@@ -291,7 +289,7 @@ const OwnerDashboard = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Category</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kategoriya</label>
                   <select value={form.category} onChange={e => handleFormChange('category', e.target.value)}
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500">
                     {['hotel', 'resort', 'hostel', 'boutique', 'motel', 'guesthouse'].map(c => (
@@ -300,12 +298,15 @@ const OwnerDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Stars *</label>
-                  <select value={form.stars} onChange={e => handleFormChange('stars', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500">
-                    {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{'★'.repeat(s)} ({s})</option>)}
-                  </select>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Xonalar soni *</label>
+                  <input type="number" required value={form.roomsAvailable} onChange={e => handleFormChange('roomsAvailable', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 10" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bir kecha uchun narx (UZS) *</label>
+                <input type="number" required value={form.pricePerNight} onChange={e => handleFormChange('pricePerNight', e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 500000" />
               </div>
             </div>
           </div>
@@ -547,43 +548,50 @@ const OwnerDashboard = () => {
         </button>
         <div className="flex-1 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">Owner Dashboard</h1>
-            <p className="text-gray-500 font-medium">Manage your properties</p>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">Mehmonxonalar Paneli</h1>
+            <p className="text-gray-500 font-medium">O'z mehmonxonalaringizni boshqaring</p>
           </div>
           <button onClick={openAddForm} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 flex items-center">
             <FiPlus className="mr-2 w-5 h-5" />
-            Add Hotel
+            Mehmonxona Qo'shish
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {[
-          { label: 'My Hotels', value: hotels.length, icon: <FiHome className="text-blue-500" /> },
-          { label: 'Total Bookings', value: allBookings.length, icon: <FiList className="text-purple-500" /> },
-          { label: 'Pending', value: allBookings.filter(b => b.status === 'pending').length, icon: <FiClock className="text-orange-500" /> },
-          { label: 'Revenue', value: new Intl.NumberFormat('uz-UZ', { notation: 'compact' }).format(totalRevenue) + ' UZS', icon: <FiDollarSign className="text-green-500" /> },
-        ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-[#1e293b] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-            <p className="text-2xl mb-2">{s.icon}</p>
-            <p className="text-2xl font-black text-gray-900 dark:text-white">{s.value}</p>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
+          { label: 'Mening Mehmonxonalarim', value: hotels.length, gradient: 'from-[#4F46E5] to-[#7C3AED]', icon: <FiHome className="w-6 h-6" /> },
+          { label: 'Jami Bronlar', value: allBookings.length, gradient: 'from-[#EC4899] to-[#8B5CF6]', icon: <FiList className="w-6 h-6" /> },
+          { label: 'Kutilayotgan', value: allBookings.filter(b => b.status === 'pending').length, gradient: 'from-[#F59E0B] to-[#EF4444]', icon: <FiClock className="w-6 h-6" /> },
+          { label: 'Daromad', value: new Intl.NumberFormat('uz-UZ', { notation: 'compact' }).format(totalRevenue) + ' UZS', gradient: 'from-[#10B981] to-[#047857]', icon: <FiDollarSign className="w-6 h-6" /> },
+        ].map((s, i) => (
+          <div key={i} className={`bg-gradient-to-br ${s.gradient} p-7 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3 group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner border border-white/30">
+                {s.icon}
+              </div>
+              <div>
+                <h3 className="text-4xl font-black drop-shadow-md mb-1">{s.value}</h3>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80 drop-shadow-sm">{s.label}</p>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-6">
+      <div className="flex space-x-3 mb-10 overflow-x-auto hide-scrollbar pb-2 px-1">
         {[
-          { key: 'hotels', label: <span className="flex items-center gap-2"><FiHome /> My Hotels</span> },
-          { key: 'bookings', label: <span className="flex items-center gap-2"><FiList /> Bookings</span> },
+          { key: 'hotels', label: <span className="flex items-center gap-2"><FiHome /> Mening Mehmonxonalarim</span> },
+          { key: 'bookings', label: <span className="flex items-center gap-2"><FiList /> Mijozlar Bronlari</span> },
         ].map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
+            className={`px-7 py-3.5 rounded-2xl font-black text-[13px] whitespace-nowrap transition-all duration-300 ${
               activeTab === t.key
-                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow'
-                : 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-300 dark:shadow-none scale-105 transform'
+                : 'glass-panel text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-slate-800 hover:-translate-y-0.5'
             }`}>
             {t.label}
           </button>
@@ -600,7 +608,9 @@ const OwnerDashboard = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{hotel.name}</h3>
-                    <p className="text-sm text-gray-500">{hotel.city} · {hotel.stars}★ · {hotel.roomsAvailable} rooms · {new Intl.NumberFormat('uz-UZ').format(hotel.pricePerNight)} UZS/night</p>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      {hotel.city} <span className="text-gray-300">•</span> {hotel.roomsAvailable} xonalar <span className="text-gray-300">•</span> {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || 0) || 0)} UZS/kecha
+                    </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${hotel.approved ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
                     {hotel.approved ? 'Active' : 'Pending'}
@@ -620,15 +630,15 @@ const OwnerDashboard = () => {
                     <p className="text-[10px] font-bold text-gray-400 uppercase">Reviews</p>
                   </div>
                 </div>
-                <div className="flex space-x-3">
-                  <button onClick={() => openEditForm(hotel)} className="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold py-3 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                    <FiEdit2 /> Edit
+                <div className="flex space-x-3 mt-6">
+                  <button onClick={() => openEditForm(hotel)} className="flex-1 flex items-center justify-center gap-1.5 bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold py-3.5 rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors active:scale-95 border border-blue-100 dark:border-blue-800/50">
+                    <FiEdit2 /> Tahrirlash
                   </button>
-                  <button onClick={() => navigate(`/hotel/${hotel._id}`)} className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
-                    <FiEye /> View
+                  <button onClick={() => navigate(`/hotel/${hotel._id}`)} className="flex-1 flex items-center justify-center gap-1.5 bg-gray-50/80 dark:bg-slate-800/80 text-gray-700 dark:text-gray-300 font-bold py-3.5 rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors active:scale-95 border border-gray-200 dark:border-gray-700/50">
+                    <FiEye /> Ko'rish
                   </button>
                   <button onClick={() => handleDeleteHotel(hotel._id)} disabled={actionLoading === hotel._id}
-                    className="px-5 flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50">
+                    className="px-5 flex items-center justify-center bg-red-50/80 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold py-3.5 rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors active:scale-95 disabled:opacity-50 border border-red-100 dark:border-red-800/50">
                     <FiTrash2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -636,12 +646,12 @@ const OwnerDashboard = () => {
             );
           })}
           {hotels.length === 0 && (
-            <div className="text-center py-16 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800">
-              <FiHome className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No hotels yet</h3>
-              <p className="text-gray-500 mb-6">Add your first hotel to start receiving bookings.</p>
+            <div className="text-center py-20 glass-panel">
+              <FiHome className="w-16 h-16 text-indigo-300 mx-auto mb-4" />
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Hozircha mehmonxonalar yo'q</h3>
+              <p className="text-gray-500 mb-6">Bronlarni qabul qilishni boshlash uchun birinchi mehmonxonangizni qo'shing.</p>
               <button onClick={openAddForm} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold active:scale-95 transition-transform">
-                + Add Hotel
+                + Mehmonxona Qo'shish
               </button>
             </div>
           )}
@@ -680,23 +690,23 @@ const OwnerDashboard = () => {
               const nights = b.checkInDate && b.checkOutDate ? Math.max(1, Math.ceil((new Date(b.checkOutDate) - new Date(b.checkInDate)) / (1000 * 60 * 60 * 24))) : '?';
               
               return (
-                <div key={b._id} className="bg-white dark:bg-[#1e293b] rounded-[2rem] p-5 lg:p-6 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row md:items-center gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all overflow-hidden relative">
+                <div key={b._id} className="glass-panel p-6 flex flex-col md:flex-row md:items-center gap-6 relative overflow-hidden group hover:shadow-lg transition-all border border-gray-100 dark:border-gray-800">
                   {/* Decorative status bar */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${b.status === 'confirmed' ? 'bg-green-500' : b.status === 'pending' ? 'bg-yellow-400' : b.status === 'cancelled' ? 'bg-red-500' : 'bg-gray-400'}`} />
+                  <div className={`absolute left-0 top-0 bottom-0 w-2 ${b.status === 'confirmed' ? 'bg-gradient-to-b from-green-400 to-green-600' : b.status === 'pending' ? 'bg-gradient-to-b from-yellow-400 to-yellow-600' : b.status === 'cancelled' ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-gray-400 to-gray-600'}`} />
                   
                   {/* Info Section */}
                   <div className="flex-1 flex flex-col sm:flex-row gap-5">
-                    <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-xl shrink-0 border border-blue-100 dark:border-blue-800/50">
+                    <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-2xl shrink-0 shadow-inner border border-white dark:border-slate-800">
                       {b.user?.name?.[0]?.toUpperCase() || 'M'}
                     </div>
                     
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                          <div className="flex items-center gap-2">
-                           <h3 className="font-extrabold text-gray-900 dark:text-white text-lg leading-none">{b.user?.name || 'Mijoz'}</h3>
+                           <h3 className="font-black text-gray-900 dark:text-white text-[17px] leading-tight group-hover:text-indigo-600 transition-colors">{b.user?.name || 'Mijoz'}</h3>
                            <span className="text-xs font-bold text-gray-400">({b.user?.email || 'Mavjud emas'})</span>
                          </div>
-                         <span className={`w-fit px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                         <span className={`w-fit px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
                             b.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/50' :
                             b.status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50' :
                             'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800/50'
@@ -705,8 +715,8 @@ const OwnerDashboard = () => {
                          </span>
                       </div>
                       
-                      <div className="bg-gray-50/80 dark:bg-slate-800/60 rounded-2xl p-4 border border-gray-100/50 dark:border-gray-700/50">
-                         <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 flex items-center"><FiHome className="mr-1.5" /> {h.name}</p>
+                      <div className="bg-white/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-white/60 dark:border-gray-700/50">
+                         <p className="text-[13px] font-bold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center"><FiHome className="mr-1.5" /> {h.name}</p>
                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                            <div>
                               <span className="text-[10px] uppercase font-black text-gray-400 block mb-0.5 tracking-widest">Sanalar</span>
@@ -725,10 +735,10 @@ const OwnerDashboard = () => {
 
                   {/* Actions / Price Section */}
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-800/80 pt-4 md:pt-0 md:pl-6 shrink-0 min-w-[180px]">
-                    <div className="text-left md:text-right mb-0 md:mb-4">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Umumiy Summa</span>
-                      <span className="text-xl font-black text-gray-900 dark:text-white block">
-                        {new Intl.NumberFormat('uz-UZ').format(b.totalPrice || 0)} <span className="text-sm text-gray-400">UZS</span>
+                    <div className="text-left md:text-right mb-0 md:mb-5">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Umumiy Summa</span>
+                      <span className="text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
+                        {new Intl.NumberFormat('uz-UZ').format(b.totalPrice || 0)} <span className="text-sm font-bold text-gray-400">UZS</span>
                       </span>
                     </div>
 
@@ -736,17 +746,17 @@ const OwnerDashboard = () => {
                       {b.status === 'pending' && (
                         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                           <button onClick={() => handleConfirmBooking(b._id)} disabled={actionLoading === b._id}
-                            className="flex-1 px-4 py-2.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 rounded-xl text-sm font-bold active:scale-95 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-                            {actionLoading === b._id ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span> : <FiCheck />} Qabul qilish
+                            className="flex-1 px-4 py-3 bg-green-50/80 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 rounded-xl text-[13px] font-bold active:scale-95 disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                            {actionLoading === b._id ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span> : <FiCheck />} Qabul qilish
                           </button>
                           <button onClick={() => handleCancelBooking(b._id)} disabled={actionLoading === b._id}
-                            className="flex-1 px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 rounded-xl text-sm font-bold active:scale-95 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                            className="flex-1 px-4 py-3 bg-red-50/80 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 rounded-xl text-[13px] font-bold active:scale-95 disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                             Rad etish
                           </button>
                         </div>
                       )}
                       
-                      <button onClick={() => navigate(`/chat/${b._id}`)} className="w-full px-4 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl text-sm font-bold active:scale-95 transition-colors flex items-center justify-center gap-2 mt-1">
+                      <button onClick={() => navigate(`/chat/${b._id}`)} className="w-full px-4 py-3 bg-blue-50/80 hover:bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl text-[13px] font-bold active:scale-95 transition-colors flex items-center justify-center gap-1.5 mt-1 shadow-sm">
                         <FiMessageCircle /> Xabar yozish
                       </button>
                     </div>
@@ -754,10 +764,10 @@ const OwnerDashboard = () => {
                 </div>
               );
             }) : (
-              <div className="text-center py-16 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800">
-                <FiList className="mx-auto w-12 h-12 text-gray-300 dark:text-slate-600 mb-3" />
-                <p className="text-gray-900 dark:text-white font-bold text-lg">{bookingFilter !== 'all' ? `Bu turdagi bronlar yo'q (${bookingFilter})` : 'Sizda hozircha bronlar mavjud emas.'}</p>
-                <p className="text-gray-500 text-sm mt-1">Yangi mijozlar joy band qilganda shu yerda ko'rinadi.</p>
+              <div className="text-center py-24 glass-panel">
+                <FiList className="mx-auto w-16 h-16 text-indigo-300 dark:text-slate-600 mb-4" />
+                <p className="text-gray-900 dark:text-white font-black text-xl mb-1">{bookingFilter !== 'all' ? `Bu turdagi bronlar yo'q (${bookingFilter})` : 'Sizda hozircha bronlar mavjud emas.'}</p>
+                <p className="text-gray-500 text-[13px] font-medium">Yangi mijozlar joy band qilganda shu yerda ko'rinadi.</p>
               </div>
             )}
           </div>

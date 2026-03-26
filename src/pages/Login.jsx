@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
-import { FiLock, FiMail } from 'react-icons/fi';
+import { FiLock, FiMail, FiMapPin, FiAlertTriangle } from 'react-icons/fi';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -37,86 +37,133 @@ const Login = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50 dark:bg-[#0f172a] relative overflow-hidden">
-      {/* Decorative background gradients */}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px]"></div>
-      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px]"></div>
+  const inputStyle = {
+    width: '100%',
+    paddingLeft: '3rem',
+    paddingRight: '1rem',
+    paddingTop: '0.875rem',
+    paddingBottom: '0.875rem',
+    background: 'rgba(99,102,241,0.05)',
+    border: '1.5px solid var(--border)',
+    borderRadius: '1rem',
+    outline: 'none',
+    color: 'var(--text-main)',
+    fontWeight: 600,
+    fontSize: '0.9375rem',
+    transition: 'all 0.2s ease',
+    fontFamily: 'inherit',
+  };
 
-      <div className="w-full max-w-md relative z-10 transition-all duration-500 animate-in fade-in zoom-in-95 duration-700">
-        <div className="mb-4"><BackButton /></div>
-        <div className="bg-white dark:bg-[#1e293b] p-8 md:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800">
-          <div className="text-center mb-10">
-            <div className="inline-block bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 dark:shadow-none mb-6 group hover:scale-110 transition-transform cursor-pointer">
-              <FiLock className="w-8 h-8 text-white mx-auto" strokeWidth={2.5} />
+  return (
+    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden"
+      style={{ background: 'var(--gradient-bg)' }}>
+      {/* Background decorative blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-30 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.4), transparent)', filter: 'blur(80px)', transform: 'translate(30%, -30%)' }} />
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.4), transparent)', filter: 'blur(80px)', transform: 'translate(-30%, 30%)' }} />
+
+      <div className="w-full max-w-sm relative z-10">
+        <div className="mb-5"><BackButton /></div>
+
+        {/* Card */}
+        <div className="glass-panel p-8" style={{ borderRadius: '2rem' }}>
+          {/* Logo / Brand */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
+              style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}>
+              <FiMapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
             </div>
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Xush kelibsiz!</h1>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Bronlar va sevimlilarni boshqarish uchun kiring.</p>
+            <h1 className="text-2xl font-black mb-1.5" style={{ color: 'var(--text-main)' }}>
+              Xush kelibsiz! 👋
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
+              Bronlar va sevimlilarni boshqarish uchun kiring.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-2xl px-4 py-3 text-sm font-semibold">
-                {error}
-              </div>
-            )}
+          {/* Error */}
+          {error && (
+            <div className="mb-5 px-4 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2"
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' }}>
+              <FiAlertTriangle className="w-4 h-4" /> {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label className="block text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">Email manzil</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
-                  <FiMail className="w-5 h-5" />
-                </div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '8px' }}>
+                Email manzil
+              </label>
+              <div className="relative">
+                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                 <input
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-gray-800 rounded-2xl focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none text-gray-900 dark:text-white font-medium transition-all"
+                  style={inputStyle}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; e.target.style.background = 'rgba(99,102,241,0.08)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none'; e.target.style.background = 'rgba(99,102,241,0.05)'; }}
                   required
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-2 ml-1">
-                <label className="text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Parol</label>
-                <Link to="#" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">Parolni unutdingizmi?</Link>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+                  Parol
+                </label>
+                <Link to="#" style={{ fontSize: '12px', fontWeight: 700, color: '#6366F1', textDecoration: 'none' }}>
+                  Parolni unutdingizmi?
+                </Link>
               </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
-                  <FiLock className="w-5 h-5" />
-                </div>
+              <div className="relative">
+                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-gray-800 rounded-2xl focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none text-gray-900 dark:text-white font-medium transition-all"
+                  style={inputStyle}
+                  onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; e.target.style.background = 'rgba(99,102,241,0.08)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none'; e.target.style.background = 'rgba(99,102,241,0.05)'; }}
                   required
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            {/* Submit */}
+            <button
+              type="submit"
               disabled={loading}
-              className={`w-full bg-gray-900 dark:bg-blue-600 hover:bg-gray-800 dark:hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-[0.98] mt-4 flex items-center justify-center space-x-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className="btn-primary w-full py-3.5 rounded-2xl font-black text-base flex items-center justify-center gap-2"
+              style={{ marginTop: '8px', opacity: loading ? 0.75 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
-              {loading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-              <span>{loading ? 'Kirilmoqda...' : 'Kirish'}</span>
+              {loading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {loading ? 'Kirilmoqda...' : 'Kirish →'}
             </button>
           </form>
 
-          <p className="mt-10 text-center text-gray-500 dark:text-gray-400 font-medium">
+          <p className="mt-8 text-center font-medium" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             Hisobingiz yo'qmi?{' '}
-            <Link to="/register" className="text-blue-600 dark:text-blue-400 font-black hover:underline">Ro'yxatdan o'tish</Link>
+            <Link to="/register" style={{ color: '#6366F1', fontWeight: 800, textDecoration: 'none' }}>
+              Ro'yxatdan o'tish
+            </Link>
           </p>
         </div>
-        
-        <div className="mt-8 flex items-center justify-center space-x-6 text-gray-400">
-           <Link to="/" className="text-xs font-bold uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-colors">← Bosh sahifaga</Link>
-           <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-           <Link to="#" className="text-xs font-bold uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-colors">Yordam</Link>
+
+        <div className="mt-6 flex items-center justify-center gap-5">
+          <Link to="/" style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none' }}>
+            ← Bosh sahifaga
+          </Link>
+          <span style={{ width: '4px', height: '4px', background: 'var(--border)', borderRadius: '50%', display: 'inline-block' }} />
+          <Link to="#" style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none' }}>
+            Yordam
+          </Link>
         </div>
       </div>
     </div>
