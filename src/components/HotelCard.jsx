@@ -1,11 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FiHeart, FiStar, FiMapPin } from 'react-icons/fi';
+import { FiHeart, FiStar, FiMapPin, FiEye, FiZap } from 'react-icons/fi';
 
 const HotelCard = ({ hotel }) => {
   const { user, favorites, toggleFavorite } = useContext(AuthContext);
   const isFav = favorites.includes(hotel._id);
+  const [imgHovered, setImgHovered] = useState(false);
 
   const handleFav = (e) => {
     e.preventDefault();
@@ -13,11 +14,15 @@ const HotelCard = ({ hotel }) => {
     toggleFavorite(hotel._id);
   };
 
+  // Check if hotel is "new" (created within last 7 days)
+  const isNew = hotel.createdAt && (Date.now() - new Date(hotel.createdAt)) < 7 * 24 * 60 * 60 * 1000;
+
   return (
-    <div className="glass-panel overflow-hidden group flex flex-col h-full relative"
-      style={{ transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+    <div
+      className="glass-panel overflow-hidden group flex flex-col h-full relative"
+      style={{ transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)' }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-8px)';
+        e.currentTarget.style.transform = 'translateY(-4px)';
         e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
       }}
       onMouseLeave={e => {
@@ -26,7 +31,12 @@ const HotelCard = ({ hotel }) => {
       }}
     >
       {/* Image */}
-      <div className="relative overflow-hidden" style={{ height: '220px' }}>
+      <div
+        className="relative overflow-hidden"
+        style={{ height: '220px' }}
+        onMouseEnter={() => setImgHovered(true)}
+        onMouseLeave={() => setImgHovered(false)}
+      >
         {/* Skeleton */}
         <div className="absolute inset-0 shimmer" />
 
@@ -34,10 +44,8 @@ const HotelCard = ({ hotel }) => {
           src={hotel.image || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800'}
           alt={hotel.name}
           className="w-full h-full object-cover relative z-10"
-          style={{ transition: 'transform 0.7s ease' }}
+          style={{ transition: 'transform 0.5s ease', transform: imgHovered ? 'scale(1.04)' : 'scale(1)' }}
           loading="lazy"
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         />
 
         {/* Gradient overlay */}
@@ -45,12 +53,19 @@ const HotelCard = ({ hotel }) => {
           style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,8,30,0.8) 100%)' }} />
 
         {/* Top badges */}
-        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-30">
+        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-40">
+
           <div className="flex flex-col gap-1.5">
             {hotel.roomsAvailable !== undefined && hotel.roomsAvailable <= 3 && hotel.roomsAvailable > 0 && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse"
                 style={{ background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(248,113,113,0.5)', color: 'white' }}>
-                🔥 {hotel.roomsAvailable} ta qoldi
+                <FiZap className="w-3 h-3" /> {hotel.roomsAvailable} ta qoldi
+              </div>
+            )}
+            {isNew && (
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                style={{ background: 'rgba(16,185,129,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(52,211,153,0.5)', color: 'white' }}>
+                <FiStar className="w-3 h-3" /> Yangi
               </div>
             )}
           </div>
@@ -81,12 +96,24 @@ const HotelCard = ({ hotel }) => {
             <span className="text-sm font-black text-white">{hotel.rating?.toFixed?.(1) || hotel.rating}</span>
           </div>
         )}
+
+        {/* Quick view overlay on hover */}
+        <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{ background: 'rgba(0,0,0,0.15)' }}>
+          <Link to={`/hotel/${hotel._id}`}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-white"
+            style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)' }}
+            onClick={e => e.stopPropagation()}>
+            <FiEye className="w-4 h-4" /> Ko'rish
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         <div className="mb-3">
-          <h3 className="font-extrabold text-gray-900 dark:text-white text-lg line-clamp-1 mb-1"
+          <h3 className="font-extrabold text-gray-900 dark:text-white text-base sm:text-lg line-clamp-1 mb-1"
+
             style={{ transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = '#6366F1'}
             onMouseLeave={e => e.currentTarget.style.color = ''}>
@@ -122,7 +149,8 @@ const HotelCard = ({ hotel }) => {
             <span className="block text-[10px] uppercase font-black tracking-widest mb-0.5"
               style={{ color: 'var(--text-muted)' }}>Bir kecha</span>
             <div className="flex items-baseline gap-1">
-              <span className="font-black text-2xl" style={{ color: '#6366F1' }}>
+              <span className="font-black text-xl sm:text-2xl" style={{ color: '#6366F1' }}>
+
                 {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)}
               </span>
               <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>UZS</span>

@@ -4,7 +4,9 @@ import HotelCard from '../components/HotelCard';
 import AIRecommendations from '../components/AIRecommendations';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { FiSearch, FiAward, FiSun, FiDollarSign, FiUsers, FiHome, FiBriefcase, FiMapPin, FiCalendar, FiMap, FiStar, FiTrendingUp, FiFrown, FiAlertTriangle } from 'react-icons/fi';
+import { FiSearch, FiAward, FiSun, FiDollarSign, FiUsers, FiHome, FiBriefcase, FiMapPin, FiCalendar, FiMap, FiStar, FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp, FiTruck } from 'react-icons/fi';
+import BackButton from '../components/BackButton';
+
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -15,6 +17,13 @@ const Home = () => {
   const [checkOut, setCheckOut] = useState('');
   const navigate = useNavigate();
   const { darkMode } = useContext(AuthContext);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const categories = [
     { name: 'Hashamatli', icon: <FiAward className="w-8 h-8 text-yellow-500" />, query: 'luxury' },
@@ -54,9 +63,17 @@ const Home = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 lg:pl-32">
+
+      {/* Back Button Overlay */}
+      <div className="absolute top-6 left-4 z-30">
+        <BackButton />
+      </div>
+
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ height: '580px' }}>
+      <div className="relative w-full overflow-hidden" style={{ height: 'clamp(520px, 80vh, 680px)' }}>
+
+
         {/* Background Image */}
         <img
           src="https://marakandatravel.asia/wp-content/uploads/2019/11/p5111803-5-844x473.jpg"
@@ -77,7 +94,8 @@ const Home = () => {
           style={{ background: 'radial-gradient(circle, #EC4899, transparent)', filter: 'blur(70px)' }} />
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center" style={{ paddingBottom: '100px' }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center pb-20 sm:pb-28">
+
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5"
             style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
@@ -219,8 +237,8 @@ const Home = () => {
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.borderColor = '#6366F1';
-                  e.currentTarget.style.boxShadow = '0 8px 24px -6px rgba(99,102,241,0.25)';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px -4px rgba(99,102,241,0.2)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = 'var(--border)';
@@ -233,6 +251,39 @@ const Home = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Transport Routes Quick Link */}
+        <div className="mb-10">
+          <button
+            onClick={() => navigate('/routes')}
+            className="w-full glass-panel p-5 flex items-center gap-4 transition-all active:scale-[0.99]"
+            style={{
+              borderRadius: '1.5rem',
+              borderLeft: '4px solid #6366F1',
+              cursor: 'pointer',
+              background: 'none',
+              border: '1px solid var(--border)',
+              borderLeftWidth: '4px',
+              borderLeftColor: '#6366F1',
+              fontFamily: 'inherit',
+              textAlign: 'left',
+            }}
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(99,102,241,0.1)' }}>
+              <FiTruck className="w-6 h-6 text-indigo-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-extrabold text-base text-gray-900 dark:text-white mb-0.5">
+                Shahar yo'nalishlari
+              </h3>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Navoiy shahri jamoat transporti marshrutlari
+              </p>
+            </div>
+            <FiMapPin className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+          </button>
         </div>
 
         {/* AI Recommendations */}
@@ -279,6 +330,22 @@ const Home = () => {
           ) : null}
         </div>
       </div>
+
+      {/* ── SCROLL TO TOP ──────────────────────────────────── */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-28 right-5 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:opacity-90 active:scale-90"
+          style={{
+            background: 'var(--gradient-main)',
+            boxShadow: 'var(--shadow-colored)',
+            animation: 'fadeInUp 0.3s ease forwards',
+          }}
+          aria-label="Yuqoriga qaytish"
+        >
+          <FiArrowUp className="w-5 h-5 text-white" strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   );
 };

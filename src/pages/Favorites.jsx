@@ -35,7 +35,8 @@ const Favorites = () => {
   };
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
+    <div className="pb-24 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <BackButton className="mb-2" />

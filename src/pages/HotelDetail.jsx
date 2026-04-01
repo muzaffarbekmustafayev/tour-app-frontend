@@ -8,9 +8,9 @@ import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import { 
   FiWifi, FiDroplet, FiHeart, FiCoffee, 
-  FiMapPin, FiWind, FiBriefcase, FiMap, 
+  FiMapPin, FiWind, FiBriefcase, FiMap, FiNavigation,
   FiCheckCircle, FiShield, FiFrown, FiUsers, 
-  FiStar, FiEdit3, FiImage, FiCheck
+  FiStar, FiEdit3, FiImage, FiCheck, FiPhone, FiMail
 } from 'react-icons/fi';
 
 const amenityIcons = {
@@ -97,7 +97,8 @@ const HotelDetail = () => {
   const images = (hotel.images && hotel.images.length > 0) ? hotel.images : fallbackImages;
 
   return (
-    <div className="pb-24 max-w-7xl mx-auto">
+    <div className="pb-24 max-w-7xl mx-auto lg:pl-32">
+
       <div className="px-0 sm:px-4 mb-8 sm:mb-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[60vh] sm:h-[500px]">
           <div className="md:col-span-3 h-full overflow-hidden sm:rounded-[2.5rem] rounded-b-[2.5rem] relative group shadow-sm -mt-2 sm:mt-0">
@@ -170,7 +171,19 @@ const HotelDetail = () => {
                     <span>Tasdiqlangan joy</span>
                   </div>
                 </div>
+
+                {/* Overnight Price */}
+                <div className="mt-8 p-6 bg-white dark:bg-[#1e293b] rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm inline-block">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Tunab qolish narxi</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black text-indigo-600 dark:text-indigo-400">
+                      {new Intl.NumberFormat('uz-UZ').format(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0)}
+                    </span>
+                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400">UZS / tun</span>
+                  </div>
+                </div>
               </div>
+
               
               {/* Premium Rating Block */}
               <div className="hidden sm:flex flex-col items-end">
@@ -186,6 +199,26 @@ const HotelDetail = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Yo'l boshlash (Route) Button */}
+          <div className="mb-10 w-full sm:w-auto">
+            <button 
+              onClick={() => {
+                const lat = hotel?.location?.lat;
+                const lng = hotel?.location?.lng;
+                if (lat && lng) {
+                  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+                } else {
+                  const query = encodeURIComponent(`${hotel.name} ${hotel.city}`);
+                  window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                }
+              }}
+              className="w-full sm:max-w-xs bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-8 rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              <FiNavigation className="w-5 h-5" /> 
+              <span>Yo'l boshlash</span>
+            </button>
           </div>
 
           {/* Overview & Quick Highlights */}
@@ -223,6 +256,33 @@ const HotelDetail = () => {
             </div>
           </div>
 
+          {/* Owner Info */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold mb-5 text-gray-900 dark:text-white flex items-center gap-2">
+              <FiUsers className="text-indigo-500" /> Bog'lanish (Ma'muriyat)
+            </h2>
+            <div className="bg-white/60 dark:bg-slate-800/40 border border-white dark:border-gray-800 rounded-3xl p-6 flex items-center gap-6 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl">
+                {hotel.owner?.name?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-black text-gray-900 dark:text-white mb-0.5">{hotel.owner?.name || 'Noma\'lum Egasi'}</p>
+                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                   {hotel.owner?.phone && (
+                     <a href={`tel:${hotel.owner.phone}`} className="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                       <FiPhone className="text-indigo-500 w-4 h-4" /> {hotel.owner.phone}
+                     </a>
+                   )}
+                   {hotel.owner?.email && (
+                     <a href={`mailto:${hotel.owner.email}`} className="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                       <FiMail className="text-indigo-500 w-4 h-4" /> {hotel.owner.email}
+                     </a>
+                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             {hotel.amenities && hotel.amenities.length > 0 && (
@@ -252,15 +312,20 @@ const HotelDetail = () => {
                     {Object.entries({
                       wheelchairAccessible: 'Nogironlar aravachasi',
                       elevator: 'Lift',
-                      accessibleRooms: 'Moslashtirilgan',
                       brailleSigns: 'Brayl yozuvi',
-                      hearingAssistance: 'Eshitish',
-                      specialParking: 'Maxsus Joy',
-                    }).map(([key, label]) => hotel.accessibility[key] && (
+                      tactileFlooring: 'Taktil pol qoplamalari',
+                      hearingAssistance: 'Eshitish moslamalari',
+                      voiceAssistant: 'Ovozli boshqaruv',
+                      signLanguage: 'Imo-ishora tili xizmati',
+                      emergencyButtons: 'Yordam tugmalari',
+                      wideDoors: 'Keng eshiklar',
+                      showerSeat: 'Dush o\'rindig\'i',
+                    }).map(([key, label]) => hotel.accessibility?.[key] && (
                       <span key={key} className="bg-white/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-4 py-2 rounded-full text-xs font-bold shadow-sm backdrop-blur-sm border border-emerald-100 dark:border-emerald-700/50">
                         {label}
                       </span>
                     ))}
+
                   </div>
                 </div>
               )}
@@ -471,12 +536,13 @@ const HotelDetail = () => {
         {/* Right: Booking Widget */}
         <div className="lg:w-96 pb-20 lg:pb-0" id="booking-widget">
           <div className="sticky top-4">
-            <AvailabilityChecker hotel={hotel} />
+            {/* <AvailabilityChecker hotel={hotel} /> */}
           </div>
         </div>
       </div>
 
       {/* Floating Mobile Booking Footer */}
+      {/* 
       <div className="lg:hidden fixed bottom-[72px] left-0 right-0 p-4 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800/80 flex justify-between items-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
         <div>
            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5">Narxlar</p>
@@ -494,7 +560,8 @@ const HotelDetail = () => {
         }} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-transform text-sm h-full max-h-[52px] flex items-center justify-center">
            Band qilish
         </button>
-      </div>
+      </div> 
+      */}
 
     </div>
   );

@@ -2,10 +2,11 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
-import { FiUser, FiMail, FiLock, FiChevronDown, FiMapPin } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiChevronDown, FiMapPin, FiEye, FiEyeOff, FiAlertTriangle, FiPhone } from 'react-icons/fi';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'CUSTOMER' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'CUSTOMER', phone: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { register } = useContext(AuthContext);
@@ -56,7 +57,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden"
+    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden lg:pl-32"
+
       style={{ background: 'var(--gradient-bg)' }}>
       {/* Background blobs */}
       <div className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-25 pointer-events-none"
@@ -75,7 +77,7 @@ const Register = () => {
               <FiMapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-2xl font-black mb-1.5" style={{ color: 'var(--text-main)' }}>
-              NavaiTour'ga qo'shiling 🚀
+              NavaiTour'ga qo'shiling
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
               Eng yaxshi mehmonxonalarni band qilish uchun ro'yxatdan o'ting.
@@ -86,7 +88,7 @@ const Register = () => {
           {error && (
             <div className="mb-5 px-4 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2"
               style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' }}>
-              ⚠️ {error}
+              <FiAlertTriangle className="w-4 h-4" /> {error}
             </div>
           )}
 
@@ -117,6 +119,19 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Phone */}
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '7px' }}>
+                Telefon raqam
+              </label>
+              <div className="relative">
+                <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
+                <input type="tel" name="phone" placeholder="+998 90 123 45 67"
+                  value={formData.phone} onChange={handleChange}
+                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} required />
+              </div>
+            </div>
+
             {/* Password */}
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '7px' }}>
@@ -124,9 +139,18 @@ const Register = () => {
               </label>
               <div className="relative">
                 <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-                <input type="password" name="password" placeholder="Kuchli parol yarating"
+                <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Kuchli parol yarating"
                   value={formData.password} onChange={handleChange}
-                  style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} required />
+                  style={{ ...inputStyle, paddingRight: '3rem' }} onFocus={focusStyle} onBlur={blurStyle} required />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-80 active:scale-90"
+                  tabIndex={-1}
+                  style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 

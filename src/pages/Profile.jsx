@@ -34,7 +34,6 @@ const Profile = () => {
   const roleLabels = { ADMIN: 'Administrator', HOTEL_OWNER: 'Mehmonxona egasi', CUSTOMER: 'Mijoz', GUEST: 'Mehmon' };
 
   const menuItems = [
-    { icon: <FiCalendar className="text-blue-500 w-5 h-5" />, label: 'Bronlarim', path: '/bookings', roles: ['CUSTOMER', 'ADMIN'] },
     { icon: <FiHeart className="text-red-500 w-5 h-5" />, label: 'Sevimlilar', path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
     { icon: <FiHome className="text-emerald-500 w-5 h-5" />, label: 'Mehmonxonalarim', path: '/owner', roles: ['HOTEL_OWNER'] },
     { icon: <FiSettings className="text-gray-500 dark:text-gray-400 w-5 h-5" />, label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },

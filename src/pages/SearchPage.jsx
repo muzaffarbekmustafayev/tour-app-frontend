@@ -64,15 +64,22 @@ const SearchPage = () => {
   const activeFiltersCount = [filters.minPrice, filters.maxPrice, filters.minRating, filters.city].filter(Boolean).length + filters.accessibility.length;
 
   const accessibilityOptions = [
-    { key: 'wheelchair', label: 'Nogironlar aravachasi' },
-    { key: 'elevator', label: 'Lift' },
-    { key: 'braille', label: 'Brayl belgilar' },
-    { key: 'hearing', label: 'Eshitish moslamasi' },
-    { key: 'parking', label: 'Maxsus avtoturargoh' },
+    { key: 'wheelchairAccessible', label: 'Nogironlar aravachasi' },
+    { key: 'elevator', label: 'Lift mavjud' },
+    { key: 'brailleSigns', label: 'Brayl shrifti (Ko\'zi ojizlar)' },
+    { key: 'tactileFlooring', label: 'Taktil pol qoplamalari' },
+    { key: 'hearingAssistance', label: 'Eshitish moslamalari' },
+    { key: 'voiceAssistant', label: 'Ovozli boshqaruv' },
+    { key: 'signLanguage', label: 'Imo-ishora tili xizmati' },
+    { key: 'emergencyButtons', label: 'Favqulodda yordam tugmalari' },
+    { key: 'wideDoors', label: 'Keng eshiklar' },
+    { key: 'showerSeat', label: 'Dush o\'rindig\'i' },
   ];
 
+
   return (
-    <div className="pb-28 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
+    <div className="pb-28 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+
       <div className="mb-4"><BackButton /></div>
       
       {/* ── SEARCH BAR ────────────────────────────────────── */}
@@ -195,6 +202,23 @@ const SearchPage = () => {
             )}
           </div>
 
+          <div className="glass-panel p-5">
+            <h3 className="font-bold mb-4 text-gray-900 dark:text-white text-[11px] uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400">Maxsus qulayliklar</h3>
+            <div className="space-y-3">
+              {accessibilityOptions.map(opt => (
+                <label key={opt.key} className="flex items-center cursor-pointer group">
+                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all mr-3 ${filters.accessibility.includes(opt.key) ? 'bg-indigo-600 border-indigo-600' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600'}`}>
+                    {filters.accessibility.includes(opt.key) && <FiCheck className="text-white w-3.5 h-3.5" />}
+                  </div>
+                  <input type="checkbox" className="hidden" checked={filters.accessibility.includes(opt.key)} onChange={() => handleAccessibilityToggle(opt.key)} />
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 transition-colors">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+
+
           <button onClick={() => setShowFilters(false)} className="w-full md:hidden btn-primary py-4 rounded-2xl font-black text-base shadow-xl mt-6">
             {totalHotels} ta natijani ko'rish
           </button>
@@ -212,11 +236,12 @@ const SearchPage = () => {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="shimmer h-[380px] rounded-3xl" />)}
             </div>
           ) : hotels.length > 0 ? (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
               {hotels.map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
             </div>
           ) : (

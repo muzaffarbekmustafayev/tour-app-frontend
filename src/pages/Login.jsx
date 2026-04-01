@@ -2,11 +2,12 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
-import { FiLock, FiMail, FiMapPin, FiAlertTriangle } from 'react-icons/fi';
+import { FiLock, FiMail, FiMapPin, FiAlertTriangle, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
@@ -40,7 +41,7 @@ const Login = () => {
   const inputStyle = {
     width: '100%',
     paddingLeft: '3rem',
-    paddingRight: '1rem',
+    paddingRight: '3rem',
     paddingTop: '0.875rem',
     paddingBottom: '0.875rem',
     background: 'rgba(99,102,241,0.05)',
@@ -55,7 +56,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden"
+    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden lg:pl-32"
+
       style={{ background: 'var(--gradient-bg)' }}>
       {/* Background decorative blobs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-30 pointer-events-none"
@@ -75,7 +77,7 @@ const Login = () => {
               <FiMapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-2xl font-black mb-1.5" style={{ color: 'var(--text-main)' }}>
-              Xush kelibsiz! 👋
+              Xush kelibsiz!
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
               Bronlar va sevimlilarni boshqarish uchun kiring.
@@ -99,6 +101,7 @@ const Login = () => {
               <div className="relative">
                 <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                 <input
+                  id="login-email"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
@@ -124,7 +127,8 @@ const Login = () => {
               <div className="relative">
                 <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                 <input
-                  type="password"
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -133,12 +137,24 @@ const Login = () => {
                   onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none'; e.target.style.background = 'rgba(99,102,241,0.05)'; }}
                   required
                 />
+                {/* Show/Hide password toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-80 active:scale-90"
+                  tabIndex={-1}
+                  style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  aria-label={showPassword ? 'Parolni yashirish' : 'Parolni ko\'rsatish'}
+                >
+                  {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
+              id="login-submit"
               disabled={loading}
               className="btn-primary w-full py-3.5 rounded-2xl font-black text-base flex items-center justify-center gap-2"
               style={{ marginTop: '8px', opacity: loading ? 0.75 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
