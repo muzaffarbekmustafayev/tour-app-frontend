@@ -97,57 +97,52 @@ const Home = () => {
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center pb-20 sm:pb-28">
 
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
-            <FiMap className="text-amber-400 w-4 h-4" />
-            <span className="text-white text-xs font-black uppercase tracking-[0.2em]">NavaiTour · O'zbekiston</span>
+          <div className="glass-pill mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <FiMap className="text-amber-400 w-4 h-4 inline mr-2" />
+            <span className="font-black">NavaiTour · O'zbekiston</span>
           </div>
 
           {/* Title */}
-          <h1 className="text-white font-black mb-4 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 6vw, 3.25rem)', textShadow: '0 4px 24px rgba(0,0,0,0.4)' }}>
-            Ideal mehmonxona
+          <h1 className="text-white font-black mb-6 leading-[1.1] animate-fade-in"
+            style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', textShadow: '0 10px 40px rgba(0,0,0,0.5)', animationDelay: '0.2s' }}>
+            Ideal sarguzasht
             <br />
-            <span style={{
-              background: 'linear-gradient(135deg, #818CF8, #C084FC, #F472B6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
+            <span className="text-reveal">
               sizi kutmoqda
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-white/80 font-medium mb-8 max-w-md"
-            style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1rem)' }}>
-            O'zbekiston bo'ylab eng sara mehmonxonalarni oson band qiling.
+          <p className="text-white/90 font-medium mb-10 max-w-xl animate-fade-in"
+            style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', lineHeight: '1.6', animationDelay: '0.3s' }}>
+            O'zbekistonning eng go'zal go'shalarida unutilmas lahzalarni biz bilan birga his qiling.
           </p>
 
           {/* Search Form */}
           <form
             onSubmit={handleSearch}
-            className="w-full max-w-3xl"
+            className="w-full max-w-4xl animate-fade-in"
             style={{
-              background: 'rgba(255,255,255,0.96)',
-              backdropFilter: 'blur(24px)',
-              borderRadius: '2rem',
-              padding: '8px',
-              boxShadow: '0 24px 60px -12px rgba(0,0,0,0.4)',
-              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.98)',
+              backdropFilter: 'blur(30px)',
+              borderRadius: '2.5rem',
+              padding: '12px',
+              boxShadow: '0 30px 70px -15px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.4)',
+              animationDelay: '0.4s'
             }}
           >
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col lg:flex-row gap-3">
               {/* Location input */}
-              <div className="flex-1 flex items-center px-4 py-3 rounded-[1.5rem] gap-3"
-                style={{ background: 'rgba(240,244,255,0.8)' }}>
-                <FiMapPin className="text-indigo-500 flex-shrink-0 w-5 h-5" />
+              <div className="flex-[1.5] flex items-center px-6 py-4 rounded-[2rem] gap-4 transition-all focus-within:ring-2 ring-indigo-500/20"
+                style={{ background: 'rgba(241, 245, 249, 0.8)' }}>
+                <FiMapPin className="text-indigo-600 flex-shrink-0 w-6 h-6" />
                 <div className="flex-1 text-left min-w-0">
-                  <label className="block text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">Manzil yoki Nomi</label>
+                  <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-1">Manzil yoki Nomi</label>
                   <input
                     type="text"
-                    placeholder="Qayerga ketyapsiz?"
-                    className="w-full bg-transparent border-none outline-none text-gray-900 font-bold text-sm placeholder-gray-400 truncate"
+                    placeholder="Qayerga boramiz?"
+                    className="w-full bg-transparent border-none outline-none text-slate-900 font-bold text-base placeholder-slate-400 truncate"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -155,34 +150,34 @@ const Home = () => {
               </div>
 
               {/* Date inputs */}
-              <div className="flex gap-2">
-                <div className="flex items-center px-4 py-3 rounded-[1.5rem] gap-2 shrink-0"
-                  style={{ background: 'rgba(240,244,255,0.8)' }}>
-                  <FiCalendar className="text-indigo-400 flex-shrink-0 w-4 h-4" />
-                  <div className="text-left">
-                    <label className="block text-[9px] uppercase font-black text-gray-400 tracking-wider mb-0.5">Kirish</label>
+              <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                <div className="flex-1 flex items-center px-6 py-4 rounded-[2rem] gap-3 transition-all focus-within:ring-2 ring-indigo-500/20"
+                  style={{ background: 'rgba(241, 245, 249, 0.8)' }}>
+                  <FiCalendar className="text-indigo-500 flex-shrink-0 w-5 h-5" />
+                  <div className="text-left w-full">
+                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-1">Kelish</label>
                     <input type="date" min={today}
-                      className="bg-transparent border-none outline-none text-gray-900 font-bold text-sm w-full p-0"
+                      className="bg-transparent border-none outline-none text-slate-900 font-bold text-sm w-full p-0 leading-tight"
                       value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
                   </div>
                 </div>
 
-                <div className="flex items-center px-4 py-3 rounded-[1.5rem] gap-2 shrink-0"
-                  style={{ background: 'rgba(240,244,255,0.8)' }}>
-                  <FiCalendar className="text-rose-400 flex-shrink-0 w-4 h-4" />
-                  <div className="text-left">
-                    <label className="block text-[9px] uppercase font-black text-gray-400 tracking-wider mb-0.5">Chiqish</label>
+                <div className="flex-1 flex items-center px-6 py-4 rounded-[2rem] gap-3 transition-all focus-within:ring-2 ring-indigo-500/20"
+                  style={{ background: 'rgba(241, 245, 249, 0.8)' }}>
+                  <FiCalendar className="text-rose-500 flex-shrink-0 w-5 h-5" />
+                  <div className="text-left w-full">
+                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-1">Ketish</label>
                     <input type="date" min={checkIn || today}
-                      className="bg-transparent border-none outline-none text-gray-900 font-bold text-sm w-full p-0"
+                      className="bg-transparent border-none outline-none text-slate-900 font-bold text-sm w-full p-0 leading-tight"
                       value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
                   </div>
                 </div>
               </div>
 
               {/* Search Button */}
-              <button type="submit" className="btn-primary flex items-center justify-center gap-2 font-bold px-7 py-3 rounded-[1.5rem] text-sm sm:w-auto w-full mt-1 sm:mt-0"
-                style={{ borderRadius: '1.5rem' }}>
-                <FiSearch className="w-5 h-5" />
+              <button type="submit" className="btn-primary flex items-center justify-center gap-3 font-extrabold px-10 py-5 rounded-[2rem] text-base group hover:scale-[1.02]"
+                style={{ borderRadius: '2rem' }}>
+                <FiSearch className="w-6 h-6 transition-transform group-hover:rotate-12" />
                 Topish
               </button>
             </div>
@@ -221,33 +216,37 @@ const Home = () => {
               Barchasi →
             </button>
           </div>
-          <div className="flex space-x-3 overflow-x-auto hide-scrollbar pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
-            {categories.map((cat) => (
+          <div className="flex space-x-4 overflow-x-auto hide-scrollbar pb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {categories.map((cat, idx) => (
               <button
                 key={cat.name}
                 onClick={() => navigate(`/search?q=${cat.query}`)}
-                className="flex-shrink-0 flex flex-col items-center justify-center gap-2 transition-all group active:scale-95"
+                className="flex-shrink-0 flex flex-col items-center justify-center gap-3 transition-all group active:scale-95 animate-scale-in"
                 style={{
-                  width: '100px',
-                  height: '96px',
-                  borderRadius: '1.5rem',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '2rem',
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border)',
-                  boxShadow: 'var(--shadow-sm)',
+                  boxShadow: 'var(--shadow)',
+                  animationDelay: `${0.1 * idx}s`
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = '#6366F1';
-                  e.currentTarget.style.boxShadow = '0 6px 16px -4px rgba(99,102,241,0.2)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.boxShadow = '0 12px 24px -8px rgba(99,102,241,0.3)';
+                  e.currentTarget.style.transform = 'translateY(-6px)';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow)';
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <span>{cat.icon}</span>
-                <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{cat.name}</span>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-6"
+                  style={{ background: 'rgba(99,102,241,0.05)' }}>
+                  {cat.icon}
+                </div>
+                <span className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-tight">{cat.name}</span>
               </button>
             ))}
           </div>

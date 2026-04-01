@@ -19,14 +19,19 @@ const HotelCard = ({ hotel }) => {
 
   return (
     <div
-      className="glass-panel overflow-hidden group flex flex-col h-full relative"
-      style={{ transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)' }}
+      className="glass-panel overflow-hidden group flex flex-col h-full relative border-0"
+      style={{ 
+        transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+        borderRadius: '2rem',
+        boxShadow: 'var(--shadow)',
+        background: 'var(--bg-card)',
+      }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+        e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)';
+        e.currentTarget.style.boxShadow = '0 30px 60px -12px rgba(99, 102, 241, 0.25)';
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.transform = 'translateY(0) scale(1)';
         e.currentTarget.style.boxShadow = 'var(--shadow)';
       }}
     >
@@ -55,17 +60,17 @@ const HotelCard = ({ hotel }) => {
         {/* Top badges */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-40">
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             {hotel.roomsAvailable !== undefined && hotel.roomsAvailable <= 3 && hotel.roomsAvailable > 0 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse"
-                style={{ background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(248,113,113,0.5)', color: 'white' }}>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse shadow-lg"
+                style={{ background: 'rgba(239,68,68,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
                 <FiZap className="w-3 h-3" /> {hotel.roomsAvailable} ta qoldi
               </div>
             )}
             {isNew && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
-                style={{ background: 'rgba(16,185,129,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(52,211,153,0.5)', color: 'white' }}>
-                <FiStar className="w-3 h-3" /> Yangi
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg"
+                style={{ background: 'rgba(16,185,129,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
+                <FiStar className="w-3 h-3 fill-current" /> Yangi
               </div>
             )}
           </div>
@@ -143,23 +148,21 @@ const HotelCard = ({ hotel }) => {
         )}
 
         {/* Price & CTA */}
-        <div className="mt-auto pt-4 flex items-center justify-between"
+        <div className="mt-auto pt-5 flex items-center justify-between"
           style={{ borderTop: '1px solid var(--border)' }}>
           <div>
-            <span className="block text-[10px] uppercase font-black tracking-widest mb-0.5"
-              style={{ color: 'var(--text-muted)' }}>Bir kecha</span>
+            <span className="block text-[10px] uppercase font-black tracking-widest mb-1 opacity-60">Bir kecha uchun</span>
             <div className="flex items-baseline gap-1">
-              <span className="font-black text-xl sm:text-2xl" style={{ color: '#6366F1' }}>
-
+              <span className="font-black text-2xl" style={{ color: 'var(--primary)' }}>
                 {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)}
               </span>
-              <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>UZS</span>
+              <span className="text-xs font-bold opacity-60">UZS</span>
             </div>
           </div>
           <Link to={`/hotel/${hotel._id}`}
-            className="btn-primary px-5 py-2.5 rounded-2xl text-sm font-bold"
+            className="btn-primary w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
             style={{ textDecoration: 'none' }}>
-            Ko'rish →
+            <FiZap className="w-5 h-5" />
           </Link>
         </div>
       </div>

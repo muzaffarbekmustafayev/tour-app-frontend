@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import api from '../services/api';
 import BackButton from '../components/BackButton';
-import { FiSearch, FiFilter, FiX, FiStar, FiAward, FiThumbsUp, FiSmile
+import { FiSearch, FiFilter, FiX, FiStar, FiAward, FiThumbsUp, FiSmile, FiCheck
 } from 'react-icons/fi';
 
 const SearchPage = () => {
@@ -94,14 +94,15 @@ const SearchPage = () => {
             placeholder="Mehmonxona yoki shahar qidiring..."
             value={filters.search}
             onChange={(e) => handleFilterChange('search', e.target.value)}
-            className="w-full pl-12 pr-5 py-4 bg-white dark:bg-[#1e293b] font-bold text-gray-900 dark:text-white outline-none transition-all"
+            className="w-full pl-14 pr-6 py-5 bg-white dark:bg-slate-800/80 font-bold text-gray-900 dark:text-white outline-none transition-all"
             style={{ 
-              borderRadius: '2rem', 
+              borderRadius: '2.5rem', 
               border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: 'var(--shadow)',
+              backdropFilter: 'blur(12px)'
             }}
-            onFocus={e => { e.target.style.borderColor = '#6366F1'; e.target.style.boxShadow = 'var(--shadow)'; }}
-            onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
+            onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 12px 30px -10px rgba(99, 102, 241, 0.3)'; }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'var(--shadow)'; }}
           />
         </div>
         
