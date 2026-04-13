@@ -1,77 +1,94 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import AvailabilityChecker from '../components/AvailabilityChecker';
 import MapView from '../components/MapView';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
-import { 
-  FiWifi, FiDroplet, FiHeart, FiCoffee, 
-  FiMapPin, FiWind, FiBriefcase, FiMap, FiNavigation,
-  FiCheckCircle, FiShield, FiFrown, FiUsers, 
-  FiStar, FiEdit3, FiImage, FiCheck, FiPhone, FiMail
+import {
+  FiWifi, FiDroplet, FiHeart, FiCoffee, FiMapPin, FiWind,
+  FiBriefcase, FiMap, FiCheckCircle, FiShield, FiFrown,
+  FiUsers, FiStar, FiEdit3, FiCheck, FiPhone, FiMail,
+  FiVolume2, FiVolumeX, FiX, FiTag, FiCalendar, FiAward,
+  FiChevronRight
 } from 'react-icons/fi';
 
-const amenityIcons = {
-  'Free WiFi': <FiWifi className="w-4 h-4" />, 
-  'Pool': <FiDroplet className="w-4 h-4" />, 
-  'Spa': <FiHeart className="w-4 h-4" />, 
+const AMENITY_ICONS = {
+  'Free WiFi': <FiWifi className="w-4 h-4" />,
+  'Pool': <FiDroplet className="w-4 h-4" />,
+  'Spa': <FiHeart className="w-4 h-4" />,
   'Restaurant': <FiCoffee className="w-4 h-4" />,
-  'Gym': <FiCheckCircle className="w-4 h-4" />, 
-  'Parking': <FiMapPin className="w-4 h-4" />, 
+  'Gym': <FiCheckCircle className="w-4 h-4" />,
+  'Parking': <FiMapPin className="w-4 h-4" />,
   'Air Conditioning': <FiWind className="w-4 h-4" />,
-  'Airport Shuttle': <FiMap className="w-4 h-4" />, 
-  'Bar': <FiCoffee className="w-4 h-4" />, 
+  'Airport Shuttle': <FiMap className="w-4 h-4" />,
+  'Bar': <FiCoffee className="w-4 h-4" />,
   'Meeting Rooms': <FiBriefcase className="w-4 h-4" />,
 };
+
+const Section = ({ title, icon, children, className = '' }) => (
+  <div className={`glass-panel p-5 sm:p-6 ${className}`} style={{ borderRadius: '1.75rem' }}>
+    {title && (
+      <h2 className="flex items-center gap-2 text-base font-extrabold mb-4" style={{ color: 'var(--text-main)' }}>
+        <span style={{ color: '#6366f1' }}>{icon}</span> {title}
+      </h2>
+    )}
+    {children}
+  </div>
+);
+
+const StarRow = ({ rating, size = 'sm' }) => (
+  <div className="flex items-center gap-0.5">
+    {[1,2,3,4,5].map(i => (
+      <FiStar key={i} className={size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'}
+        style={{ color: i <= rating ? '#fbbf24' : 'var(--border)', fill: i <= rating ? '#fbbf24' : 'none' }} />
+    ))}
+  </div>
+);
 
 const HotelDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const [hotel, setHotel] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeImage, setActiveImage] = useState(0);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const [hotel, setHotel]               = useState(null);
+  const [reviews, setReviews]           = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(null);
+  const [activeImg, setActiveImg]       = useState(0);
+  const [reviewForm, setReviewForm]     = useState({ rating: 5, comment: '' });
+  const [submitting, setSubmitting]     = useState(false);
+  const [audioModal, setAudioModal]     = useState(false);
+  const [isReading, setIsReading]       = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+    const load = async () => {
+      setLoading(true); setError(null);
       try {
-        const [hotelRes, reviewsRes] = await Promise.all([
+        const [h, r] = await Promise.all([
           api.get(`/hotels/${id}`),
           api.get(`/reviews/hotel/${id}`)
         ]);
-        setHotel(hotelRes.data);
-        setReviews(reviewsRes.data);
-      } catch (err) {
-        console.error(err);
-        setError('Hotel not found or backend is unavailable.');
+        setHotel(h.data);
+        setReviews(r.data);
+      } catch {
+        setError("Mehmonxona topilmadi yoki server ishlamayapti.");
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    load();
   }, [id]);
 
-  const handleReviewSubmit = async (e) => {
+  const submitReview = async (e) => {
     e.preventDefault();
     if (!user) return navigate('/login');
-    setSubmittingReview(true);
+    setSubmitting(true);
     try {
       const res = await api.post('/reviews', { hotelId: id, ...reviewForm });
-      setReviews(prev => [{ ...res.data, user: { name: user.name } }, ...prev]);
+      setReviews(p => [{ ...res.data, user: { name: user.name } }, ...p]);
       setReviewForm({ rating: 5, comment: '' });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSubmittingReview(false);
-    }
+    } catch { /* ignore */ }
+    finally { setSubmitting(false); }
   };
 
   if (loading) return (
@@ -81,321 +98,256 @@ const HotelDetail = () => {
   );
 
   if (error || !hotel) return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
-      <FiFrown className="w-16 h-16 text-gray-400 mb-4 mx-auto" strokeWidth={1.5} />
-      <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Couldn't load hotel</h2>
-      <p className="text-gray-500 mb-6 text-center">{error}</p>
-      <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition">Go Back</button>
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center">
+      <FiFrown className="w-16 h-16 mb-4" style={{ color: 'var(--text-muted)' }} strokeWidth={1.5} />
+      <h2 className="text-xl font-extrabold mb-2" style={{ color: 'var(--text-main)' }}>Yuklab bo'lmadi</h2>
+      <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>{error}</p>
+      <button onClick={() => navigate(-1)}
+        className="btn-primary px-6 py-2.5 rounded-2xl font-bold text-sm text-white">
+        Orqaga
+      </button>
     </div>
   );
 
-  const fallbackImages = [
+  const FALLBACK = [
     'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1000',
     'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=1000',
     'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1000',
   ];
-  const images = (hotel.images && hotel.images.length > 0) ? hotel.images : fallbackImages;
+  const images = hotel.images?.length ? hotel.images : FALLBACK;
+
+  const name = typeof hotel.name === 'object'
+    ? (hotel.name.uz || hotel.name.en || Object.values(hotel.name)[0])
+    : hotel.name;
+
+  const desc = typeof hotel.description === 'object'
+    ? (hotel.description.uz || hotel.description.en || '')
+    : hotel.description;
+
+  const price = hotel.basePricePerNight || hotel.pricePerNight || hotel.rooms?.[0]?.pricePerNight || 0;
+
+  const imgSrc = (src) => src?.startsWith('http')
+    ? src
+    : `${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:5000'}/${src}`;
 
   return (
-    <div className="pb-24 max-w-7xl mx-auto lg:pl-32">
+    <div className="pb-28 md:pb-8 max-w-7xl mx-auto lg:pl-32">
 
-      <div className="px-0 sm:px-4 mb-8 sm:mb-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[60vh] sm:h-[500px]">
-          <div className="md:col-span-3 h-full overflow-hidden sm:rounded-[2.5rem] rounded-b-[2.5rem] relative group shadow-sm -mt-2 sm:mt-0">
-            {/* Floating Mobile/Desktop Back Button overlay */}
-            <div className="absolute top-6 left-4 sm:top-6 sm:left-6 z-20">
-              <BackButton />
-            </div>
+      {/* ── Gallery ── */}
+      <div className="px-0 sm:px-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3" style={{ height: 'clamp(260px, 50vh, 480px)' }}>
+          {/* Main image */}
+          <div className="md:col-span-3 h-full overflow-hidden relative group rounded-b-[2rem] sm:rounded-[2rem]">
+            <div className="absolute top-4 left-4 z-20"><BackButton /></div>
             <img
-              src={images[activeImage]}
+              src={imgSrc(images[activeImg])}
+              alt={name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              alt={hotel.name}
             />
-            {/* Elegant Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-gray-900/30 pointer-events-none" />
-            
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)' }} />
+            {/* Dots */}
             {images.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-10 bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20">
-                {images.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveImage(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${idx === activeImage ? 'bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-white/50 w-2 hover:bg-white/80'}`}
-                  />
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-4 py-2 rounded-full z-10"
+                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' }}>
+                {images.map((_, i) => (
+                  <button key={i} onClick={() => setActiveImg(i)}
+                    className="rounded-full transition-all"
+                    style={{ width: i === activeImg ? 24 : 8, height: 8, background: i === activeImg ? 'white' : 'rgba(255,255,255,0.45)' }} />
                 ))}
               </div>
             )}
           </div>
-          
-          <div className="hidden md:flex flex-col gap-4">
-            {images.slice(1, 3).map((img, idx) => (
-               <div key={idx} className="overflow-hidden rounded-[2.5rem] h-full relative group shadow-sm border border-gray-100 dark:border-gray-800">
-                <img
-                  src={img}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 cursor-pointer"
-                  alt={`Gallery ${idx + 1}`}
-                  onClick={() => setActiveImage(idx + 1)}
-                />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          {/* Thumbnails */}
+          <div className="hidden md:flex flex-col gap-3 h-full">
+            {images.slice(1, 3).map((img, i) => (
+              <div key={i} className="flex-1 overflow-hidden rounded-[2rem] relative group cursor-pointer"
+                onClick={() => setActiveImg(i + 1)}>
+                <img src={imgSrc(img)} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'rgba(99,102,241,0.15)' }} />
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="px-4 flex flex-col lg:flex-row gap-12">
-        {/* Left: Hotel Info */}
-        <div className="lg:flex-1 min-w-0">
+      <div className="px-4 flex flex-col lg:flex-row gap-8">
 
-          {/* Detailed Header */}
-          <div className="mb-10 pb-8 border-b border-gray-100 dark:border-gray-800">
-            <div className="flex justify-between items-start gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest bg-blue-600 dark:bg-blue-500 text-white px-4 py-1.5 rounded-full shadow-md shadow-blue-500/20">
+        {/* ── Left column ── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-6">
+
+          {/* Header */}
+          <div className="glass-panel p-5 sm:p-7" style={{ borderRadius: '1.75rem' }}>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-white"
+                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
                     {hotel.category || 'Hotel'}
                   </span>
-                </div>
-                
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight tracking-tight">
-                  {hotel.name}
-                </h1>
-                
-                <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-                  <div className="flex items-center text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-slate-800/80 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700">
-                    <FiMapPin className="mr-2 text-rose-500 w-4 h-4" />
-                    <span>{hotel.address && `${hotel.address}, `}{hotel.city}, {hotel.country}</span>
-                  </div>
-                  <div className="flex items-center text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2.5 rounded-2xl border border-emerald-100 dark:border-emerald-800/60">
-                    <FiCheckCircle className="mr-2 w-4 h-4" />
-                    <span>Tasdiqlangan joy</span>
-                  </div>
-                </div>
-
-                {/* Overnight Price */}
-                <div className="mt-8 p-6 bg-white dark:bg-[#1e293b] rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm inline-block">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Tunab qolish narxi</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-indigo-600 dark:text-indigo-400">
-                      {new Intl.NumberFormat('uz-UZ').format(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0)}
-                    </span>
-                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400">UZS / tun</span>
-                  </div>
-                </div>
-              </div>
-
-              
-              {/* Premium Rating Block */}
-              <div className="hidden sm:flex flex-col items-end">
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-[2rem] shadow-xl shadow-blue-500/30 text-center min-w-[110px] border border-white/10 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:opacity-20 transition-opacity" />
-                  <span className="block text-4xl font-black text-white leading-none mb-1">{hotel.rating?.toFixed(1) || '—'}</span>
-                  <div className="flex justify-center text-yellow-300 mb-2 mt-1">
-                    <FiStar className="w-3.5 h-3.5 fill-current" />
-                  </div>
-                  <span className="text-[10px] font-bold text-blue-100 uppercase tracking-widest block border-t border-white/20 pt-2 mt-1">
-                    {reviews.length > 0 ? `${reviews.length} sharh` : 'Yangi'}
+                  {hotel.stars > 0 && (
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: hotel.stars }).map((_, i) => (
+                        <FiStar key={i} className="w-3.5 h-3.5 text-amber-400" style={{ fill: '#fbbf24' }} />
+                      ))}
+                    </div>
+                  )}
+                  <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                    style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}>
+                    <FiCheckCircle className="w-3 h-3" /> Tasdiqlangan
                   </span>
                 </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight mb-2" style={{ color: 'var(--text-main)' }}>
+                  {name}
+                </h1>
+                {(hotel.address || hotel.city) && (
+                  <p className="flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                    <FiMapPin className="w-4 h-4 text-rose-500 shrink-0" />
+                    {[hotel.address, hotel.city, hotel.country].filter(Boolean).join(', ')}
+                  </p>
+                )}
               </div>
+              {/* Rating badge */}
+              {hotel.rating > 0 && (
+                <div className="shrink-0 flex flex-col items-center px-4 py-3 rounded-2xl"
+                  style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', minWidth: 72 }}>
+                  <span className="text-2xl font-black text-white leading-none">{hotel.rating.toFixed(1)}</span>
+                  <FiStar className="w-3.5 h-3.5 text-amber-300 my-1" style={{ fill: '#fcd34d' }} />
+                  <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-wider">
+                    {reviews.length} sharh
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>
+                  Bir kecha uchun
+                </p>
+                <p className="text-2xl font-black" style={{ color: '#6366f1' }}>
+                  {new Intl.NumberFormat('uz-UZ').format(price)}
+                  <span className="text-sm font-bold ml-1" style={{ color: 'var(--text-muted)' }}>UZS</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setAudioModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm text-white transition-all active:scale-95"
+                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 16px -6px rgba(99,102,241,0.5)' }}
+              >
+                <FiVolume2 className="w-4 h-4" /> Ovozli o'qish
+              </button>
             </div>
           </div>
 
-          {/* Yo'l boshlash (Route) Button */}
-          <div className="mb-10 w-full sm:w-auto">
-            <button 
-              onClick={() => {
-                const lat = hotel?.location?.lat;
-                const lng = hotel?.location?.lng;
-                if (lat && lng) {
-                  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
-                } else {
-                  const query = encodeURIComponent(`${hotel.name} ${hotel.city}`);
-                  window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-                }
-              }}
-              className="w-full sm:max-w-xs bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-8 rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
-            >
-              <FiNavigation className="w-5 h-5" /> 
-              <span>Yo'l boshlash</span>
-            </button>
-          </div>
-
-          {/* Overview & Quick Highlights */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-extrabold mb-6 text-gray-900 dark:text-white">Mehmonxona haqida</h2>
-            <div className="bg-white/60 dark:bg-[#1e293b]/60 backdrop-blur-md rounded-[2.5rem] p-8 border border-white dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[17px] font-medium mb-8">
-                {hotel.description || 'Mehmonxona haqida batafsil ma\'lumot kiritilmagan.'}
-              </p>
-              
-              {(hotel.checkInTime || hotel.checkOutTime) && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-gray-100 dark:border-gray-800/60">
-                  {hotel.checkInTime && (
-                    <div className="flex flex-col gap-1.5">
-                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/20 w-fit px-3 py-1 rounded-lg">Kirish vaqti</p>
-                      <p className="text-xl font-black text-gray-900 dark:text-white mt-1">{hotel.checkInTime}</p>
+          {/* Description */}
+          {desc && (
+            <Section title="Mehmonxona haqida" icon={<FiAward className="w-4 h-4" />}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+              {(hotel.checkIn || hotel.checkOut) && (
+                <div className="flex flex-wrap gap-3 mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+                  {hotel.checkIn && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold"
+                      style={{ background: 'rgba(99,102,241,0.08)', color: '#6366f1' }}>
+                      <FiCalendar className="w-3.5 h-3.5" /> Kirish: {hotel.checkIn}
                     </div>
                   )}
-                  {hotel.checkOutTime && (
-                    <div className="flex flex-col gap-1.5">
-                      <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest bg-orange-50 dark:bg-orange-900/20 w-fit px-3 py-1 rounded-lg">Chiqish vaqti</p>
-                      <p className="text-xl font-black text-gray-900 dark:text-white mt-1">{hotel.checkOutTime}</p>
-                    </div>
-                  )}
-                  {hotel.maxGuests && (
-                    <div className="flex flex-col gap-1.5">
-                      <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-lg">Max mehmonlar</p>
-                      <div className="text-xl font-black text-gray-900 dark:text-white mt-1 flex items-center">
-                         <FiUsers className="mr-2 text-indigo-500 w-5 h-5" /> {hotel.maxGuests} <span className="text-sm text-gray-400 ml-1.5 font-semibold">kishigacha</span>
-                      </div>
+                  {hotel.checkOut && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold"
+                      style={{ background: 'rgba(244,63,94,0.08)', color: '#f43f5e' }}>
+                      <FiCalendar className="w-3.5 h-3.5" /> Chiqish: {hotel.checkOut}
                     </div>
                   )}
                 </div>
               )}
-            </div>
-          </div>
+            </Section>
+          )}
 
-          {/* Owner Info */}
-          <div className="mb-12">
-            <h2 className="text-xl font-bold mb-5 text-gray-900 dark:text-white flex items-center gap-2">
-              <FiUsers className="text-indigo-500" /> Bog'lanish (Ma'muriyat)
-            </h2>
-            <div className="bg-white/60 dark:bg-slate-800/40 border border-white dark:border-gray-800 rounded-3xl p-6 flex items-center gap-6 shadow-sm">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl">
-                {hotel.owner?.name?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="flex-1">
-                <p className="text-lg font-black text-gray-900 dark:text-white mb-0.5">{hotel.owner?.name || 'Noma\'lum Egasi'}</p>
-                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                   {hotel.owner?.phone && (
-                     <a href={`tel:${hotel.owner.phone}`} className="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                       <FiPhone className="text-indigo-500 w-4 h-4" /> {hotel.owner.phone}
-                     </a>
-                   )}
-                   {hotel.owner?.email && (
-                     <a href={`mailto:${hotel.owner.email}`} className="text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                       <FiMail className="text-indigo-500 w-4 h-4" /> {hotel.owner.email}
-                     </a>
-                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            {hotel.amenities && hotel.amenities.length > 0 && (
-              <div className="bg-white/60 dark:bg-slate-800/40 border border-white dark:border-gray-800/80 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none h-full">
-                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Qulayliklar</h2>
-                <div className="flex flex-col gap-4">
-                  {hotel.amenities.map(amenity => (
-                    <div key={amenity} className="flex items-center space-x-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
-                        {amenityIcons[amenity] || <FiCheck className="w-5 h-5" />}
+          {/* Amenities + Accessibility */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {hotel.amenities?.length > 0 && (
+              <Section title="Qulayliklar" icon={<FiCheckCircle className="w-4 h-4" />}>
+                <div className="flex flex-col gap-2.5">
+                  {hotel.amenities.map(a => (
+                    <div key={a} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(99,102,241,0.08)', color: '#6366f1' }}>
+                        {AMENITY_ICONS[a] || <FiCheck className="w-4 h-4" />}
                       </div>
-                      <span className="text-[15px] font-bold text-gray-700 dark:text-gray-300">{amenity}</span>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>{a}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Section>
             )}
 
-            <div className="flex flex-col gap-6">
-              {/* Accessibility */}
-              {hotel.accessibility && Object.values(hotel.accessibility).some(Boolean) && (
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 border border-emerald-100 dark:border-emerald-800/30 rounded-[2.5rem] p-8 h-full">
-                  <h2 className="text-lg font-bold mb-5 text-emerald-900 dark:text-emerald-400 flex items-center gap-2">
-                     <FiCheckCircle className="w-5 h-5" /> Maxsus qulayliklar
-                  </h2>
-                  <div className="flex flex-wrap gap-2.5">
-                    {Object.entries({
-                      wheelchairAccessible: 'Nogironlar aravachasi',
-                      elevator: 'Lift',
-                      brailleSigns: 'Brayl yozuvi',
-                      tactileFlooring: 'Taktil pol qoplamalari',
-                      hearingAssistance: 'Eshitish moslamalari',
-                      voiceAssistant: 'Ovozli boshqaruv',
-                      signLanguage: 'Imo-ishora tili xizmati',
-                      emergencyButtons: 'Yordam tugmalari',
-                      wideDoors: 'Keng eshiklar',
-                      showerSeat: 'Dush o\'rindig\'i',
-                    }).map(([key, label]) => hotel.accessibility?.[key] && (
-                      <span key={key} className="bg-white/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-4 py-2 rounded-full text-xs font-bold shadow-sm backdrop-blur-sm border border-emerald-100 dark:border-emerald-700/50">
-                        {label}
-                      </span>
-                    ))}
-
-                  </div>
+            {hotel.accessibility && Object.values(hotel.accessibility).some(v => typeof v === 'boolean' && v) && (
+              <Section title="Maxsus qulayliklar" icon={<FiUsers className="w-4 h-4" />}>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    ['wheelchairAccessible', 'Nogironlar aravachasi'],
+                    ['elevator', 'Lift'],
+                    ['brailleSigns', 'Brayl yozuvi'],
+                    ['hearingAssistance', 'Eshitish moslamasi'],
+                    ['wideDoors', 'Keng eshiklar'],
+                  ].map(([k, l]) => hotel.accessibility?.mobility?.[k] && (
+                    <span key={k} className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(16,185,129,0.08)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}>
+                      {l}
+                    </span>
+                  ))}
                 </div>
-              )}
-              
-              {/* Security */}
-              {hotel.security && hotel.security.length > 0 && (
-                 <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-gray-700/50 rounded-[2.5rem] p-8">
-                  <h2 className="text-lg font-bold mb-5 text-gray-900 dark:text-white flex items-center gap-2">
-                     <FiShield className="text-indigo-500 w-5 h-5" /> Xavfsizlik
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {hotel.security.map(s => (
-                       <span key={s} className="flex items-center gap-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-2xl text-[13px] font-bold shadow-sm border border-gray-100 dark:border-gray-800">
-                          <FiCheck className="text-indigo-500 w-4 h-4" /> {s}
-                       </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              </Section>
+            )}
           </div>
 
-          {/* Stunning Rooms Presentation */}
-          {hotel.rooms && hotel.rooms.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-extrabold mb-8 text-gray-900 dark:text-white flex items-center gap-3">
-                 Xona turlari <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-sm px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800/50">{hotel.rooms.length} ta</span>
+          {/* Rooms */}
+          {hotel.rooms?.length > 0 && (
+            <div>
+              <h2 className="text-lg font-extrabold mb-3 flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                <FiBriefcase className="w-4 h-4 text-indigo-500" />
+                Xona turlari
+                <span className="text-xs font-black px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+                  {hotel.rooms.length} ta
+                </span>
               </h2>
-              <div className="flex flex-col gap-6">
-                {hotel.rooms.map((rt) => (
-                  <div key={rt._id} className="group bg-white dark:bg-[#1e293b]/80 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600 transform scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-300" />
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{rt.name}</h3>
-                        <span className="text-[10px] font-black uppercase bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600">{rt.category}</span>
+              <div className="flex flex-col gap-3">
+                {hotel.rooms.map(r => (
+                  <div key={r._id} className="glass-panel p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between"
+                    style={{ borderRadius: '1.5rem' }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h3 className="font-extrabold text-sm" style={{ color: 'var(--text-main)' }}>{r.name}</h3>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
+                          style={{ background: 'var(--bg-main)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                          {r.category}
+                        </span>
                       </div>
-                      
-                      <div className="flex flex-wrap items-center gap-5 text-[13px] text-gray-600 dark:text-gray-400 font-bold mb-5">
-                        <div className="flex items-center gap-2"><FiUsers className="text-blue-500 w-4 h-4" /> {rt.capacity} kishi</div>
-                        {rt.areaSqMeters && <div className="flex items-center gap-2"><FiMap className="text-orange-500 w-4 h-4" /> {rt.areaSqMeters} m²</div>}
-                        {rt.bedType && <div className="flex items-center gap-2"><FiBriefcase className="text-purple-500 w-4 h-4" /> {rt.bedType}</div>}
+                      <div className="flex flex-wrap gap-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                        <span className="flex items-center gap-1"><FiUsers className="w-3.5 h-3.5" /> {r.capacity} kishi</span>
+                        {r.areaSqMeters && <span className="flex items-center gap-1"><FiMap className="w-3.5 h-3.5" /> {r.areaSqMeters} m²</span>}
+                        {r.bedType && <span className="flex items-center gap-1"><FiBriefcase className="w-3.5 h-3.5" /> {r.bedType}</span>}
                       </div>
-                      
-                      {rt.amenities?.length > 0 && (
-                         <div className="flex flex-wrap gap-2 mt-1">
-                          {rt.amenities.map(a => <span key={a} className="text-[10px] uppercase font-extrabold bg-gray-50 dark:bg-slate-900/50 text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800">{a}</span>)}
-                        </div>
-                      )}
                     </div>
-                    
-                    <div className="flex flex-row md:flex-col justify-between md:justify-center items-end border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-800 pt-5 md:pt-0 md:pl-8 min-w-[200px]">
-                      <div className="text-left md:text-right w-full">
-                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bir kecha uchun</p>
-                         <div className="flex items-baseline md:justify-end">
-                           <span className="font-black text-gray-900 dark:text-white text-3xl">{new Intl.NumberFormat('uz-UZ').format(Number(rt.pricePerNight || 0) || 0)}</span>
-                           <span className="text-sm text-gray-400 ml-1.5 font-bold">UZS</span>
-                         </div>
+                    <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Bir kecha</p>
+                        <p className="text-lg font-black" style={{ color: '#6366f1' }}>
+                          {new Intl.NumberFormat('uz-UZ').format(r.pricePerNight || 0)}
+                          <span className="text-xs font-bold ml-1" style={{ color: 'var(--text-muted)' }}>UZS</span>
+                        </p>
                       </div>
-                      
-                      {rt.roomsAvailable > 0 ? (
-                         <div className="mt-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold px-4 py-2.5 rounded-xl border border-green-200 dark:border-green-800/50 flex items-center justify-center gap-2 w-full md:w-auto text-[13px]">
-                            <FiCheckCircle className="w-4 h-4" /> {rt.roomsAvailable} ta qoldi
-                         </div>
-                      ) : (
-                         <div className="mt-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-bold px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-800/50 flex items-center justify-center gap-2 w-full md:w-auto text-[13px]">
-                            <FiX className="w-4 h-4" /> Band qilingan
-                         </div>
-                      )}
+                      <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl ${r.roomsAvailable > 0 ? '' : ''}`}
+                        style={{
+                          background: r.roomsAvailable > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                          color: r.roomsAvailable > 0 ? '#10b981' : '#ef4444',
+                          border: `1px solid ${r.roomsAvailable > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                        }}>
+                        {r.roomsAvailable > 0 ? `${r.roomsAvailable} ta bo'sh` : 'Band'}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -404,165 +356,218 @@ const HotelDetail = () => {
           )}
 
           {/* Security */}
-          {hotel.security && hotel.security.length > 0 && (
-             <div className="mb-8 bg-white dark:bg-[#1e293b] rounded-3xl p-6 border border-gray-100 dark:border-gray-800">
-              <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
-                 <FiShield className="text-indigo-500" /> Xavfsizlik
-              </h2>
+          {hotel.security?.length > 0 && (
+            <Section title="Xavfsizlik" icon={<FiShield className="w-4 h-4" />}>
               <div className="flex flex-wrap gap-2">
                 {hotel.security.map(s => (
-                   <span key={s} className="flex items-center gap-1.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-full text-xs font-bold">
-                      <FiCheckCircle className="w-3 h-3 text-gray-400" /> {s}
-                   </span>
+                  <span key={s} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
+                    style={{ background: 'var(--bg-main)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                    <FiCheck className="w-3 h-3 text-indigo-400" /> {s}
+                  </span>
                 ))}
               </div>
-            </div>
+            </Section>
           )}
 
-          {/* Nearby & Map Block */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            {/* Nearby Places */}
-            {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
-               <div className="bg-white/60 dark:bg-[#1e293b]/60 border border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 h-full">
-                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                   <FiMapPin className="text-red-500" /> Turistik joylar
-                </h2>
-                <div className="flex flex-col gap-3">
+          {/* Nearby + Map */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {hotel.nearbyPlaces?.length > 0 && (
+              <Section title="Yaqin joylar" icon={<FiMapPin className="w-4 h-4" />}>
+                <div className="flex flex-col gap-2">
                   {hotel.nearbyPlaces.map(p => (
-                     <div key={p} className="flex items-center gap-4 bg-gray-50 dark:bg-slate-800/70 text-gray-800 dark:text-gray-300 px-4 py-3.5 rounded-2xl text-[14px] font-bold border border-gray-200/60 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                          <FiMap className="w-4 h-4" /> 
-                        </div>
-                        {p}
-                     </div>
+                    <div key={p} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold"
+                      style={{ background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border)' }}>
+                      <FiMap className="w-4 h-4 text-indigo-400 shrink-0" /> {p}
+                    </div>
                   ))}
                 </div>
-              </div>
+              </Section>
             )}
-
-            {/* Map */}
-            <div className="flex flex-col h-full">
-                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2 px-2">
-                   <FiMap className="text-emerald-500" /> Manzil xaritada
-                </h2>
-              <div className="flex-1">
-                <MapView hotel={hotel} />
-              </div>
+            <div>
+              <h2 className="flex items-center gap-2 text-base font-extrabold mb-3" style={{ color: 'var(--text-main)' }}>
+                <FiMap className="w-4 h-4 text-emerald-500" /> Xaritada
+              </h2>
+              <MapView hotel={hotel} />
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-              Mehmon sharhlari ({reviews.length})
-            </h2>
-
-            {/* Review Form */}
-            {user && user.role !== 'GUEST' ? (
-              <form onSubmit={handleReviewSubmit} className="bg-white dark:bg-[#1e293b] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 mb-6 group">
-                <h3 className="font-bold text-gray-900 dark:text-white mb-4">Sharh yozing</h3>
-                <div className="mb-4">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Bahoyingiz</label>
-                  <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <button type="button" key={star} onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))} className={`text-2xl transition-transform hover:scale-125 ${star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'}`}>
-                         <FiStar className={`${star <= reviewForm.rating ? 'fill-current' : ''}`} />
-                      </button>
-                    ))}
+          {/* Owner */}
+          {hotel.owner && (
+            <Section title="Ma'muriyat" icon={<FiUsers className="w-4 h-4" />}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shrink-0"
+                  style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
+                  {hotel.owner.name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-extrabold text-sm mb-1" style={{ color: 'var(--text-main)' }}>
+                    {hotel.owner.name || "Noma'lum"}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {hotel.owner.phone && (
+                      <a href={`tel:${hotel.owner.phone}`}
+                        className="flex items-center gap-1.5 text-xs font-bold"
+                        style={{ color: '#6366f1' }}>
+                        <FiPhone className="w-3.5 h-3.5" /> {hotel.owner.phone}
+                      </a>
+                    )}
+                    {hotel.owner.email && (
+                      <a href={`mailto:${hotel.owner.email}`}
+                        className="flex items-center gap-1.5 text-xs font-bold"
+                        style={{ color: '#6366f1' }}>
+                        <FiMail className="w-3.5 h-3.5" /> {hotel.owner.email}
+                      </a>
+                    )}
                   </div>
                 </div>
+              </div>
+            </Section>
+          )}
+
+          {/* Reviews */}
+          <div>
+            <h2 className="text-lg font-extrabold mb-4 flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+              <FiStar className="w-4 h-4 text-amber-400" style={{ fill: '#fbbf24' }} />
+              Mehmon sharhlari
+              <span className="text-xs font-black px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+                {reviews.length}
+              </span>
+            </h2>
+
+            {/* Review form */}
+            {user && user.role !== 'GUEST' ? (
+              <form onSubmit={submitReview} className="glass-panel p-5 mb-4" style={{ borderRadius: '1.5rem' }}>
+                <p className="font-extrabold text-sm mb-3" style={{ color: 'var(--text-main)' }}>Sharh yozing</p>
+                <div className="flex gap-1.5 mb-3">
+                  {[1,2,3,4,5].map(s => (
+                    <button type="button" key={s}
+                      onClick={() => setReviewForm(p => ({ ...p, rating: s }))}
+                      className="transition-transform hover:scale-125 active:scale-95">
+                      <FiStar className="w-6 h-6"
+                        style={{ color: s <= reviewForm.rating ? '#fbbf24' : 'var(--border)', fill: s <= reviewForm.rating ? '#fbbf24' : 'none' }} />
+                    </button>
+                  ))}
+                </div>
                 <textarea
-                  placeholder="Tajribangizni batafsil ulashing..."
+                  placeholder="Tajribangizni ulashing..."
                   value={reviewForm.comment}
-                  onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
-                  required rows={4}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/50 resize-none transition-all placeholder:text-gray-400"
+                  onChange={e => setReviewForm(p => ({ ...p, comment: e.target.value }))}
+                  required rows={3}
+                  className="w-full px-4 py-3 text-sm font-medium rounded-2xl outline-none resize-none mb-3"
+                  style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-main)' }}
                 />
-                <button type="submit" disabled={submittingReview} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center w-full sm:w-auto">
-                  {submittingReview && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
-                  {submittingReview ? 'Yuborilmoqda...' : 'Sharhni yuborish'}
+                <button type="submit" disabled={submitting}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-2xl font-bold text-sm text-white disabled:opacity-60"
+                  style={{ background: 'var(--gradient-main)' }}>
+                  {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                  {submitting ? 'Yuborilmoqda...' : 'Yuborish'}
                 </button>
               </form>
-            ) : (
-               <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-800/50 mb-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                   <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-1">Mijozlar sharh yozishi mumkin</h3>
-                   <p className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80 mb-0">Haqiqiy tajriba ulashish uchun ro'yxatdan o'ting yoki tizimga kiring.</p>
-                </div>
-                <button onClick={() => navigate('/login')} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-md hover:shadow-lg active:scale-95 transition-all w-full sm:w-auto flex items-center justify-center gap-2">
-                   Kirish <FiCheckCircle className="w-4 h-4" />
+            ) : !user ? (
+              <div className="glass-panel p-5 mb-4 flex items-center justify-between gap-4" style={{ borderRadius: '1.5rem' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
+                  Sharh yozish uchun tizimga kiring
+                </p>
+                <button onClick={() => navigate('/login')}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm text-white shrink-0"
+                  style={{ background: 'var(--gradient-main)' }}>
+                  Kirish <FiChevronRight className="w-4 h-4" />
                 </button>
               </div>
-            )}
+            ) : null}
 
-            {/* Reviews List */}
+            {/* Reviews list */}
             {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map(review => (
-                  <div key={review._id} className="bg-white dark:bg-[#1e293b] p-5 rounded-3xl border border-gray-100 dark:border-gray-800">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-black">
-                          {review.user?.name?.[0]?.toUpperCase() || '?'}
+              <div className="flex flex-col gap-3">
+                {reviews.map(rv => (
+                  <div key={rv._id} className="glass-panel p-4" style={{ borderRadius: '1.5rem' }}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
+                          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
+                          {rv.user?.name?.[0]?.toUpperCase() || '?'}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 dark:text-white">{review.user?.name || 'Guest'}</p>
-                          <p className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                          <p className="font-bold text-sm" style={{ color: 'var(--text-main)' }}>{rv.user?.name || 'Mehmon'}</p>
+                          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                            {new Date(rv.createdAt).toLocaleDateString('uz-UZ')}
+                          </p>
                         </div>
                       </div>
-                      <div className="flex text-yellow-400 text-sm space-x-0.5">
-                         {[...Array(5)].map((_, i) => <FiStar key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-current' : 'text-gray-300'}`} />)}
-                      </div>
+                      <StarRow rating={rv.rating} />
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{review.comment}</p>
-                    {review.ownerReply && (
-                      <div className="mt-3 pl-4 border-l-2 border-blue-200 dark:border-blue-800">
-                        <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">Owner's Reply</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{review.ownerReply}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{rv.comment}</p>
+                    {rv.ownerReply && (
+                      <div className="mt-3 pl-3 pt-3" style={{ borderTop: '1px solid var(--border)', borderLeft: '2px solid #6366f1' }}>
+                        <p className="text-[11px] font-black text-indigo-500 mb-1">Egasining javobi</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{rv.ownerReply}</p>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-10 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800">
-                <div className="mb-3"><FiEdit3 className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto" strokeWidth={1.5} /></div>
-                <p className="text-gray-500 font-medium">Hali sharh yo'q. Birinchi bo'lib sharh qoldiring!</p>
+              <div className="glass-panel flex flex-col items-center py-12 text-center" style={{ borderRadius: '1.5rem' }}>
+                <FiEdit3 className="w-10 h-10 mb-3" style={{ color: 'var(--text-muted)' }} strokeWidth={1.5} />
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
+                  Hali sharh yo'q. Birinchi bo'ling!
+                </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: Booking Widget */}
-        <div className="lg:w-96 pb-20 lg:pb-0" id="booking-widget">
+        {/* ── Right: booking widget placeholder ── */}
+        <div className="lg:w-80 shrink-0">
           <div className="sticky top-4">
-            {/* <AvailabilityChecker hotel={hotel} /> */}
+            {/* AvailabilityChecker will go here */}
           </div>
         </div>
       </div>
 
-      {/* Floating Mobile Booking Footer */}
-      {/* 
-      <div className="lg:hidden fixed bottom-[72px] left-0 right-0 p-4 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800/80 flex justify-between items-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-        <div>
-           <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5">Narxlar</p>
-            <div className="flex items-baseline">
-               <span className="font-extrabold text-gray-900 dark:text-white text-xl">{new Intl.NumberFormat('uz-UZ').format(Number(hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)}</span>
-               <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">UZS / tun</span>
+      {/* ── Audio modal ── */}
+      {audioModal && (
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0"
+          onClick={() => { setAudioModal(false); setIsReading(false); }}>
+          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} />
+          <div className="relative w-full max-w-sm p-7 rounded-[2rem] shadow-2xl"
+            style={{ background: 'linear-gradient(145deg,#1e1b4b,#312e81)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => { setAudioModal(false); setIsReading(false); }}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>
+              <FiX className="w-4 h-4" />
+            </button>
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 relative"
+                style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                {isReading && <div className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(99,102,241,0.3)' }} />}
+                {isReading
+                  ? <FiVolumeX className="w-7 h-7 text-indigo-300 relative z-10" />
+                  : <FiVolume2 className="w-7 h-7 text-indigo-300 relative z-10" />
+                }
+              </div>
+              <h3 className="text-lg font-black text-white mb-1">Ovozli o'qish</h3>
+              <p className="text-indigo-300 text-xs text-center">
+                Tez orada Gemini AI orqali mehmonxona tavsifini o'zbek tilida ovozli o'qiydi.
+              </p>
             </div>
+            <div className="flex gap-3">
+              <button onClick={() => setIsReading(r => !r)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm text-white"
+                style={{ background: isReading ? 'rgba(239,68,68,0.8)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
+                {isReading ? <><FiVolumeX className="w-4 h-4" /> To'xtatish</> : <><FiVolume2 className="w-4 h-4" /> Demo</>}
+              </button>
+              <button onClick={() => { setAudioModal(false); setIsReading(false); }}
+                className="px-5 py-3 rounded-2xl font-bold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#c7d2fe' }}>
+                Yopish
+              </button>
+            </div>
+          </div>
         </div>
-        <button onClick={() => {
-            const widget = document.getElementById('booking-widget');
-            if(widget) {
-                const y = widget.getBoundingClientRect().top + window.scrollY - 80;
-                window.scrollTo({ top: y, behavior: 'smooth' });
-            }
-        }} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-transform text-sm h-full max-h-[52px] flex items-center justify-center">
-           Band qilish
-        </button>
-      </div> 
-      */}
-
+      )}
     </div>
   );
 };

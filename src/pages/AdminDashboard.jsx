@@ -234,7 +234,7 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="pb-28 pt-6 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 md:pb-8 pt-6 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
 
       <div className="flex items-center mb-8 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-4 rounded-3xl border border-white/20 dark:border-slate-800 shadow-sm gap-5">
         <BackButton />

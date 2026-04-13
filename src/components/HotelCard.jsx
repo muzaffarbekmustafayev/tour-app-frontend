@@ -8,18 +8,32 @@ const HotelCard = ({ hotel }) => {
   const isFav = favorites.includes(hotel._id);
   const [imgHovered, setImgHovered] = useState(false);
 
+  // Multilingual name
+  const name = typeof hotel.name === 'object'
+    ? (hotel.name.uz || hotel.name.ru || hotel.name.en || 'Nomi yo\'q')
+    : (hotel.name || 'Nomi yo\'q');
+
   const handleFav = (e) => {
     e.preventDefault();
     e.stopPropagation();
     toggleFavorite(hotel._id);
   };
 
+  // Accessibility badges
+  const accessBadges = [
+    hotel.accessibility?.mobility?.wheelchairAccessible && { icon: '♿', label: 'Nogironlar aravachasi uchun moslashgan' },
+    hotel.accessibility?.auditory?.audioGuides           && { icon: '🔔', label: 'Ovozli yo\'riqnoma mavjud' },
+    hotel.accessibility?.cognitive?.quietZones           && { icon: '🧠', label: 'Shovqinsiz hudud mavjud' },
+    hotel.familyAndElderly?.strollerAccessible           && { icon: '👨\u200d👩\u200d👧', label: 'Bolalar aravachasi uchun qulay' },
+  ].filter(Boolean);
+
   // Check if hotel is "new" (created within last 7 days)
   const isNew = hotel.createdAt && (Date.now() - new Date(hotel.createdAt)) < 7 * 24 * 60 * 60 * 1000;
 
   return (
-    <div
+    <article
       className="glass-panel overflow-hidden group flex flex-col h-full relative border-0"
+      aria-label={`${name} mehmonxonasi`}
       style={{ 
         transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
         borderRadius: '2rem',
@@ -43,14 +57,16 @@ const HotelCard = ({ hotel }) => {
         onMouseLeave={() => setImgHovered(false)}
       >
         {/* Skeleton */}
-        <div className="absolute inset-0 shimmer" />
+        <div className="absolute inset-0 shimmer" aria-hidden="true" />
 
         <img
           src={hotel.image || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800'}
-          alt={hotel.name}
+          alt={`${name} mehmonxonasining tashqi ko'rinishi`}
           className="w-full h-full object-cover relative z-10"
           style={{ transition: 'transform 0.5s ease', transform: imgHovered ? 'scale(1.04)' : 'scale(1)' }}
           loading="lazy"
+          width="800"
+          height="220"
         />
 
         {/* Gradient overlay */}
@@ -76,8 +92,11 @@ const HotelCard = ({ hotel }) => {
           </div>
 
           {user && (
-            <button onClick={handleFav}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+            <button
+              onClick={handleFav}
+              aria-label={isFav ? `${name} sevimlilardan olib tashlash` : `${name} sevimlilarga qo'shish`}
+              aria-pressed={isFav}
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90"
               style={{
                 background: isFav ? '#EF4444' : 'rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(12px)',
@@ -86,7 +105,7 @@ const HotelCard = ({ hotel }) => {
                 color: 'white',
               }}
             >
-              <FiHeart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
+              <FiHeart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -105,11 +124,13 @@ const HotelCard = ({ hotel }) => {
         {/* Quick view overlay on hover */}
         <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           style={{ background: 'rgba(0,0,0,0.15)' }}>
-          <Link to={`/hotel/${hotel._id}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-white"
+          <Link
+            to={`/hotel/${hotel._id}`}
+            aria-label={`${name} mehmonxonasini batafsil ko'rish`}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold text-white"
             style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)' }}
             onClick={e => e.stopPropagation()}>
-            <FiEye className="w-4 h-4" /> Ko'rish
+            <FiEye className="w-4 h-4" aria-hidden="true" /> Ko'rish
           </Link>
         </div>
       </div>
@@ -117,18 +138,35 @@ const HotelCard = ({ hotel }) => {
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         <div className="mb-3">
-          <h3 className="font-extrabold text-gray-900 dark:text-white text-base sm:text-lg line-clamp-1 mb-1"
-
+          <h3
+            className="font-extrabold text-gray-900 dark:text-white text-base sm:text-lg line-clamp-1 mb-1"
             style={{ transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = '#6366F1'}
             onMouseLeave={e => e.currentTarget.style.color = ''}>
-            {hotel.name}
+            {name}
           </h3>
           <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm">
-            <FiMapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <FiMapPin className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate font-medium">{hotel.city}{hotel.country ? `, ${hotel.country}` : ''}</span>
           </div>
         </div>
+
+        {/* Accessibility badges */}
+        {accessBadges.length > 0 && (
+          <div className="flex gap-1.5 mb-3" aria-label="Maxsus qulayliklar">
+            {accessBadges.map(b => (
+              <span
+                key={b.icon}
+                title={b.label}
+                aria-label={b.label}
+                className="text-base leading-none"
+                role="img"
+              >
+                {b.icon}
+              </span>
+            ))}
+          </div>
+        )}
 
         {hotel.amenities?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -148,25 +186,30 @@ const HotelCard = ({ hotel }) => {
         )}
 
         {/* Price & CTA */}
-        <div className="mt-auto pt-5 flex items-center justify-between"
-          style={{ borderTop: '1px solid var(--border)' }}>
+        <div
+          className="mt-auto pt-5 flex items-center justify-between"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
           <div>
             <span className="block text-[10px] uppercase font-black tracking-widest mb-1 opacity-60">Bir kecha uchun</span>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1" aria-label={`Narx: ${new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)} so'm`}>
               <span className="font-black text-2xl" style={{ color: 'var(--primary)' }}>
                 {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0) || 0)}
               </span>
-              <span className="text-xs font-bold opacity-60">UZS</span>
+              <span className="text-xs font-bold opacity-60" aria-hidden="true">UZS</span>
             </div>
           </div>
-          <Link to={`/hotel/${hotel._id}`}
+          <Link
+            to={`/hotel/${hotel._id}`}
+            aria-label={`${name} mehmonxonasini bron qilish`}
             className="btn-primary w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
-            style={{ textDecoration: 'none' }}>
-            <FiZap className="w-5 h-5" />
+            style={{ textDecoration: 'none' }}
+          >
+            <FiZap className="w-5 h-5" aria-hidden="true" />
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

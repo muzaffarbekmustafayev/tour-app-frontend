@@ -1,9 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="uz" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO -->
+    <title>NavaiTour — Navoiy viloyati mehmonxonalari</title>
+    <meta name="description" content="Navoiy viloyatidagi mehmonxonalarni qidiring va bron qiling. Jismoniy imkoniyatlari cheklangan mehmonlar uchun maxsus filtrlar mavjud." />
+    <meta name="keywords"    content="NavaiTour, Navoiy, mehmonxona, bron, nogironlar uchun, inklyuziv" />
+    <meta name="author"      content="NavaiTour" />
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:title"       content="NavaiTour — Navoiy viloyati mehmonxonalari" />
+    <meta property="og:description" content="Hamma uchun qulay mehmonxona qidirish platformasi." />
+    <meta property="og:locale"      content="uz_UZ" />
+
+    <!-- Web Accessibility: color-scheme, reduced-motion support -->
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -11,25 +28,35 @@
         theme: {
           extend: {
             colors: {
-              primary: {
-                DEFAULT: '#2563eb',
-                hover: '#1d4ed8'
-              }
+              primary: { DEFAULT: '#2563eb', hover: '#1d4ed8' }
             }
           }
         }
       }
       // Apply theme on initial load
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark')
+      if (
+        localStorage.theme === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ) {
+        document.documentElement.classList.add('dark');
       } else {
-        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.remove('dark');
       }
     </script>
-    <title>NavaiTour - Premium Hotel Booking</title>
   </head>
+
   <body class="bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-    <div id="root"></div>
+
+    <!-- Skip-to-content: first focusable element for screen readers / keyboard users -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999]
+             bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-xl"
+    >
+      Asosiy kontentga o'tish
+    </a>
+
+    <div id="root" role="application" aria-label="NavaiTour ilovasi"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -3,42 +3,52 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
-import { FiMapPin, FiInbox, FiMessageCircle, FiHome, FiCoffee, FiNavigation, FiPlusSquare } from 'react-icons/fi';
+import { FiMapPin, FiInbox, FiHome, FiCoffee, FiNavigation, FiPlusSquare } from 'react-icons/fi';
 
 const Bookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [cancelling, setCancelling] = useState(null);
+  const [bookings,    setBookings]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
+  const [filter,      setFilter]      = useState('all');
+  const [cancelling,  setCancelling]  = useState(null);
+  const [confirmId,   setConfirmId]   = useState(null); // custom confirm modal
+  const [toast,       setToast]       = useState('');   // success/error toast
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/bookings/my-bookings')
-      .then(res => {
-        setBookings(res.data);
-        setLoading(false);
-      })
+      .then(res => { setBookings(res.data); setLoading(false); })
       .catch(err => {
         console.error(err);
-        setError('Could not load bookings. Please make sure you are logged in and the backend is running.');
+        setError('Bronlarni yuklashda xatolik. Iltimos, tizimga kirganingizni va backend ishlayotganini tekshiring.');
         setLoading(false);
       });
   }, []);
 
   const handleCancel = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    setConfirmId(bookingId);
+  };
+
+  const confirmCancel = async () => {
+    const bookingId = confirmId;
+    setConfirmId(null);
     setCancelling(bookingId);
     try {
       await api.patch(`/bookings/${bookingId}/cancel`);
       setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: 'cancelled' } : b));
+      showToast('Bron bekor qilindi ✓');
     } catch (err) {
       console.error(err);
-      alert('Failed to cancel booking. Please try again.');
+      showToast('⚠️ Bekor qilishda xatolik. Iltimos, qayta urinib ko\'ring.');
     } finally {
       setCancelling(null);
     }
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3500);
   };
 
   const getStatusStyle = (status) => {
@@ -54,7 +64,7 @@ const Bookings = () => {
   const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status?.toLowerCase() === filter);
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-4xl mx-auto min-h-screen">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-4xl mx-auto min-h-screen lg:pl-32">
       <div className="mb-8">
         <BackButton className="mb-3" />
         <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">Bronlarim</h1>
@@ -62,10 +72,12 @@ const Bookings = () => {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex space-x-2 mb-6 overflow-x-auto hide-scrollbar pb-2">
+      <div className="flex space-x-2 mb-6 overflow-x-auto hide-scrollbar pb-2" role="tablist" aria-label="Bron holati filtri">
         {tabs.map(tab => (
           <button
             key={tab}
+            role="tab"
+            aria-selected={filter === tab}
             onClick={() => setFilter(tab)}
             className={`px-5 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${
               filter === tab
@@ -75,7 +87,7 @@ const Bookings = () => {
           >
             {tab === 'all' ? 'Barchasi' : tab === 'confirmed' ? 'Tasdiqlangan' : tab === 'completed' ? 'Yakunlangan' : tab === 'cancelled' ? 'Bekor qilingan' : 'Kutilmoqda'}
             {tab !== 'all' && bookings.filter(b => b.status?.toLowerCase() === tab).length > 0 && (
-              <span className="ml-2 text-[10px] bg-blue-600 text-white rounded-full px-1.5 py-0.5">
+              <span className="ml-2 text-[10px] bg-blue-600 text-white rounded-full px-1.5 py-0.5" aria-hidden="true">
                 {bookings.filter(b => b.status?.toLowerCase() === tab).length}
               </span>
             )}
@@ -84,8 +96,8 @@ const Bookings = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-2xl p-4 mb-6 text-sm font-medium">
-          {error}
+        <div role="alert" className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-2xl p-4 mb-6 text-sm font-medium flex items-start gap-2">
+          <span aria-hidden="true">⚠️</span> {error}
         </div>
       )}
 
@@ -113,9 +125,9 @@ const Bookings = () => {
                 {/* Hotel Image (larger on mobile) */}
                 <div className="w-full md:w-56 h-48 md:h-full min-h-[140px] flex-shrink-0 rounded-[1.5rem] overflow-hidden bg-gray-100 dark:bg-slate-800 relative shadow-inner">
                   {hotel.images?.[0] ? (
-                    <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={hotel.images[0]} alt={`${hotel.name || 'Mehmonxona'} rasmi`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400"><FiHome className="w-12 h-12" /></div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-400" aria-label="Rasm mavjud emas"><FiHome className="w-12 h-12" aria-hidden="true" /></div>
                   )}
                   {/* Status Badges Overlaid on Mobile */}
                   <div className="absolute top-3 right-3 md:hidden">
@@ -187,12 +199,6 @@ const Bookings = () => {
                       </span>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <button
-                        onClick={() => navigate(`/chat/${booking._id}`)}
-                        className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-center gap-2 shadow-sm"
-                      >
-                         <FiMessageCircle className="w-4 h-4" /> Xabar yozish
-                      </button>
                       {hotel._id && (
                         <button
                           onClick={() => navigate(`/hotel/${hotel._id}`)}
@@ -220,16 +226,68 @@ const Bookings = () => {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center mt-12 p-10 bg-white dark:bg-[#1e293b] rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-          <div className="mb-4"><FiInbox className="w-16 h-16 text-gray-300 dark:text-slate-600 mx-auto" /></div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <div className="mb-4"><FiInbox className="w-16 h-16 text-gray-300 dark:text-slate-600 mx-auto" aria-hidden="true" /></div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {filter !== 'all' ? `${filter} bronlar yo'q` : 'Bronlar yo\'q'}
-          </h3>
+          </h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm">
-            {filter !== 'all' ? `Sizda ${filter} bronlar mavjud emas.` : "Siz hali hech qanday bron qilmagansiz."}
+            {filter !== 'all' ? `Sizda ${filter} bronlar mavjud emas.` : 'Siz hali hech qanday bron qilmagansiz.'}
           </p>
           <button onClick={() => navigate('/search')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all active:scale-95">
             Mehmonxonalarni ko'rish
           </button>
+        </div>
+      )}
+
+      {/* ── Custom Confirm Modal ─────────────────────────────────── */}
+      {confirmId && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-title"
+          onClick={() => setConfirmId(null)}
+        >
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+          <div
+            className="relative glass-panel p-8 max-w-sm w-full"
+            style={{ borderRadius: '2rem', animation: 'scaleIn 0.2s ease forwards' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 id="confirm-title" className="text-xl font-black text-gray-900 dark:text-white mb-3">
+              Bronni bekor qilish
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+              ⚠️ Bu amalni bekor qilib bo'lmaydi. Bronni haqiqatan ham bekor qilmoqchimisiz?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={confirmCancel}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-2xl transition-all active:scale-95"
+              >
+                Ha, bekor qilish
+              </button>
+              <button
+                onClick={() => setConfirmId(null)}
+                className="flex-1 font-bold py-3 rounded-2xl transition-all active:scale-95"
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-main)' }}
+              >
+                Orqaga
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Toast Notification ──────────────────────────────────── */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[300] px-6 py-3 rounded-2xl font-bold text-sm text-white shadow-xl"
+          style={{ background: toast.startsWith('⚠️') ? '#dc2626' : '#16a34a', animation: 'slideUp 0.3s ease forwards' }}
+        >
+          {toast}
         </div>
       )}
     </div>

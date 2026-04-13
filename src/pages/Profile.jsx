@@ -34,13 +34,14 @@ const Profile = () => {
   const roleLabels = { ADMIN: 'Administrator', HOTEL_OWNER: 'Mehmonxona egasi', CUSTOMER: 'Mijoz', GUEST: 'Mehmon' };
 
   const menuItems = [
-    { icon: <FiHeart className="text-red-500 w-5 h-5" />, label: 'Sevimlilar', path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
-    { icon: <FiHome className="text-emerald-500 w-5 h-5" />, label: 'Mehmonxonalarim', path: '/owner', roles: ['HOTEL_OWNER'] },
+    { icon: <FiCalendar className="text-indigo-500 w-5 h-5" />, label: 'Bronlarim',       path: '/bookings', roles: ['CUSTOMER'] },
+    { icon: <FiHeart    className="text-red-500   w-5 h-5" />, label: 'Sevimlilar',       path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
+    { icon: <FiHome     className="text-emerald-500 w-5 h-5" />, label: 'Mehmonxonalarim', path: '/owner',     roles: ['HOTEL_OWNER'] },
     { icon: <FiSettings className="text-gray-500 dark:text-gray-400 w-5 h-5" />, label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },
   ].filter(item => !item.roles || item.roles.includes(profile?.role));
 
   return (
-    <div className="pb-28 pt-4 px-4 max-w-md mx-auto min-h-screen">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-lg mx-auto min-h-screen lg:pl-32">
       <div className="mb-4"><BackButton /></div>
       <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2rem] p-6 mb-6 overflow-hidden shadow-xl shadow-blue-200 dark:shadow-none">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 -translate-y-10" />

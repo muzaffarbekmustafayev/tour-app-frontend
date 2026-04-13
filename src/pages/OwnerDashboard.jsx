@@ -5,7 +5,7 @@ import {
   FiArrowLeft, FiEdit3, FiMapPin, FiNavigation,
   FiMap, FiDollarSign, FiUsers, FiImage,
   FiClock, FiFile, FiBell, FiCheck, FiCommand,
-  FiLock, FiPlus, FiHome, FiList, FiStar, FiEdit2, FiEye, FiTrash2, FiMessageCircle
+  FiLock, FiPlus, FiHome, FiList, FiStar, FiEdit2, FiEye, FiTrash2
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
 
@@ -405,7 +405,7 @@ const OwnerDashboard = () => {
   // ---------- FORM VIEW ----------
   if (showForm) {
     return (
-      <div className="pb-24 pt-4 px-4 max-w-3xl mx-auto min-h-screen lg:pl-32">
+      <div className="pb-28 md:pb-8 pt-4 px-4 max-w-3xl mx-auto min-h-screen lg:pl-32">
         <div className="flex items-center mb-6">
           <BackButton onClick={() => { if (hotels.length > 0) setShowForm(false); else navigate(-1); }} />
           <div className="ml-4">
@@ -775,7 +775,7 @@ const OwnerDashboard = () => {
   );
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
       <div className="flex flex-col sm:flex-row sm:items-center mb-10 gap-6">
         <BackButton />
         <div className="flex-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ml-0 sm:ml-4">
@@ -997,10 +997,6 @@ const OwnerDashboard = () => {
                           </button>
                         </div>
                       )}
-
-                      <button onClick={() => navigate(`/chat/${b._id}`)} className="w-full px-4 py-3 bg-blue-50/80 hover:bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl text-[13px] font-bold active:scale-95 transition-colors flex items-center justify-center gap-1.5 mt-1 shadow-sm">
-                        <FiMessageCircle /> Xabar yozish
-                      </button>
                     </div>
                   </div>
                 </div>
