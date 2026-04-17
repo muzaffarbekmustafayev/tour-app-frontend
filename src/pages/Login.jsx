@@ -24,10 +24,6 @@ const Login = () => {
       const user = await login(email, password);
       if (redirectTo) {
         navigate(redirectTo, { replace: true });
-      } else if (user?.role === 'ADMIN') {
-        navigate('/admin', { replace: true });
-      } else if (user?.role === 'HOTEL_OWNER') {
-        navigate('/owner', { replace: true });
       } else {
         navigate('/', { replace: true });
       }

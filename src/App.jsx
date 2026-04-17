@@ -7,27 +7,25 @@ import BottomNav from './components/BottomNav';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import HotelDetail from './pages/HotelDetail';
-import Bookings from './pages/Bookings';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
-import TransportRoutes from './pages/TransportRoutes';
+import HotelsMap from './pages/HotelsMap';
 
 const App = () => {
   return (
     <AuthProvider>
       <Router>
         <div className="flex flex-col min-h-screen">
-          <div className="flex-grow scroll-smooth pb-20 md:pb-0 relative">
+          <div className="flex-grow scroll-smooth main-container relative">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/routes" element={<TransportRoutes />} />
+              <Route path="/map" element={<HotelsMap />} />
               <Route path="/hotel/:id" element={<HotelDetail />} />
-              <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
               <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/login" element={<Login />} />

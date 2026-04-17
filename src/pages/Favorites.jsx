@@ -20,9 +20,7 @@ const SkeletonCard = () => (
 
 /* ── Hotel card (inline, no dependency on HotelCard) ── */
 const FavCard = ({ hotel, onRemove }) => {
-  const name = typeof hotel.name === 'object'
-    ? (hotel.name.uz || hotel.name.en || Object.values(hotel.name)[0])
-    : (hotel.name || 'Nomi yo\'q');
+  const name = (hotel.name || 'Nomi yo\'q');
 
   const price = hotel.basePricePerNight
     || hotel.pricePerNight

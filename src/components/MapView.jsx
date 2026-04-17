@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FiNavigation, FiX, FiMaximize, FiMinimize, FiMapPin } from 'react-icons/fi';
+import { FiNavigation, FiX, FiMaximize, FiMinimize, FiMapPin, FiLoader } from 'react-icons/fi';
 
 // Leaflet icon fix
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,36 +17,44 @@ const hotelIcon = L.divIcon({
   className: '',
   html: `
     <div style="
-      width:38px;height:38px;
-      background:#6366f1;
-      border-radius:50% 50% 50% 0;
-      transform:rotate(-45deg);
-      border:3px solid white;
-      box-shadow:0 4px 14px -2px rgba(99,102,241,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
     ">
-      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="none">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>
-      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="#3b82f6" stroke="white" stroke-width="2" stroke-linejoin="round">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
     </div>
   `,
-  iconSize: [38, 38],
-  iconAnchor: [19, 38],
-  popupAnchor: [0, -38],
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+  popupAnchor: [0, -15],
 });
 
-// User location marker
-const userIcon = L.divIcon({
+// User location icon (blue pulsing dot)
+const userLocationIcon = L.divIcon({
   className: '',
   html: `
-    <div style="position:relative;width:20px;height:20px;">
-      <div style="position:absolute;inset:0;background:#3b82f6;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(59,130,246,0.6);"></div>
-      <div style="position:absolute;inset:-7px;background:rgba(59,130,246,0.2);border-radius:50%;"></div>
+    <div style="position:relative;width:24px;height:24px;">
+      <div style="
+        position:absolute;inset:0;
+        background:#3b82f6;border-radius:50%;
+        border:4px solid white;
+        box-shadow:0 0 15px rgba(59,130,246,0.6);
+        z-index:2;
+      "></div>
+      <div style="
+        position:absolute;inset:-8px;
+        background:rgba(59,130,246,0.3);
+        border-radius:50%;
+        animation:pulse 2s infinite;
+        z-index:1;
+      "></div>
     </div>
   `,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
 });
 
 // Fit map to show both points
@@ -54,50 +62,80 @@ const FitBounds = ({ points }) => {
   const map = useMap();
   useEffect(() => {
     if (points.length === 2) {
-      map.fitBounds(points, { padding: [50, 50], duration: 1 });
+      map.fitBounds(points, { padding: [80, 80], duration: 1.5 });
     } else if (points.length === 1) {
-      map.flyTo(points[0], 15, { duration: 1 });
+      map.flyTo(points[0], 15, { duration: 1.2 });
     }
   }, [points, map]);
   return null;
 };
 
-const MapView = ({ hotel, userPos: externalUserPos, onClearRoute }) => {
+// Map Layers stable component
+const MapLayers = ({ hasCoords, lat, lng, userPos, boundsPoints }) => {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+
+  return (
+    <>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {boundsPoints.length > 0 && <FitBounds points={boundsPoints} />}
+      {hasCoords && <Marker position={[lat, lng]} icon={hotelIcon} />}
+      {userPos && (
+        <>
+          <Marker position={userPos} icon={userLocationIcon} />
+          {hasCoords && (
+            <>
+              <Polyline
+                positions={[userPos, [lat, lng]]}
+                pathOptions={{ color: '#2563eb', weight: 8, opacity: 0.2 }}
+              />
+              <Polyline
+                positions={[userPos, [lat, lng]]}
+                pathOptions={{ color: '#2563eb', weight: 4, dashArray: '10, 10', opacity: 0.9 }}
+              />
+            </>
+          )}
+        </>
+      )}
+    </>
+  );
+};
+
+const MapView = ({ hotel, userPos: externalUserPos, onClearGuidance }) => {
   const [fullscreen, setFullscreen] = useState(false);
   const [internalUserPos, setInternalUserPos] = useState(null);
-  const [routing, setRouting]                 = useState(false);
+  const [loadingPos, setLoadingPos]           = useState(false);
 
-  // Use external userPos if provided (from HotelDetail), otherwise internal
-  const userPos    = externalUserPos ?? internalUserPos;
-  const clearRoute = onClearRoute ?? (() => setInternalUserPos(null));
+  // Use external userPos if provided, otherwise internal
+  const userPos       = externalUserPos ?? internalUserPos;
+  const clearGuidance = onClearGuidance ?? (() => setInternalUserPos(null));
 
   const lat  = hotel?.location?.lat;
   const lng  = hotel?.location?.lng;
-  const name = typeof hotel?.name === 'object'
-    ? (hotel.name.uz || hotel.name.en || Object.values(hotel.name)[0])
-    : (hotel?.name || '');
+  const name = (hotel?.name || '');
 
   const hasCoords = lat && lng;
   const center    = hasCoords ? [lat, lng] : [40.0842, 65.3791];
 
-  const startRoute = () => {
-    setRouting(true);
+  const startGuidance = () => {
+    setLoadingPos(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = [pos.coords.latitude, pos.coords.longitude];
-        if (onClearRoute) {
-          // controlled from parent — parent manages userPos via HotelDetail state
-          // we need to lift it up; use a local setter as fallback
-          setInternalUserPos(coords);
-        } else {
-          setInternalUserPos(coords);
-        }
-        setRouting(false);
+        setInternalUserPos(coords);
+        setLoadingPos(false);
       },
       () => {
         const fallback = [40.0842, 65.3791];
         setInternalUserPos(fallback);
-        setRouting(false);
+        setLoadingPos(false);
       },
       { timeout: 6000 }
     );
@@ -109,33 +147,26 @@ const MapView = ({ hotel, userPos: externalUserPos, onClearRoute }) => {
       ? [[lat, lng]]
       : [];
 
-  const MapContent = () => (
-    <>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {boundsPoints.length > 0 && <FitBounds points={boundsPoints} />}
-      {hasCoords && <Marker position={[lat, lng]} icon={hotelIcon} />}
-      {userPos && (
-        <>
-          <Marker position={userPos} icon={userIcon} />
-          {hasCoords && (
-            <Polyline
-              positions={[userPos, [lat, lng]]}
-              pathOptions={{ color: '#6366f1', weight: 4, dashArray: '8 6', opacity: 0.85 }}
-            />
-          )}
-        </>
-      )}
-    </>
-  );
+  const getExternalMapUrl = () => {
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  };
+
+  const [distance, setDistance] = useState(null);
+
+  useEffect(() => {
+    if (userPos && hasCoords) {
+      const d = L.latLng(userPos).distanceTo(L.latLng([lat, lng]));
+      setDistance(d > 1000 ? `${(d / 1000).toFixed(1)} km` : `${Math.round(d)} m`);
+    } else {
+      setDistance(null);
+    }
+  }, [userPos, lat, lng, hasCoords]);
 
   return (
     <>
       {/* Inline map */}
-      <div className="relative overflow-hidden w-full"
-        style={{ height: 220, borderRadius: '2rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+      <div className="relative overflow-hidden w-full transition-all duration-500"
+        style={{ height: 'clamp(260px, 35vh, 380px)', borderRadius: '2.5rem', border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
         <MapContainer
           center={center}
           zoom={14}
@@ -143,49 +174,80 @@ const MapView = ({ hotel, userPos: externalUserPos, onClearRoute }) => {
           zoomControl={false}
           scrollWheelZoom={false}
         >
-          <MapContent />
+          <MapLayers hasCoords={hasCoords} lat={lat} lng={lng} userPos={userPos} boundsPoints={boundsPoints} />
         </MapContainer>
 
-        {/* Controls */}
-        <div className="absolute bottom-3 right-3 flex gap-2 z-[400]">
-          {userPos ? (
-            <button
-              onClick={clearRoute}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95"
-              style={{ background: 'rgba(239,68,68,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}
-            >
-              <FiX className="w-3.5 h-3.5" /> Marshrutni yopish
-            </button>
-          ) : (
-            <button
-              onClick={startRoute}
-              disabled={routing}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-70"
-              style={{ background: 'rgba(99,102,241,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}
-            >
-              {routing
-                ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Aniqlanmoqda...</>
-                : <><FiNavigation className="w-3.5 h-3.5" /> Yo'l ko'rsatish</>
-              }
-            </button>
-          )}
+        {/* Controls Overlay */}
+        <div className="absolute inset-x-0 top-0 p-4 pointer-events-none flex justify-between items-start z-[400]">
+           {/* Active Guidance Badge */}
+           {userPos ? (
+            <div className="pointer-events-auto flex flex-col gap-1.5 animate-fade-in">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl"
+                style={{ background: '#2563eb', color: 'white', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 25px rgba(37,99,235,0.4)' }}>
+                <FiNavigation className="w-4 h-4 animate-pulse" />
+                <span className="text-xs font-black uppercase tracking-wider">Yo'nalish faol</span>
+              </div>
+              {distance && (
+                <div className="px-3 py-1.5 rounded-xl text-[11px] font-black self-start"
+                  style={{ background: 'rgba(255,255,255,0.95)', color: '#1e293b', backdropFilter: 'blur(12px)', border: '1px solid var(--border)' }}>
+                  Masofa: {distance}
+                </div>
+              )}
+            </div>
+          ) : <div />}
+
           <button
             onClick={() => setFullscreen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
-            style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#1e293b' }}
+            className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', border: '1px solid var(--border)', color: '#1e293b', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
           >
-            <FiMaximize className="w-3.5 h-3.5" /> To'liq
+            <FiMaximize className="w-4 h-4" />
+            <span className="text-[11px] font-black uppercase tracking-widest">Kattalashtirish</span>
           </button>
         </div>
 
-        {/* Route active indicator */}
-        {userPos && (
-          <div className="absolute top-3 left-3 z-[400] flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-            style={{ background: 'rgba(99,102,241,0.9)', backdropFilter: 'blur(10px)', color: 'white' }}>
-            <FiNavigation className="w-3 h-3 animate-pulse" />
-            <span className="text-[11px] font-bold">Marshrut ko'rsatilmoqda</span>
+        <div className="absolute inset-x-0 bottom-0 p-6 pointer-events-none z-[400]">
+          <div className="flex justify-center sm:justify-end gap-3 pointer-events-auto">
+            {userPos ? (
+              <>
+                <a
+                  href={getExternalMapUrl()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-14 px-6 rounded-[1.25rem] flex items-center gap-3 transition-all active:scale-95"
+                  style={{ background: 'white', color: '#1e293b', border: '1.5px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.08)' }}
+                >
+                  <FiMapPin className="w-5 h-5 text-rose-500" />
+                  <span className="text-[11px] font-black uppercase tracking-widest">Google Maps</span>
+                </a>
+                <button
+                  onClick={clearGuidance}
+                  className="h-14 px-6 rounded-[1.25rem] flex items-center gap-3 transition-all active:scale-95"
+                  style={{ background: 'rgba(239,68,68,0.95)', color: 'white', border: 'none', boxShadow: '0 10px 25px rgba(239,68,68,0.3)' }}
+                >
+                  <FiX className="w-5 h-5" />
+                  <span className="text-[11px] font-black uppercase tracking-widest">Yopish</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={startGuidance}
+                disabled={loadingPos}
+                className="h-14 px-8 rounded-[1.25rem] flex items-center gap-3 transition-all active:scale-95 disabled:opacity-70"
+                style={{ background: 'var(--gradient-main)', color: 'white', border: 'none', boxShadow: 'var(--shadow-colored)' }}
+              >
+                {loadingPos ? (
+                  <FiLoader className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <FiNavigation className="w-5 h-5" />
+                    <span className="text-xs font-black uppercase tracking-widest">Yo'nalishni ko'rish</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Fullscreen modal */}
@@ -202,28 +264,28 @@ const MapView = ({ hotel, userPos: externalUserPos, onClearRoute }) => {
               <div>
                 <p className="text-sm font-extrabold" style={{ color: 'var(--text-main)' }}>{name}</p>
                 <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                  {userPos ? 'Marshrut ko\'rsatilmoqda' : 'Xaritada joylashuv'}
+                  {userPos ? 'Yo\'nalish ko\'rsatilmoqda' : 'Xaritada joylashuv'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {userPos ? (
                 <button
-                  onClick={clearRoute}
+                  onClick={clearGuidance}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white"
                   style={{ background: '#ef4444' }}
                 >
-                  <FiX className="w-3.5 h-3.5" /> Marshrutni yopish
+                  <FiX className="w-3.5 h-3.5" /> Yopish
                 </button>
               ) : (
                 <button
-                  onClick={startRoute}
-                  disabled={routing}
+                  onClick={startGuidance}
+                  disabled={loadingPos}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-70"
                   style={{ background: '#6366f1' }}
                 >
-                  {routing
-                    ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Aniqlanmoqda...</>
+                  {loadingPos
+                    ? <FiLoader className="w-3.5 h-3.5 animate-spin" />
                     : <><FiNavigation className="w-3.5 h-3.5" /> Yo'l ko'rsatish</>
                   }
                 </button>
@@ -246,7 +308,7 @@ const MapView = ({ hotel, userPos: externalUserPos, onClearRoute }) => {
               style={{ width: '100%', height: '100%' }}
               zoomControl={true}
             >
-              <MapContent />
+              <MapLayers hasCoords={hasCoords} lat={lat} lng={lng} userPos={userPos} boundsPoints={boundsPoints} />
             </MapContainer>
           </div>
         </div>

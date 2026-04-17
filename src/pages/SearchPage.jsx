@@ -97,7 +97,7 @@ const AccordionGroup = ({ group, filters, onToggle, openGroups, onToggleGroup })
         style={{ background: 'transparent' }}
       >
         <span className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-main)' }}>
-          <span style={{ color: '#6366f1' }}>{group.icon}</span>
+          <span style={{ color: 'var(--primary)' }}>{group.icon}</span>
           {group.label}
           {active > 0 && (
             <span className="text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full font-black">{active}</span>
@@ -116,8 +116,8 @@ const AccordionGroup = ({ group, filters, onToggle, openGroups, onToggleGroup })
               <div
                 className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all"
                 style={{
-                  background: filters.access[opt.key] ? '#6366f1' : 'var(--bg-card)',
-                  border: `2px solid ${filters.access[opt.key] ? '#6366f1' : 'var(--border)'}`,
+                  background: filters.access[opt.key] ? 'var(--primary)' : 'var(--bg-main)',
+                  border: `2px solid ${filters.access[opt.key] ? 'var(--primary)' : 'var(--border)'}`,
                 }}
               >
                 {filters.access[opt.key] && <FiCheck className="w-3 h-3 text-white" />}
@@ -301,7 +301,7 @@ const SearchPage = () => {
                 className="w-4.5 h-4.5 rounded-full shrink-0 transition-all"
                 style={{
                   width: 18, height: 18,
-                  border: filters.minRating === r.v ? '5px solid #6366f1' : '2px solid var(--border)',
+                  border: filters.minRating === r.v ? '5px solid var(--primary)' : '2px solid var(--border)',
                   background: 'var(--bg-card)',
                 }}
               />
@@ -334,7 +334,7 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
 
       {/* ── Top bar ── */}
       <div className="flex items-center gap-3 mb-6">
@@ -355,7 +355,7 @@ const SearchPage = () => {
               boxShadow: 'var(--shadow-sm)',
               color: 'var(--text-main)',
             }}
-            onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+            onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-light)'; }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
           />
         </div>

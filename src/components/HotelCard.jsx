@@ -8,10 +8,7 @@ const HotelCard = ({ hotel }) => {
   const isFav = favorites.includes(hotel._id);
   const [imgHovered, setImgHovered] = useState(false);
 
-  // Multilingual name
-  const name = typeof hotel.name === 'object'
-    ? (hotel.name.uz || hotel.name.ru || hotel.name.en || 'Nomi yo\'q')
-    : (hotel.name || 'Nomi yo\'q');
+  const name = hotel.name || 'Nomi yo\'q';
 
   const handleFav = (e) => {
     e.preventDefault();
@@ -77,12 +74,6 @@ const HotelCard = ({ hotel }) => {
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-40">
 
           <div className="flex flex-col gap-2">
-            {hotel.roomsAvailable !== undefined && hotel.roomsAvailable <= 3 && hotel.roomsAvailable > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse shadow-lg"
-                style={{ background: 'rgba(239,68,68,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
-                <FiZap className="w-3 h-3" /> {hotel.roomsAvailable} ta qoldi
-              </div>
-            )}
             {isNew && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg"
                 style={{ background: 'rgba(16,185,129,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
@@ -201,7 +192,7 @@ const HotelCard = ({ hotel }) => {
           </div>
           <Link
             to={`/hotel/${hotel._id}`}
-            aria-label={`${name} mehmonxonasini bron qilish`}
+            aria-label={`${name} mehmonxonasini batafsil ko'rish`}
             className="btn-primary w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
             style={{ textDecoration: 'none' }}
           >

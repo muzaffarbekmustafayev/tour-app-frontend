@@ -83,7 +83,7 @@ const Home = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="pb-28 md:pb-8 lg:pb-12 lg:pl-32 overflow-x-hidden">
+    <div className="pb-28 md:pb-8 lg:pb-12 overflow-x-hidden">
 
       {/* ══════════════════════════════════════════
           HERO — Navoiy vibe
@@ -164,15 +164,16 @@ const Home = () => {
             style={{ animationDelay: '0.4s' }}
           >
             <div
-              className="rounded-[2rem] overflow-hidden"
+              className="rounded-[2rem] overflow-hidden transition-all duration-500"
               style={{
-                background: 'rgba(255,255,255,0.97)',
-                boxShadow: '0 32px 80px -16px rgba(0,0,0,0.6)',
-                border: '1px solid rgba(255,255,255,0.6)',
+                background: 'var(--bg-card)',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 32px 80px -16px rgba(0,0,0,0.4)',
+                border: '1px solid var(--border)',
               }}
             >
               {/* Location field */}
-              <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100">
+              <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: 'rgba(99,102,241,0.1)' }}>
                   <FiMapPin className="w-5 h-5 text-indigo-500" />
@@ -185,7 +186,7 @@ const Home = () => {
                     id="hs"
                     type="search"
                     placeholder="Mehmonxona yoki shahar nomi..."
-                    className="w-full bg-transparent border-none outline-none text-slate-800 font-bold text-sm placeholder-slate-300"
+                    className="w-full bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 font-bold text-sm placeholder-slate-300"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                   />
@@ -195,7 +196,7 @@ const Home = () => {
               {/* Dates row */}
               <div className="flex">
                 {/* Check-in */}
-                <div className="flex-1 flex items-center gap-4 px-6 py-4 border-r border-slate-100">
+                <div className="flex-1 flex items-center gap-4 px-6 py-4 border-r border-slate-100 dark:border-slate-800">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: 'rgba(99,102,241,0.08)' }}>
                     <FiCalendar className="w-4.5 h-4.5 text-indigo-400" />
@@ -208,7 +209,7 @@ const Home = () => {
                       id="ci"
                       type="date"
                       min={today}
-                      className="bg-transparent border-none outline-none text-slate-700 font-bold text-sm w-full p-0 cursor-pointer"
+                      className="bg-transparent border-none outline-none text-slate-700 dark:text-slate-200 font-bold text-sm w-full p-0 cursor-pointer"
                       value={checkIn}
                       onChange={e => setCheckIn(e.target.value)}
                     />
@@ -229,7 +230,7 @@ const Home = () => {
                       id="co"
                       type="date"
                       min={checkIn || today}
-                      className="bg-transparent border-none outline-none text-slate-700 font-bold text-sm w-full p-0 cursor-pointer"
+                      className="bg-transparent border-none outline-none text-slate-700 dark:text-slate-200 font-bold text-sm w-full p-0 cursor-pointer"
                       value={checkOut}
                       onChange={e => setCheckOut(e.target.value)}
                     />
@@ -348,7 +349,7 @@ const Home = () => {
 
         {/* ── Map quick link ── */}
         <button
-          onClick={() => navigate('/routes')}
+          onClick={() => navigate('/map')}
           className="w-full mb-12 flex items-center gap-4 p-5 rounded-[1.75rem] transition-all active:scale-[0.99] hover:scale-[1.01] text-left"
           style={{
             background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%)',

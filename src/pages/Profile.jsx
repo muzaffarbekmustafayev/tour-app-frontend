@@ -34,16 +34,15 @@ const Profile = () => {
   const roleLabels = { ADMIN: 'Administrator', HOTEL_OWNER: 'Mehmonxona egasi', CUSTOMER: 'Mijoz', GUEST: 'Mehmon' };
 
   const menuItems = [
-    { icon: <FiCalendar className="text-indigo-500 w-5 h-5" />, label: 'Bronlarim',       path: '/bookings', roles: ['CUSTOMER'] },
     { icon: <FiHeart    className="text-red-500   w-5 h-5" />, label: 'Sevimlilar',       path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
     { icon: <FiHome     className="text-emerald-500 w-5 h-5" />, label: 'Mehmonxonalarim', path: '/owner',     roles: ['HOTEL_OWNER'] },
-    { icon: <FiSettings className="text-gray-500 dark:text-gray-400 w-5 h-5" />, label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },
+    { icon: <FiSettings className="text-slate-500 dark:text-slate-400 w-5 h-5" />, label: 'Admin panel', path: '/admin', roles: ['ADMIN'] },
   ].filter(item => !item.roles || item.roles.includes(profile?.role));
 
   return (
-    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-lg mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-lg mx-auto min-h-screen">
       <div className="mb-4"><BackButton /></div>
-      <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2rem] p-6 mb-6 overflow-hidden shadow-xl shadow-blue-200 dark:shadow-none">
+      <div className="relative bg-gradient-to-br from-indigo-600 to-violet-800 rounded-2xl p-6 mb-6 overflow-hidden shadow-xl shadow-indigo-200 dark:shadow-none">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 -translate-y-10" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -translate-x-6 translate-y-6" />
         <div className="relative z-10 flex items-center space-x-4 mb-5">
@@ -52,7 +51,7 @@ const Profile = () => {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-black text-white truncate">{profile?.name || 'Foydalanuvchi'}</h1>
-            <p className="text-blue-100 text-sm truncate">{profile?.email}</p>
+            <p className="text-indigo-100 text-sm truncate">{profile?.email}</p>
             <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${roleColors[profile?.role] || roleColors.GUEST}`}>
               {roleLabels[profile?.role] || 'Mehmon'}
             </span>
@@ -61,11 +60,11 @@ const Profile = () => {
         <div className="relative z-10 grid grid-cols-3 gap-3">
           {[
             { label: "A'zo bo'lgan", value: profile?.createdAt ? new Date(profile.createdAt).getFullYear() : '—' },
-            { label: 'Holat', value: <span className="flex items-center justify-center gap-1">{profile?.blocked ? <><FiLock className="text-red-400 w-3 h-3"/> Bloklangan</> : <><FiCheckCircle className="text-green-400 w-3 h-3"/> Faol</>}</span> },
+            { label: 'Holat', value: <span className="flex items-center justify-center gap-1">{profile?.blocked ? <><FiLock className="text-rose-400 w-3 h-3"/> Bloklangan</> : <><FiCheckCircle className="text-emerald-400 w-3 h-3"/> Faol</>}</span> },
             { label: 'Rol', value: roleLabels[profile?.role] || 'Mehmon' },
           ].map(stat => (
             <div key={stat.label} className="bg-white/10 p-3 rounded-2xl text-center backdrop-blur-sm">
-              <p className="text-[10px] font-bold text-blue-200 uppercase tracking-wider mb-1">{stat.label}</p>
+              <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-wider mb-1">{stat.label}</p>
               <p className="text-white font-black text-sm">{stat.value}</p>
             </div>
           ))}
@@ -73,34 +72,34 @@ const Profile = () => {
       </div>
 
       {menuItems.length > 0 && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden mb-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden mb-4 shadow-sm">
           {menuItems.map((item, idx) => (
-            <Link key={item.path} to={item.path} className={`flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors ${idx > 0 ? 'border-t border-gray-100 dark:border-gray-800' : ''}`}>
+            <Link key={item.path} to={item.path} className={`flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${idx > 0 ? 'border-t border-gray-100 dark:border-slate-800' : ''}`}>
               <div className="flex items-center space-x-4">
                 <span className="text-xl">{item.icon}</span>
-                <span className="font-bold text-gray-900 dark:text-white">{item.label}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{item.label}</span>
               </div>
-              <FiChevronRight className="w-5 h-5 text-gray-400" />
+              <FiChevronRight className="w-5 h-5 text-slate-400" />
             </Link>
           ))}
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#1e293b] rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden mb-4 shadow-sm">
-        <button onClick={() => setDarkMode(!darkMode)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden mb-4 shadow-sm">
+        <button onClick={() => setDarkMode(!darkMode)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
           <div className="flex items-center space-x-4">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800">
-              {darkMode ? <FiSun className="w-4 h-4 text-yellow-500" /> : <FiMoon className="w-4 h-4 text-indigo-500" />}
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800">
+              {darkMode ? <FiSun className="w-4 h-4 text-amber-500" /> : <FiMoon className="w-4 h-4 text-indigo-500" />}
             </span>
-            <span className="font-bold text-gray-900 dark:text-white">{darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'}</span>
+            <span className="font-bold text-slate-900 dark:text-white">{darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'}</span>
           </div>
-          <div className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-blue-600' : 'bg-gray-200'} relative`}>
+          <div className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'} relative`}>
             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-7' : 'translate-x-1'}`} />
           </div>
         </button>
       </div>
 
-      <button onClick={handleLogout} className="w-full bg-white dark:bg-[#1e293b] text-red-500 font-bold py-4 rounded-[2rem] border border-red-100 dark:border-red-900/30 flex items-center justify-center space-x-3 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors shadow-sm">
+      <button onClick={handleLogout} className="w-full bg-white dark:bg-slate-900 text-rose-500 font-bold py-4 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-center justify-center space-x-3 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors shadow-sm">
         <FiLogOut className="w-5 h-5" />
         <span>Chiqish</span>
       </button>
