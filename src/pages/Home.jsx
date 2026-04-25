@@ -2,14 +2,21 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import AIRecommendations from '../components/AIRecommendations';
+import AccessibilityBanner from '../components/AccessibilityBanner';
 import api from '../services/api';
+import heroBg from '../assets/image.png';
 import {
-  FiSearch, FiMapPin, FiCalendar, FiMap, FiStar,
+  FiSearch, FiMapPin, FiMap, FiStar,
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
   FiArrowRight, FiHome, FiSun, FiUsers, FiAward,
   FiDollarSign, FiBriefcase, FiChevronRight,
   FiClock, FiFeather
 } from 'react-icons/fi';
+import {
+  MdAccessible, MdHearing, MdVisibility,
+  MdFamilyRestroom, MdElderly, MdSignLanguage,
+} from 'react-icons/md';
+import { TbWheelchair, TbBraille } from 'react-icons/tb';
 
 /* ── Navoiy landmark stats ── */
 const STATS = [
@@ -20,12 +27,16 @@ const STATS = [
 
 /* ── Category chips ── */
 const CATEGORIES = [
-  { name: 'Hashamatli', icon: <FiAward className="w-5 h-5" />, query: 'luxury',   color: '#f59e0b' },
-  { name: 'Resort',     icon: <FiSun className="w-5 h-5" />,   query: 'resort',   color: '#10b981' },
-  { name: 'Arzon',      icon: <FiDollarSign className="w-5 h-5" />, query: 'budget', color: '#6366f1' },
-  { name: 'Oilaviy',    icon: <FiUsers className="w-5 h-5" />, query: 'family',   color: '#ec4899' },
-  { name: 'Butik',      icon: <FiHome className="w-5 h-5" />,  query: 'boutique', color: '#8b5cf6' },
-  { name: 'Biznes',     icon: <FiBriefcase className="w-5 h-5" />, query: 'business', color: '#0ea5e9' },
+  { name: 'Hashamatli',  icon: <FiAward className="w-5 h-5" />,        query: 'luxury',      color: '#f59e0b' },
+  { name: 'Resort',      icon: <FiSun className="w-5 h-5" />,           query: 'resort',      color: '#10b981' },
+  { name: 'Arzon',       icon: <FiDollarSign className="w-5 h-5" />,    query: 'budget',      color: '#6366f1' },
+  { name: 'Oilaviy',     icon: <MdFamilyRestroom className="w-5 h-5" />,query: 'family',      color: '#ec4899' },
+  { name: 'Butik',       icon: <FiHome className="w-5 h-5" />,          query: 'boutique',    color: '#8b5cf6' },
+  { name: 'Biznes',      icon: <FiBriefcase className="w-5 h-5" />,     query: 'business',    color: '#0ea5e9' },
+  { name: 'Aravacha',    icon: <TbWheelchair className="w-5 h-5" />,    query: 'wheelchair',  color: '#7c3aed', accessKey: 'wheelchair' },
+  { name: 'Eshitish',    icon: <MdHearing className="w-5 h-5" />,       query: 'audioGuides', color: '#06b6d4', accessKey: 'audioGuides' },
+  { name: "Ko'rish",    icon: <MdVisibility className="w-5 h-5" />,    query: 'tactilePaving',color: '#059669', accessKey: 'tactilePaving' },
+  { name: 'Keksalar',    icon: <MdElderly className="w-5 h-5" />,       query: 'family',      color: '#d97706' },
 ];
 
 /* ── Skeleton ── */
@@ -44,9 +55,6 @@ const Home = () => {
   const [hotels, setHotels]         = useState([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [checkIn, setCheckIn]       = useState('');
-  const [checkOut, setCheckOut]     = useState('');
   const [showTop, setShowTop]       = useState(false);
   const navigate = useNavigate();
 
@@ -71,19 +79,8 @@ const Home = () => {
 
   useEffect(() => { fetchHotels(); }, [fetchHotels]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const p = new URLSearchParams();
-    if (searchQuery) p.set('q', searchQuery);
-    if (checkIn)     p.set('checkIn', checkIn);
-    if (checkOut)    p.set('checkOut', checkOut);
-    navigate(`/search?${p.toString()}`);
-  };
-
-  const today = new Date().toISOString().split('T')[0];
-
   return (
-    <div className="pb-28 md:pb-8 lg:pb-12 overflow-x-hidden">
+    <div className="pb-24 md:pb-8 lg:pb-12 overflow-x-hidden">
 
       {/* ══════════════════════════════════════════
           HERO — Navoiy vibe
@@ -92,7 +89,7 @@ const Home = () => {
 
         {/* Background */}
         <img
-          src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&q=85&w=1800"
+          src={heroBg}
           alt="Navoiy viloyati"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: 'center 35%' }}
@@ -110,9 +107,7 @@ const Home = () => {
         <div className="absolute bottom-32 left-0 w-72 h-72 rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.15), transparent 70%)', filter: 'blur(50px)' }} />
 
-        {/* Navoiy ornament pattern — subtle top border */}
-        <div className="absolute top-0 left-0 right-0 h-1.5"
-          style={{ background: 'linear-gradient(90deg, #6366f1, #f59e0b, #10b981, #6366f1)' }} />
+        {/* Top border removed for classic clean look */}
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-8 text-center pb-12 sm:pb-16">
@@ -157,103 +152,26 @@ const Home = () => {
             Qadimiy Navoiy shahri va uning atrofidagi eng sara mehmonxonalar, resortlar va dam olish maskanlarini kashf eting.
           </p>
 
-          {/* Search card */}
-          <form
-            onSubmit={handleSearch}
-            className="w-full max-w-2xl animate-fade-in"
-            style={{ animationDelay: '0.4s' }}
+          {/* Search shortcut button */}
+          <button
+            onClick={() => navigate('/search')}
+            className="w-full max-w-sm animate-fade-in flex items-center gap-3 px-5 py-4 rounded-[2rem] font-bold text-sm transition-all hover:bg-white/5 active:scale-[0.99]"
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(16px)',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+              color: 'rgba(255,255,255,0.9)',
+              animationDelay: '0.4s',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            }}
           >
-            <div
-              className="rounded-[2rem] overflow-hidden transition-all duration-500"
-              style={{
-                background: 'var(--bg-card)',
-                backdropFilter: 'blur(12px)',
-                boxShadow: '0 32px 80px -16px rgba(0,0,0,0.4)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              {/* Location field */}
-              <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(99,102,241,0.1)' }}>
-                  <FiMapPin className="w-5 h-5 text-indigo-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <label htmlFor="hs" className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-0.5">
-                    Qayerga boramiz?
-                  </label>
-                  <input
-                    id="hs"
-                    type="search"
-                    placeholder="Mehmonxona yoki shahar nomi..."
-                    className="w-full bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 font-bold text-sm placeholder-slate-300"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Dates row */}
-              <div className="flex">
-                {/* Check-in */}
-                <div className="flex-1 flex items-center gap-4 px-6 py-4 border-r border-slate-100 dark:border-slate-800">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(99,102,241,0.08)' }}>
-                    <FiCalendar className="w-4.5 h-4.5 text-indigo-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="ci" className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-0.5">
-                      Kelish sanasi
-                    </label>
-                    <input
-                      id="ci"
-                      type="date"
-                      min={today}
-                      className="bg-transparent border-none outline-none text-slate-700 dark:text-slate-200 font-bold text-sm w-full p-0 cursor-pointer"
-                      value={checkIn}
-                      onChange={e => setCheckIn(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Check-out */}
-                <div className="flex-1 flex items-center gap-4 px-6 py-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(244,63,94,0.08)' }}>
-                    <FiCalendar className="w-4.5 h-4.5 text-rose-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="co" className="block text-[10px] uppercase font-black text-slate-400 tracking-widest mb-0.5">
-                      Ketish sanasi
-                    </label>
-                    <input
-                      id="co"
-                      type="date"
-                      min={checkIn || today}
-                      className="bg-transparent border-none outline-none text-slate-700 dark:text-slate-200 font-bold text-sm w-full p-0 cursor-pointer"
-                      value={checkOut}
-                      onChange={e => setCheckOut(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit */}
-              <div className="px-4 pb-4">
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-2.5 py-4 rounded-[1.5rem] font-extrabold text-base text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a855f7 100%)',
-                    boxShadow: '0 10px 30px -8px rgba(99,102,241,0.6)',
-                  }}
-                >
-                  <FiSearch className="w-5 h-5" />
-                  Mehmonxona qidirish
-                </button>
-              </div>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(255,255,255,0.2)' }}>
+              <FiSearch className="w-4 h-4" />
             </div>
-          </form>
+            <span className="flex-1 text-left opacity-80">Mehmonxona qidirish...</span>
+            <FiArrowRight className="w-4 h-4 opacity-60" />
+          </button>
         </div>
 
         {/* Bottom wave */}
@@ -327,21 +245,29 @@ const Home = () => {
               Barchasi <FiChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="snap-x-scroll -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
             {CATEGORIES.map((cat, i) => (
               <button
                 key={cat.name}
-                onClick={() => navigate(`/search?q=${cat.query}`)}
-                className="flex-shrink-0 flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 hover:scale-[1.04]"
+                onClick={() => {
+                  if (cat.accessKey) {
+                    navigate(`/search?accessibility=${cat.accessKey}`);
+                  } else {
+                    navigate(`/search?q=${cat.query}`);
+                  }
+                }}
+                className="press-effect flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-colors"
                 style={{
                   background: `${cat.color}12`,
-                  border: `1.5px solid ${cat.color}30`,
+                  border: `1.5px solid ${cat.color}25`,
                   color: cat.color,
-                  animationDelay: `${i * 0.05}s`,
+                  minHeight: 'unset',
+                  minWidth: 'unset',
                 }}
+                aria-label={`${cat.name} mehmonxonalarini qidirish`}
               >
                 {cat.icon}
-                {cat.name}
+                <span className="whitespace-nowrap">{cat.name}</span>
               </button>
             ))}
           </div>
@@ -350,7 +276,7 @@ const Home = () => {
         {/* ── Map quick link ── */}
         <button
           onClick={() => navigate('/map')}
-          className="w-full mb-12 flex items-center gap-4 p-5 rounded-[1.75rem] transition-all active:scale-[0.99] hover:scale-[1.01] text-left"
+          className="w-full mb-12 flex items-center gap-4 p-5 rounded-[1.75rem] transition-all active:scale-[0.99] hover:shadow-md text-left"
           style={{
             background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%)',
             border: '1.5px solid rgba(99,102,241,0.2)',
@@ -371,6 +297,9 @@ const Home = () => {
           </div>
           <FiArrowRight className="w-5 h-5 shrink-0 text-indigo-400" />
         </button>
+
+        {/* ── Accessibility Banner ── */}
+        <AccessibilityBanner />
 
         {/* ── AI Recommendations ── */}
         <div className="mb-12">
@@ -402,11 +331,11 @@ const Home = () => {
           )}
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => <Skeleton key={i} />)}
+            <div className="hotel-grid">
+              {[1, 2, 3, 4].map(i => <Skeleton key={i} />)}
             </div>
           ) : hotels.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="hotel-grid">
               {hotels.map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
             </div>
           ) : !error ? (
@@ -426,7 +355,7 @@ const Home = () => {
       {showTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-28 right-5 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-90"
+          className="fixed bottom-28 right-5 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.95]"
           style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}
           aria-label="Yuqoriga"
         >

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
+import Loader from './components/Loader';
 
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
@@ -15,35 +16,47 @@ import AdminDashboard from './pages/AdminDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import HotelsMap from './pages/HotelsMap';
 
+const AppContent = () => {
+  const { loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <Loader fullScreen message="NavaiTour tizimi yuklanmoqda..." />;
+  }
+
+  return (
+    <Router>
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow scroll-smooth main-container relative">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/map" element={<HotelsMap />} />
+            <Route path="/hotel/:id" element={<HotelDetail />} />
+            <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/owner" element={<ProtectedRoute roles={['HOTEL_OWNER']}><OwnerDashboard /></ProtectedRoute>} />
+            <Route path="*" element={
+              <div className="flex flex-col items-center justify-center min-h-[70vh]">
+                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">404</h1>
+                <p className="text-gray-500 mb-6">Sahifa topilmadi</p>
+                <a href="/" className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition">Bosh sahifaga qaytish</a>
+              </div>
+            } />
+          </Routes>
+        </div>
+        <BottomNav />
+      </div>
+    </Router>
+  );
+};
+
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <div className="flex-grow scroll-smooth main-container relative">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/map" element={<HotelsMap />} />
-              <Route path="/hotel/:id" element={<HotelDetail />} />
-              <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/owner" element={<ProtectedRoute roles={['HOTEL_OWNER']}><OwnerDashboard /></ProtectedRoute>} />
-              <Route path="*" element={
-                <div className="flex flex-col items-center justify-center min-h-[70vh]">
-                  <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">404</h1>
-                  <p className="text-gray-500 mb-6">Sahifa topilmadi</p>
-                  <a href="/" className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition">Bosh sahifaga qaytish</a>
-                </div>
-              } />
-            </Routes>
-          </div>
-          <BottomNav />
-        </div>
-      </Router>
+      <AppContent />
     </AuthProvider>
   );
 };

@@ -6,14 +6,19 @@ import BackButton from '../components/BackButton';
 import {
   FiSearch, FiFilter, FiX, FiAward, FiThumbsUp, FiSmile, FiCheck,
   FiChevronDown, FiChevronUp, FiSliders, FiMapPin, FiDollarSign,
-  FiStar, FiWifi, FiUsers, FiEye, FiVolume2, FiCpu, FiHeart,
-  FiAlertCircle
+  FiStar, FiAlertCircle
 } from 'react-icons/fi';
+import {
+  MdAccessible, MdHearing, MdVisibility,
+  MdFamilyRestroom, MdWifi, MdSignLanguage,
+  MdSelfImprovement,
+} from 'react-icons/md';
+import { TbWheelchair, TbBraille, TbEar } from 'react-icons/tb';
 
 /* ── Filter groups ── */
 const FILTER_GROUPS = [
   {
-    id: 'mobility', label: 'Harakatlanish', icon: <FiUsers className="w-4 h-4" />,
+    id: 'mobility', label: 'Harakatlanish', icon: <TbWheelchair className="w-4 h-4" />,
     options: [
       { key: 'wheelchair',        label: 'Nogironlar aravachasi',       param: 'wheelchair' },
       { key: 'accessibleRooms',   label: 'Maxsus moslashtirilgan xona', param: 'accessibleRooms' },
@@ -21,14 +26,15 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    id: 'visual', label: "Ko'rish va yo'naltirish", icon: <FiEye className="w-4 h-4" />,
+    id: 'visual', label: "Ko'rish va yo'naltirish", icon: <MdVisibility className="w-4 h-4" />,
     options: [
       { key: 'tactilePaving',       label: "Taktil yo'lakchalar",        param: 'tactilePaving' },
       { key: 'highContrastSignage', label: 'Yuqori kontrastli belgilar', param: 'highContrastSignage' },
+      { key: 'brailleSigns',        label: 'Brayl yozuvi',               param: 'brailleSigns' },
     ],
   },
   {
-    id: 'auditory', label: 'Eshitish', icon: <FiVolume2 className="w-4 h-4" />,
+    id: 'auditory', label: 'Eshitish', icon: <MdHearing className="w-4 h-4" />,
     options: [
       { key: 'audioGuides',       label: "Ovozli yo'riqnomalar",   param: 'audioGuides' },
       { key: 'vibrationAlerts',   label: 'Vibro-signal tizimi',    param: 'vibrationAlerts' },
@@ -36,14 +42,14 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    id: 'cognitive', label: 'Kognitiv qulaylik', icon: <FiCpu className="w-4 h-4" />,
+    id: 'cognitive', label: 'Kognitiv qulaylik', icon: <MdSelfImprovement className="w-4 h-4" />,
     options: [
       { key: 'quietZones',        label: 'Shovqinsiz hududlar',         param: 'quietZones' },
       { key: 'easyToReadSignage', label: 'Sodda piktogramma belgilari', param: 'easyToReadSignage' },
     ],
   },
   {
-    id: 'family', label: 'Oila va keksalar', icon: <FiHeart className="w-4 h-4" />,
+    id: 'family', label: 'Oila va keksalar', icon: <MdFamilyRestroom className="w-4 h-4" />,
     options: [
       { key: 'strollerAccessible',   label: "Bolalar aravachasi uchun yo'l", param: 'strollerAccessible' },
       { key: 'medicalServiceOnSite', label: 'Tibbiy yordam punkti',          param: 'medicalServiceOnSite' },
@@ -51,7 +57,7 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    id: 'digital', label: 'Raqamli qulaylik', icon: <FiWifi className="w-4 h-4" />,
+    id: 'digital', label: 'Raqamli qulaylik', icon: <MdWifi className="w-4 h-4" />,
     options: [
       { key: 'offlineDataSupport', label: "Oflayn bron ko'rish (PWA)", param: 'offlineDataSupport' },
       { key: 'lowDataMode',        label: 'Past internet rejimi',       param: 'lowDataMode' },
@@ -334,7 +340,7 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
+    <div className="pb-24 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
 
       {/* ── Top bar ── */}
       <div className="flex items-center gap-3 mb-6">
@@ -405,11 +411,11 @@ const SearchPage = () => {
         {/* ── Results ── */}
         <main className="flex-1 min-w-0">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-5">
+            <div className="hotel-grid">
               {[1,2,3,4,5,6].map(i => <Skeleton key={i} />)}
             </div>
           ) : hotels.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-5">
+            <div className="hotel-grid">
               {hotels.map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
             </div>
           ) : (

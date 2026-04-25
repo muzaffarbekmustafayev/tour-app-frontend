@@ -8,6 +8,7 @@ import {
   FiCheck, FiXCircle, FiMapPin
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
+import FullHotelForm, { emptyHotelTemplate } from '../components/FullHotelForm';
 
 
 const AdminDashboard = () => {
@@ -24,10 +25,7 @@ const AdminDashboard = () => {
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
   const [addHotel, setAddHotel] = useState(false);
-  const [addHotelForm, setAddHotelForm] = useState({
-    name: '', description: '', city: '', country: 'Uzbekistan', address: '',
-    category: 'hotel', pricePerNight: '', roomsAvailable: '', owner: ''
-  });
+  const [addHotelForm, setAddHotelForm] = useState(emptyHotelTemplate);
   const [addHotelLoading, setAddHotelLoading] = useState(false);
   const [addHotelError, setAddHotelError] = useState('');
   const [editHotel, setEditHotel] = useState(null);
@@ -97,13 +95,17 @@ const AdminDashboard = () => {
     setAddHotelLoading(true);
     setAddHotelError('');
     try {
-      const res = await api.post('/hotels', addHotelForm);
+      const payload = {
+        ...addHotelForm,
+        pricePerNight: Number(addHotelForm.basePricePerNight || addHotelForm.pricePerNight),
+        basePricePerNight: Number(addHotelForm.basePricePerNight || addHotelForm.pricePerNight),
+        roomsAvailable: Number(addHotelForm.roomsAvailable),
+        location: { lat: Number(addHotelForm.location.lat), lng: Number(addHotelForm.location.lng) },
+      };
+      const res = await api.post('/hotels', payload);
       setHotels(prev => [...prev, res.data]);
       setAddHotel(false);
-      setAddHotelForm({
-        name: '', description: '', city: '', country: 'Uzbekistan', address: '',
-        category: 'hotel', pricePerNight: '', roomsAvailable: '', owner: ''
-      });
+      setAddHotelForm(emptyHotelTemplate);
     } catch (err) {
       setAddHotelError(err.response?.data?.message || 'Xatolik yuz berdi');
     } finally {
@@ -152,22 +154,26 @@ const AdminDashboard = () => {
   const openEditHotel = (h) => {
     setEditHotel(h);
     setEditHotelForm({
-      name: h.name,
-      description: h.description,
-      city: h.city,
-      address: h.address,
-      category: h.category,
+      ...emptyHotelTemplate,
+      ...h,
+      owner: h.owner?._id || h.owner,
       basePricePerNight: h.basePricePerNight || h.pricePerNight,
-      roomsAvailable: h.roomsAvailable,
-      owner: h.owner?._id || h.owner
+      location: h.location || { lat: '', lng: '' },
+      rooms: h.rooms && h.rooms.length > 0 ? h.rooms : emptyHotelTemplate.rooms
     });
-
   };
 
   const handleSaveHotel = async () => {
     setEditHotelLoading(true);
     try {
-      const res = await api.put(`/hotels/${editHotel._id}`, editHotelForm);
+      const payload = {
+        ...editHotelForm,
+        pricePerNight: Number(editHotelForm.basePricePerNight || editHotelForm.pricePerNight),
+        basePricePerNight: Number(editHotelForm.basePricePerNight || editHotelForm.pricePerNight),
+        roomsAvailable: Number(editHotelForm.roomsAvailable),
+        location: { lat: Number(editHotelForm.location.lat), lng: Number(editHotelForm.location.lng) },
+      };
+      const res = await api.put(`/hotels/${editHotel._id}`, payload);
       setHotels(prev => prev.map(h => h._id === editHotel._id ? res.data : h));
       setEditHotel(null);
       showToast('Mehmonxona yangilandi', 'success');
@@ -440,7 +446,7 @@ const AdminDashboard = () => {
       )}
 
       {/* HOTELS */}
-      {activeTab === 'hotels' && (
+      {activeTab === 'hotels' && !addHotel && !editHotel && (
         <div className="animate-fade-in space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
             <div>
@@ -566,99 +572,41 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Add Hotel Modal */}
-      {addHotel && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-800 my-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Mehmonxona Qo'shish</h2>
-              <button onClick={() => setAddHotel(false)} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <FiX className="w-5 h-5" />
+      {/* Add Hotel INLINE PAGE */}
+      {activeTab === 'hotels' && addHotel && (
+        <div className="animate-fade-in space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full pointer-events-none"></div>
+            <div>
+              <button onClick={() => setAddHotel(false)} className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm mb-4 transition-colors">
+                <FiArrowLeft className="w-4 h-4"/> Ortga ro'yxatga qaytish
               </button>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center"><FiHome className="w-5 h-5" /></span>
+                Yangi Mehmonxona Qo'shish
+              </h2>
+              <p className="text-[12px] text-slate-500 font-bold ml-12 uppercase tracking-widest mt-1">Obyekt yaratish paneli</p>
             </div>
-            {addHotelError && <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl px-4 py-3 text-xs font-bold mb-6 border border-rose-100 dark:border-rose-800/50">{addHotelError}</div>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mehmonxona nomi</label>
-                <input
-                  type="text"
-                  placeholder="Registon Plaza"
-                  value={addHotelForm.name}
-                  onChange={e => setAddHotelForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Tavsif</label>
-                <textarea
-                  placeholder="Mehmonxona haqida..."
-                  value={addHotelForm.description}
-                  onChange={e => setAddHotelForm(p => ({ ...p, description: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all resize-none text-slate-900 dark:text-white"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Shahar</label>
-                <input
-                  type="text"
-                  placeholder="Samarqand"
-                  value={addHotelForm.city}
-                  onChange={e => setAddHotelForm(p => ({ ...p, city: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Manzil</label>
-                <input
-                  type="text"
-                  placeholder="Registon maydoni 1"
-                  value={addHotelForm.address}
-                  onChange={e => setAddHotelForm(p => ({ ...p, address: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Narx (UZS)</label>
-                <input
-                  type="number"
-                  placeholder="500000"
-                  value={addHotelForm.pricePerNight}
-                  onChange={e => setAddHotelForm(p => ({ ...p, pricePerNight: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Xonalar soni</label>
-                <input
-                  type="number"
-                  placeholder="10"
-                  value={addHotelForm.roomsAvailable}
-                  onChange={e => setAddHotelForm(p => ({ ...p, roomsAvailable: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Egasi</label>
-                <select
-                  value={addHotelForm.owner}
-                  onChange={e => setAddHotelForm(p => ({ ...p, owner: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                >
-                  <option value="">Egani tanlang</option>
-                  {users.filter(u => u.role === 'HOTEL_OWNER').map(u => (
-                    <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
-                  ))}
-                </select>
-              </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto relative z-10">
+               <button onClick={() => setAddHotel(false)} className="w-full sm:w-auto px-6 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+                 Bekor qilish
+               </button>
+               <button
+                 onClick={handleAddHotel}
+                 disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.address || !addHotelForm.owner}
+                 className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-[0_8px_20px_-6px_rgba(79,70,229,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+               >
+                 <FiCheck className="w-4 h-4" />
+                 {addHotelLoading ? 'Saqlanmoqda...' : 'Bazaga Saqlash'}
+               </button>
             </div>
-            <button
-              onClick={handleAddHotel}
-              disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.description || !addHotelForm.city || !addHotelForm.pricePerNight || !addHotelForm.roomsAvailable || !addHotelForm.owner}
-              className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm mt-8 shadow-sm active:scale-95 transition-all flex justify-center disabled:opacity-50"
-            >
-              {addHotelLoading ? 'Qo\'shilmoqda...' : 'Mehmonxona Qo\'shish'}
-            </button>
+          </div>
+
+          {addHotelError && <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl px-6 py-4 text-sm font-bold border border-rose-100 dark:border-rose-800/50 flex items-center gap-3"><FiAlertTriangle className="w-5 h-5"/> {addHotelError}</div>}
+          
+          <div className="pb-10">
+            <FullHotelForm form={addHotelForm} setForm={setAddHotelForm} users={users} />
           </div>
         </div>
       )}
@@ -734,95 +682,39 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Edit Hotel Modal */}
-      {editHotel && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-800 my-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Mehmonxonani tahrirlash</h2>
-              <button onClick={() => setEditHotel(null)} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <FiX className="w-5 h-5" />
+      {/* Edit Hotel INLINE PAGE */}
+      {activeTab === 'hotels' && editHotel && (
+        <div className="animate-fade-in space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none"></div>
+            <div>
+              <button onClick={() => setEditHotel(null)} className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 font-bold text-sm mb-4 transition-colors">
+                <FiArrowLeft className="w-4 h-4"/> Ortga ro'yxatga qaytish
               </button>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center"><FiEdit2 className="w-5 h-5" /></span>
+                Mehmonxonani Tahrirlash
+              </h2>
+              <p className="text-[12px] text-slate-500 font-bold ml-12 uppercase tracking-widest mt-1">{editHotelForm.name}</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Nomi</label>
-                <input
-                  type="text"
-                  value={editHotelForm.name}
-                  onChange={e => setEditHotelForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Tavsif</label>
-                <textarea
-                  value={editHotelForm.description}
-                  onChange={e => setEditHotelForm(p => ({ ...p, description: e.target.value }))}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all resize-none text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Shahar</label>
-                <input
-                  type="text"
-                  value={editHotelForm.city}
-                  onChange={e => setEditHotelForm(p => ({ ...p, city: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Manzil</label>
-                <input
-                  type="text"
-                  value={editHotelForm.address}
-                  onChange={e => setEditHotelForm(p => ({ ...p, address: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Narx (UZS)</label>
-                <input
-                  type="number"
-                  value={editHotelForm.basePricePerNight}
-                  onChange={e => setEditHotelForm(p => ({ ...p, basePricePerNight: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Kategoriya</label>
-                <select
-                  value={editHotelForm.category}
-                  onChange={e => setEditHotelForm(p => ({ ...p, category: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                >
-                  <option value="hotel">Mehmonxona</option>
-                  <option value="resort">Resort</option>
-                  <option value="hostel">Hostel</option>
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Egasi</label>
-                <select
-                  value={editHotelForm.owner}
-                  onChange={e => setEditHotelForm(p => ({ ...p, owner: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
-                >
-                  {users.filter(u => u.role === 'HOTEL_OWNER').map(u => (
-                    <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
-                  ))}
-                </select>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto relative z-10">
+               <button onClick={() => setEditHotel(null)} className="w-full sm:w-auto px-6 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+                 Bekor qilish
+               </button>
+               <button
+                 onClick={handleSaveHotel}
+                 disabled={editHotelLoading}
+                 className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+               >
+                 <FiCheck className="w-4 h-4" />
+                 {editHotelLoading ? 'Saqlanmoqda...' : 'O\'zgarishlarni Saqlash'}
+               </button>
             </div>
-            <button
-              onClick={handleSaveHotel}
-              disabled={editHotelLoading}
-              className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm mt-8 shadow-sm active:scale-95 transition-all flex justify-center disabled:opacity-50"
-            >
-              {editHotelLoading ? 'Saqlanmoqda...' : 'O\'zgarishlarni saqlash'}
-            </button>
+          </div>
+
+          <div className="pb-10">
+            <FullHotelForm form={editHotelForm} setForm={setEditHotelForm} users={users} isEdit={true} />
           </div>
         </div>
       )}

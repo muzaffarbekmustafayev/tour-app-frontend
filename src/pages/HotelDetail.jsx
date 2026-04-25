@@ -8,10 +8,16 @@ import Loader from '../components/Loader';
 import {
   FiWifi, FiDroplet, FiHeart, FiCoffee, FiMapPin, FiWind,
   FiBriefcase, FiMap, FiCheckCircle, FiShield, FiFrown,
-  FiUsers, FiStar, FiEdit3, FiCheck, FiPhone, FiMail,
+  FiUsers, FiStar, FiCheck, FiPhone, FiMail,
   FiVolume2, FiX, FiCalendar, FiAward,
-  FiChevronRight, FiRotateCw, FiMaximize, FiLoader, FiExternalLink
+  FiRotateCw, FiMaximize, FiExternalLink
 } from 'react-icons/fi';
+import {
+  MdAccessible, MdHearing, MdVisibility,
+  MdFamilyRestroom, MdLocalHospital, MdSignLanguage,
+  MdElectricBolt,
+} from 'react-icons/md';
+import { TbWheelchair, TbBraille, TbEar, TbHandStop } from 'react-icons/tb';
 
 const AMENITY_ICONS = {
   'Free WiFi': <FiWifi className="w-4 h-4" />,
@@ -137,6 +143,22 @@ const HotelDetail = () => {
     ? src
     : `${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:5000'}/${src}`;
 
+  // Build accessibility feature list with react-icons
+  const accessFeatures = [
+    [hotel.accessibility?.mobility?.wheelchairAccessible, <TbWheelchair className="w-4 h-4 text-indigo-500" />, "Aravacha uchun yo'l"],
+    [hotel.accessibility?.mobility?.elevator,             <MdElectricBolt className="w-4 h-4 text-violet-500" />, 'Keng liftlar'],
+    [hotel.accessibility?.mobility?.accessibleParking,    <MdAccessible className="w-4 h-4 text-blue-500" />,    'Maxsus parking'],
+    [hotel.accessibility?.visual?.brailleSigns,           <TbBraille className="w-4 h-4 text-emerald-500" />,    'Brayl yozuvlari'],
+    [hotel.accessibility?.visual?.tactilePaving,          <MdVisibility className="w-4 h-4 text-teal-500" />,    "Taktil yo'lakcha"],
+    [hotel.accessibility?.visual?.highContrastSignage,    <MdVisibility className="w-4 h-4 text-green-500" />,   'Kontrast belgilar'],
+    [hotel.accessibility?.auditory?.hearingAssistance,    <TbEar className="w-4 h-4 text-sky-500" />,            'Eshitish uskunalari'],
+    [hotel.accessibility?.auditory?.signLanguageStaff,    <MdSignLanguage className="w-4 h-4 text-cyan-500" />,  'Imo-ishora tili xodimi'],
+    [hotel.accessibility?.auditory?.audioGuides,          <MdHearing className="w-4 h-4 text-blue-400" />,       "Ovozli yo'riqnoma"],
+    [hotel.accessibility?.cognitive?.quietZones,          <TbHandStop className="w-4 h-4 text-amber-500" />,     'Shovqinsiz hudud'],
+    [hotel.familyAndElderly?.strollerAccessible,          <MdFamilyRestroom className="w-4 h-4 text-pink-500" />, 'Bolalar aravachasi'],
+    [hotel.familyAndElderly?.medicalServiceOnSite,        <MdLocalHospital className="w-4 h-4 text-red-500" />,  'Tibbiy yordam punkti'],
+  ].filter(([cond]) => cond);
+
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -260,18 +282,20 @@ const HotelDetail = () => {
                      ))}
                   </div>
                </Section>
-               <Section title="Maxsus imkoniyatlar" icon={<FiUsers />} className="mb-0">
-                  <div className="grid grid-cols-1 gap-2.5 text-xs text-gray-700 dark:text-slate-300 font-medium">
-                     {[
-                      ['wheelchairAccessible', 'Aravacha uchun yo\'l'],
-                      ['elevator', 'Keng liftlar'],
-                      ['brailleSigns', 'Brayl yozuvlari'],
-                      ['hearingAssistance', 'Eshitish uskunalari'],
-                     ].map(([k, l]) => hotel.accessibility?.mobility?.[k] && (
-                       <div key={k} className="flex items-center gap-3">
-                          <span className="text-green-600"><FiCheck /></span> {l}
-                       </div>
-                     ))}
+
+               {/* ── Inklyuziv qulayliklar — react-icons bilan ── */}
+               <Section title="Inklyuziv qulayliklar" icon={<MdAccessible />} className="mb-0">
+                  <div className="grid grid-cols-1 gap-2 text-xs text-gray-700 dark:text-slate-300 font-medium">
+                    {accessFeatures.length > 0 ? (
+                      accessFeatures.map(([, icon, label]) => (
+                        <div key={label} className="flex items-center gap-3 py-0.5">
+                          <span className="shrink-0">{icon}</span>
+                          <span>{label}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-400 italic text-xs">Ma'lumot mavjud emas</p>
+                    )}
                   </div>
                </Section>
             </div>
@@ -324,6 +348,11 @@ const HotelDetail = () => {
                    <div className="mt-6 pt-4 border-t border-gray-50 dark:border-slate-800 space-y-2">
                       <p className="flex items-center gap-2 text-[10px] font-bold text-green-600 uppercase"><FiShield /> Xavfsiz to'lov</p>
                       <p className="flex items-center gap-2 text-[10px] font-bold text-blue-600 uppercase"><FiCheckCircle /> Tasdiqlangan ob'ekt</p>
+                      {accessFeatures.length > 0 && (
+                        <p className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase">
+                          <MdAccessible className="w-3.5 h-3.5" /> {accessFeatures.length} inklyuziv qulaylik
+                        </p>
+                      )}
                    </div>
                 </div>
 

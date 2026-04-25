@@ -107,11 +107,11 @@ const BottomNav = () => {
     <>
       {/* ── Mobile Bottom Nav (< md) ── */}
       <nav
-        className="md:hidden fixed bottom-4 left-1/2 z-[200]"
-        style={{ transform: 'translateX(-50%)', width: 'calc(100% - 2rem)', maxWidth: 400, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="md:hidden fixed bottom-0 left-0 w-full z-[200] border-t border-slate-200/50 dark:border-slate-800/50"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Mobil navigatsiya"
       >
-        <div className="flex items-center justify-around px-2 py-2 rounded-[2rem] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl">
+        <div className="flex items-center justify-around px-2 py-2 bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-xl">
           {items.map((item, i) => (
             <NavItem key={i} item={item} active={isActive(item)} mobile />
           ))}
