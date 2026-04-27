@@ -20,23 +20,23 @@ import { TbWheelchair, TbBraille } from 'react-icons/tb';
 
 /* ── Navoiy landmark stats ── */
 const STATS = [
-  { icon: <FiClock className="w-5 h-5 text-amber-400" />,   value: '2500+', label: 'Yillik tarix' },
-  { icon: <FiFeather className="w-5 h-5 text-emerald-400" />, value: '43',   label: 'Yodgorliklar' },
+  { icon: <FiClock className="w-5 h-5 text-amber-400" />, value: '2500+', label: 'Yillik tarix' },
+  { icon: <FiFeather className="w-5 h-5 text-emerald-400" />, value: '43', label: 'Yodgorliklar' },
   { icon: <FiStar className="w-5 h-5 text-yellow-400" style={{ fill: '#facc15' }} />, value: '4.8', label: "O'rtacha baho" },
 ];
 
 /* ── Category chips ── */
 const CATEGORIES = [
-  { name: 'Hashamatli',  icon: <FiAward className="w-5 h-5" />,        query: 'luxury',      color: '#f59e0b' },
-  { name: 'Resort',      icon: <FiSun className="w-5 h-5" />,           query: 'resort',      color: '#10b981' },
-  { name: 'Arzon',       icon: <FiDollarSign className="w-5 h-5" />,    query: 'budget',      color: '#6366f1' },
-  { name: 'Oilaviy',     icon: <MdFamilyRestroom className="w-5 h-5" />,query: 'family',      color: '#ec4899' },
-  { name: 'Butik',       icon: <FiHome className="w-5 h-5" />,          query: 'boutique',    color: '#8b5cf6' },
-  { name: 'Biznes',      icon: <FiBriefcase className="w-5 h-5" />,     query: 'business',    color: '#0ea5e9' },
-  { name: 'Aravacha',    icon: <TbWheelchair className="w-5 h-5" />,    query: 'wheelchair',  color: '#7c3aed', accessKey: 'wheelchair' },
-  { name: 'Eshitish',    icon: <MdHearing className="w-5 h-5" />,       query: 'audioGuides', color: '#06b6d4', accessKey: 'audioGuides' },
-  { name: "Ko'rish",    icon: <MdVisibility className="w-5 h-5" />,    query: 'tactilePaving',color: '#059669', accessKey: 'tactilePaving' },
-  { name: 'Keksalar',    icon: <MdElderly className="w-5 h-5" />,       query: 'family',      color: '#d97706' },
+  { name: 'Hashamatli', icon: <FiAward className="w-5 h-5" />, query: 'luxury', color: '#f59e0b' },
+  { name: 'Resort', icon: <FiSun className="w-5 h-5" />, query: 'resort', color: '#10b981' },
+  { name: 'Arzon', icon: <FiDollarSign className="w-5 h-5" />, query: 'budget', color: '#6366f1' },
+  { name: 'Oilaviy', icon: <MdFamilyRestroom className="w-5 h-5" />, query: 'family', color: '#ec4899' },
+  { name: 'Butik', icon: <FiHome className="w-5 h-5" />, query: 'boutique', color: '#8b5cf6' },
+  { name: 'Biznes', icon: <FiBriefcase className="w-5 h-5" />, query: 'business', color: '#0ea5e9' },
+  { name: 'Aravacha', icon: <TbWheelchair className="w-5 h-5" />, query: 'wheelchair', color: '#7c3aed', accessKey: 'wheelchair' },
+  { name: 'Eshitish', icon: <MdHearing className="w-5 h-5" />, query: 'audioGuides', color: '#06b6d4', accessKey: 'audioGuides' },
+  { name: "Ko'rish", icon: <MdVisibility className="w-5 h-5" />, query: 'tactilePaving', color: '#059669', accessKey: 'tactilePaving' },
+  { name: 'Keksalar', icon: <MdElderly className="w-5 h-5" />, query: 'family', color: '#d97706' },
 ];
 
 /* ── Skeleton ── */
@@ -52,10 +52,10 @@ const Skeleton = () => (
 );
 
 const Home = () => {
-  const [hotels, setHotels]         = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
-  const [showTop, setShowTop]       = useState(false);
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showTop, setShowTop] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -142,7 +142,7 @@ const Home = () => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              dam olish maskanlarini
+              dam olish maskanlari
             </span>
           </h1>
 
@@ -203,37 +203,7 @@ const Home = () => {
         )}
 
         {/* ── Navoiy highlights banner ── */}
-        <div className="mb-12 rounded-[2rem] overflow-hidden relative"
-          style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)', minHeight: 140 }}>
-          {/* Ornament dots */}
-          <div className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-            }} />
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 p-5 sm:p-7">
-            <div>
-              <p className="text-amber-400 text-xs font-black uppercase tracking-[0.25em] mb-1.5">
-                Navoiy viloyati
-              </p>
-              <h2 className="text-white text-xl sm:text-2xl font-black leading-tight mb-1">
-                Qadimiy shahar, zamonaviy qulaylik
-              </h2>
-              <p className="text-indigo-200 text-sm font-medium">
-                Navoiyda unutilmas dam olish maskanlari
-              </p>
-            </div>
-            <div className="flex gap-4 sm:gap-6 shrink-0">
-              {STATS.map(s => (
-                <div key={s.label} className="text-center">
-                  <div className="flex justify-center mb-1">{s.icon}</div>
-                  <p className="text-white text-base sm:text-lg font-black">{s.value}</p>
-                  <p className="text-indigo-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+
 
         {/* ── Categories ── */}
         <div className="mb-12">

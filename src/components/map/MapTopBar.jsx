@@ -1,7 +1,7 @@
 import React from 'react';
-import { FiLoader } from 'react-icons/fi';
+import { FiLoader, FiArrowLeft } from 'react-icons/fi';
 import { MdMyLocation } from 'react-icons/md';
-import BackButton from '../BackButton';
+import { useNavigate } from 'react-router-dom';
 
 const MapTopBar = ({
   filteredCount,
@@ -14,25 +14,26 @@ const MapTopBar = ({
   NAVOIY_CENTER,
   setFlyTarget,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div
-      className="shrink-0 z-[500]"
-      style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(24px)',
-        borderBottom: '1px solid var(--border)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-      }}
+      className="pointer-events-auto w-full bg-white dark:bg-[#0f172a] transition-all"
     >
       {/* Row 1: Back + Title + Location count */}
-      <div className="flex items-center gap-2 px-3 pt-2 pb-1.5">
-        <BackButton className="static shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-extrabold truncate" style={{ color: 'var(--text-main)' }}>
-            Mehmonxonalar xaritasi
-          </p>
-          <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
-            {filteredCount} ta joy
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors shrink-0"
+        >
+          <FiArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <h1 className="text-[17px] font-bold truncate leading-tight text-slate-900 dark:text-white">
+            Xarita
+          </h1>
+          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+            {filteredCount} ta obyekt
           </p>
         </div>
         {/* My location FAB */}
@@ -61,45 +62,40 @@ const MapTopBar = ({
               { timeout: 4000, enableHighAccuracy: false }
             );
           }}
-          className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            color: '#6366f1',
-            minHeight: 'unset',
-            minWidth: 'unset',
-          }}
+          className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400"
         >
           {geoLoading ? (
-            <FiLoader style={{ width: 16, height: 16 }} className="animate-spin" />
+            <FiLoader className="w-5 h-5 animate-spin" />
           ) : (
-            <MdMyLocation style={{ width: 18, height: 18 }} />
+            <MdMyLocation className="w-[18px] h-[18px]" />
           )}
         </button>
       </div>
 
       {/* Row 2: Filter chips */}
       <div
-        className="flex gap-2 px-3 pb-2.5 overflow-x-auto hide-scrollbar"
+        className="flex gap-2 px-4 pb-4 pt-1 overflow-x-auto hide-scrollbar"
         style={{ scrollSnapType: 'x mandatory' }}
       >
-        {FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setFilterCat(f.key)}
-            className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full transition-all active:scale-95"
-            style={{
-              scrollSnapAlign: 'start',
-              background: filterCat === f.key ? 'var(--gradient-main)' : 'var(--bg-card)',
-              color: filterCat === f.key ? 'white' : 'var(--text-muted)',
-              border: `1px solid ${filterCat === f.key ? 'transparent' : 'var(--border)'}`,
-              minHeight: 'unset',
-              minWidth: 'unset',
-            }}
-          >
-            {f.label}
-          </button>
-        ))}
+        {FILTERS.map(f => {
+          const isActive = filterCat === f.key;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setFilterCat(f.key)}
+              className={`shrink-0 text-[13px] font-semibold px-4 py-2 rounded-full transition-colors ${
+                isActive 
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' 
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+              style={{
+                scrollSnapAlign: 'start',
+              }}
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

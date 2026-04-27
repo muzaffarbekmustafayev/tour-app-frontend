@@ -50,22 +50,26 @@ L.Icon.Default.mergeOptions({
 
 export const userIcon = L.divIcon({
   className: '',
-  html: `<div style="position:relative;width:20px;height:20px;">
-    <div style="position:absolute;inset:0;background:#3b82f6;border-radius:50%;border:2.5px solid white;box-shadow:0 0 10px rgba(59,130,246,0.8);z-index:2;"></div>
-    <div style="position:absolute;inset:-6px;background:rgba(59,130,246,0.2);border-radius:50%;z-index:1;animation:none;"></div>
+  html: `<div style="position:relative;width:22px;height:22px;">
+    <div style="position:absolute;inset:0;background:#2563eb;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:2;"></div>
+    <div style="position:absolute;inset:-10px;background:rgba(37,99,235,0.3);border-radius:50%;z-index:1;animation:pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);"></div>
+    <div style="position:absolute;inset:-20px;background:rgba(37,99,235,0.15);border-radius:50%;z-index:0;animation:pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);animation-delay:1s;"></div>
   </div>`,
-  iconSize: [20, 20], iconAnchor: [10, 10],
+  iconSize: [22, 22], iconAnchor: [11, 11],
 });
 
 export const createHotelIcon = (selected = false) => {
   const size = selected ? 40 : 30;
+  const bgColor = selected ? '#4f46e5' : '#2563eb';
+  const shadowOpacity = selected ? '0.5' : '0.3';
+  
   return L.divIcon({
     className: '',
-    html: `<div style="filter:drop-shadow(0 3px 8px rgba(99,102,241,${selected ? '0.7' : '0.4'}));">
+    html: `<div style="filter:drop-shadow(0 4px 6px rgba(0,0,0,${shadowOpacity}));">
       <div style="position:relative;width:${size}px;height:${size * 1.25}px;">
         <div style="
           width:${size}px;height:${size}px;
-          background:${selected ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'linear-gradient(135deg,#2563eb,#6366f1)'};
+          background:${bgColor};
           border-radius:50% 50% 50% 0;
           transform:rotate(-45deg);
           border:${selected ? '3px' : '2px'} solid white;

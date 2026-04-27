@@ -280,7 +280,7 @@ const OwnerDashboard = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setFormLoading(true);
     setFormError('');
 
@@ -371,11 +371,11 @@ const OwnerDashboard = () => {
             </div>
           </div>
           <button
-            onClick={handleFormSubmit}
-            disabled={submitting}
+            onClick={(e) => handleSubmit(e)}
+            disabled={formLoading}
             className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
           >
-            {submitting ? 'Saqlanmoqda...' : 'O\'zgarishlarni Saqlash'}
+            {formLoading ? 'Saqlanmoqda...' : 'O\'zgarishlarni Saqlash'}
           </button>
         </div>
 

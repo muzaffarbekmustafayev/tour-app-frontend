@@ -151,23 +151,26 @@ const HotelsMap = () => {
 
   return (
     <div
-      className="flex flex-col overflow-hidden"
+      className="relative w-full overflow-hidden flex flex-col"
       style={{ height: '100dvh', background: 'var(--bg-main)' }}
     >
-      <MapTopBar
-        filteredCount={filtered.length}
-        filterCat={filterCat}
-        setFilterCat={setFilterCat}
-        FILTERS={FILTERS}
-        geoLoading={geoLoading}
-        setGeoLoading={setGeoLoading}
-        setUserPos={setUserPos}
-        NAVOIY_CENTER={NAVOIY_CENTER}
-        setFlyTarget={setFlyTarget}
-      />
+      {/* TOP BAR OUTSIDE MAP */}
+      <div className="shrink-0 z-[600] border-b border-slate-200 dark:border-slate-800 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <MapTopBar
+          filteredCount={filtered.length}
+          filterCat={filterCat}
+          setFilterCat={setFilterCat}
+          FILTERS={FILTERS}
+          geoLoading={geoLoading}
+          setGeoLoading={setGeoLoading}
+          setUserPos={setUserPos}
+          NAVOIY_CENTER={NAVOIY_CENTER}
+          setFlyTarget={setFlyTarget}
+        />
+      </div>
 
-      {/* MAP */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* MAP BACKGROUND */}
+      <div className="flex-1 relative z-0">
         {loading ? (
           <Loader message="Xarita yuklanmoqda..." />
         ) : (
@@ -190,17 +193,15 @@ const HotelsMap = () => {
             {/* Route polylines */}
             {routeCoords.length > 1 && (
               <>
+                {/* Crisp Outline */}
                 <Polyline
                   positions={routeCoords}
-                  pathOptions={{ color: '#3b82f6', weight: 14, opacity: 0.12, lineCap: 'round', lineJoin: 'round' }}
+                  pathOptions={{ color: '#1e40af', weight: 8, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }}
                 />
+                {/* Clean Inner Line */}
                 <Polyline
                   positions={routeCoords}
-                  pathOptions={{ color: '#2563eb', weight: 5.5, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
-                />
-                <Polyline
-                  positions={routeCoords}
-                  pathOptions={{ color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '1, 12', lineCap: 'round' }}
+                  pathOptions={{ color: '#3b82f6', weight: 4, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
                 />
               </>
             )}
@@ -222,57 +223,55 @@ const HotelsMap = () => {
                 }}
               >
                 <Popup closeButton={false}>
-                  <div style={{ minWidth: 160, padding: '4px 2px' }}>
+                  <div style={{ minWidth: 160, padding: '4px' }}>
                     <p
-                      style={{ fontWeight: 800, fontSize: 13, color: '#1e293b', marginBottom: 4, cursor: 'pointer' }}
+                      style={{ fontWeight: 800, fontSize: 14, color: '#0f172a', marginBottom: 6, cursor: 'pointer', lineHeight: 1.2 }}
                       onClick={() => navigate(`/hotel/${hotel._id}`)}
                     >
                       {hotel.name}
                     </p>
-                    <Stars count={hotel.stars} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <Stars count={hotel.stars} />
+                    </div>
                     {fmtPrice(getMinPrice(hotel)) && (
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#059669', marginTop: 3 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#059669', marginTop: 4 }}>
                         {fmtPrice(getMinPrice(hotel))} UZS
                       </p>
                     )}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
                       <button
                         onClick={() => {
                           openPanel(hotel);
                           startGuidance(hotel);
                         }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white transition-colors"
                         style={{
                           flex: 1,
-                          background: '#6366f1',
-                          color: 'white',
                           border: 'none',
-                          borderRadius: 8,
-                          padding: '6px 0',
-                          fontSize: 11,
-                          fontWeight: 700,
+                          borderRadius: 6,
+                          padding: '8px 0',
+                          fontSize: 12,
+                          fontWeight: 600,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 4,
+                          gap: 6,
                           cursor: 'pointer',
-                          minHeight: 'unset',
                         }}
                       >
-                        <FiNavigation style={{ width: 11, height: 11 }} /> Yo'l
+                        <FiNavigation style={{ width: 12, height: 12 }} /> Yo'l
                       </button>
                       <button
                         onClick={() => navigate(`/hotel/${hotel._id}`)}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors"
                         style={{
                           flex: 1,
-                          background: '#f1f5f9',
-                          color: '#1e293b',
                           border: 'none',
-                          borderRadius: 8,
-                          padding: '6px 0',
-                          fontSize: 11,
-                          fontWeight: 700,
+                          borderRadius: 6,
+                          padding: '8px 0',
+                          fontSize: 12,
+                          fontWeight: 600,
                           cursor: 'pointer',
-                          minHeight: 'unset',
                         }}
                       >
                         Batafsil
@@ -301,23 +300,23 @@ const HotelsMap = () => {
 
         {/* Legend */}
         {!loading && (
-          <div className="absolute bottom-4 left-4 z-[400] flex flex-col gap-2">
+          <div className="absolute bottom-6 left-4 z-[400] flex flex-col gap-2 pointer-events-auto">
             <div
-              className="hidden sm:flex flex-col gap-1.5 p-3 rounded-2xl animate-fade-in"
-              style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border)' }}
+              className="hidden sm:flex flex-col gap-3 p-4 rounded-2xl animate-fade-in shadow-lg shadow-slate-200/40 dark:shadow-black/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60"
             >
               <p
-                className="text-[9px] font-black uppercase tracking-widest flex items-center gap-1"
-                style={{ color: 'var(--text-muted)' }}
+                className="text-[11px] font-semibold uppercase tracking-widest flex items-center gap-1.5 text-slate-500 dark:text-slate-400"
               >
-                <FiLayers style={{ width: 10, height: 10 }} /> Turlari
+                <FiLayers className="w-3.5 h-3.5 text-blue-500" /> Turlari
               </p>
-              {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
-                <div key={cat} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ background: CATEGORY_COLORS[cat] }} />
-                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)' }}>{label}</span>
-                </div>
-              ))}
+              <div className="flex flex-col gap-2.5">
+                {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
+                  <div key={cat} className="flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1 -mx-1 rounded-md transition-colors cursor-pointer">
+                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: CATEGORY_COLORS[cat] }} />
+                    <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

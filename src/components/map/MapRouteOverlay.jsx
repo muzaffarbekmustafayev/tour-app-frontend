@@ -21,89 +21,102 @@ const MapRouteOverlay = ({
     `https://www.google.com/maps/dir/?api=1&destination=${hotel.location.lat},${hotel.location.lng}&travelmode=${prof === 'walking' ? 'walking' : 'driving'}`;
 
   return (
-    <div
-      className="absolute top-3 left-3 right-3 z-[400] flex flex-col gap-2"
-      style={{ pointerEvents: 'none' }}
-    >
-      {/* Hotel name banner */}
-      <div
-        className="flex items-center gap-2 px-3 py-2 rounded-2xl"
-        style={{
-          background: '#6366f1',
-          color: 'white',
-          boxShadow: '0 6px 24px rgba(99,102,241,0.45)',
-          pointerEvents: 'auto',
-        }}
+    <div className="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 z-[550] w-[92%] md:w-[360px] max-w-[400px] pointer-events-none animate-slide-up">
+      <div 
+        className="pointer-events-auto flex flex-col overflow-hidden rounded-2xl shadow-xl shadow-slate-200/40 dark:shadow-black/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60"
       >
-        <FiNavigation style={{ width: 14, height: 14, flexShrink: 0, animation: 'pulse 1.5s infinite' }} />
-        <span style={{ fontSize: 12, fontWeight: 800, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {activeHotel.name}
-        </span>
-        <button
-          onClick={clearGuidance}
-          style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0, minHeight: 'unset', minWidth: 'unset' }}
-        >
-          <FiX style={{ width: 13, height: 13 }} />
-        </button>
-      </div>
-
-      {/* Route info chips row */}
-      <div className="flex gap-1.5 flex-wrap" style={{ pointerEvents: 'auto' }}>
-        {/* Profile toggle */}
-        {[
-          { key: 'driving', icon: MdDirectionsCar, label: 'Mashina', color: '#2563eb' },
-          { key: 'walking', icon: MdDirectionsWalk, label: 'Piyoda', color: '#059669' },
-        ].map(p => {
-          const Icon = p.icon;
-          return (
-            <button key={p.key} onClick={() => switchProfile(p.key)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
-                borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer',
-                background: profile === p.key ? p.color : 'rgba(255,255,255,0.95)',
-                color: profile === p.key ? 'white' : '#1e293b',
-                boxShadow: profile === p.key ? `0 4px 12px ${p.color}55` : '0 1px 4px rgba(0,0,0,0.1)',
-                minHeight: 'unset', minWidth: 'unset',
-              }}>
-              <Icon style={{ width: 13, height: 13 }} />
-              {p.label}
-            </button>
-          );
-        })}
-
-        {/* Loading chip */}
-        {isRouting && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.95)', color: '#1e293b', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-            <FiLoader style={{ width: 12, height: 12, color: '#6366f1' }} className="animate-spin" />
-            {geoLoading ? 'Joylashuv...' : 'Hisoblanmoqda...'}
-          </div>
-        )}
-
-        {/* Distance + time */}
-        {!isRouting && routeInfo && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: 'rgba(255,255,255,0.95)', color: '#1e293b', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-              <FiMapPin style={{ width: 12, height: 12, color: '#2563eb' }} />
-              {fmtDist(routeInfo.distance)}
+        {/* Header Region */}
+        <div className="relative flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+              <FiNavigation className="w-[18px] h-[18px] text-blue-600 dark:text-blue-400 animate-pulse" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: 'rgba(255,255,255,0.95)', color: '#1e293b', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-              <FiClock style={{ width: 12, height: 12, color: '#059669' }} />
-              {fmtTime(routeInfo.duration)}
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Yo'nalish
+              </span>
+              <span className="text-[16px] font-bold truncate text-slate-900 dark:text-white">
+                {activeHotel.name}
+              </span>
             </div>
-            <a href={googleUrl(activeHotel, profile)} target="_blank" rel="noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: 'rgba(255,255,255,0.95)', color: '#e11d48', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', textDecoration: 'none', minHeight: 'unset' }}>
-              <FiExternalLink style={{ width: 12, height: 12 }} /> Google
-            </a>
-          </>
-        )}
-
-        {/* Error */}
-        {(routeError || geoMsg) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, fontSize: 10, fontWeight: 600, background: 'rgba(254,202,202,0.97)', color: '#b91c1c', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', maxWidth: 220 }}>
-            <FiAlertTriangle style={{ width: 11, height: 11, flexShrink: 0 }} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{routeError || geoMsg}</span>
           </div>
-        )}
+          <button
+            onClick={clearGuidance}
+            className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors shrink-0 text-slate-500"
+          >
+            <FiX className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content Region */}
+        <div className="p-4 flex flex-col gap-4">
+          
+          {/* Mode Toggle */}
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            {[
+              { key: 'driving', icon: MdDirectionsCar, label: 'Mashina' },
+              { key: 'walking', icon: MdDirectionsWalk, label: 'Piyoda' },
+            ].map(p => {
+              const Icon = p.icon;
+              const isActive = profile === p.key;
+              return (
+                <button 
+                  key={p.key} 
+                  onClick={() => switchProfile(p.key)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-semibold transition-colors ${
+                    isActive 
+                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Status & Stats */}
+          {isRouting ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-blue-600 dark:text-blue-400">
+              <FiLoader className="w-5 h-5 animate-spin" />
+              <span>{geoLoading ? 'Joylashuv aniqlanmoqda...' : 'Hisoblanmoqda...'}</span>
+            </div>
+          ) : routeError || geoMsg ? (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-100 dark:border-red-800/30">
+              <FiAlertTriangle className="w-5 h-5 shrink-0" />
+              <span>{routeError || geoMsg}</span>
+            </div>
+          ) : routeInfo ? (
+            <div className="flex items-center justify-between">
+              <div className="flex gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-semibold uppercase text-slate-500 mb-0.5 flex items-center gap-1">
+                    <FiMapPin /> Masofa
+                  </span>
+                  <span className="text-[17px] font-bold text-slate-800 dark:text-slate-100">{fmtDist(routeInfo.distance)}</span>
+                </div>
+                <div className="w-px bg-slate-200 dark:bg-slate-700" />
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-semibold uppercase text-slate-500 mb-0.5 flex items-center gap-1">
+                    <FiClock /> Vaqt
+                  </span>
+                  <span className="text-[17px] font-bold text-green-600 dark:text-green-400">{fmtTime(routeInfo.duration)}</span>
+                </div>
+              </div>
+              
+              <a 
+                href={googleUrl(activeHotel, profile)} 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-blue-600 transition-colors"
+                title="Google Maps"
+              >
+                <FiExternalLink className="w-[18px] h-[18px]" />
+              </a>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

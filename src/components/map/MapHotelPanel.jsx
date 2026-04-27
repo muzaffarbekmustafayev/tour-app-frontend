@@ -30,7 +30,7 @@ const MapHotelPanel = ({
         style={{
           background: 'rgba(15, 23, 42, 0.4)',
           backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
+          background: 'rgba(0, 0, 0, 0.4)',
           opacity: showPanel ? 1 : 0,
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           pointerEvents: showPanel ? 'auto' : 'none',
@@ -38,33 +38,30 @@ const MapHotelPanel = ({
         onClick={closePanel}
       />
 
-      {/* ── Bottom Sheet ── */}
+      {/* ── Bottom Sheet / Floating Card ── */}
       <div
-        className="fixed left-0 right-0 bottom-0 z-[650] overflow-hidden flex flex-col"
+        className="fixed left-0 right-0 bottom-0 md:left-1/2 md:-translate-x-1/2 md:bottom-6 md:w-[420px] z-[650] overflow-hidden flex flex-col md:rounded-2xl bg-white dark:bg-slate-900 md:shadow-xl md:border md:border-slate-200 dark:border-slate-800"
         style={{
-          background: 'var(--bg-card)',
-          backdropFilter: 'blur(30px)',
-          WebkitBackdropFilter: 'blur(30px)',
-          borderTopLeftRadius: '2rem',
-          borderTopRightRadius: '2rem',
+          borderTopLeftRadius: '1.5rem',
+          borderTopRightRadius: '1.5rem',
           borderTop: '1px solid var(--border)',
-          maxHeight: '85dvh', /* mobile-safe viewport height */
-          boxShadow: '0 -20px 60px -15px rgba(0,0,0,0.3)',
-          transform: showPanel ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          maxHeight: '85dvh',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+          transform: showPanel ? 'translateY(0)' : 'translateY(120%)',
+          transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
         {/* Scrollable Content Container */}
-        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain" style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain pb-6 md:pb-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}>
 
-          {/* ── Float Drag Handle ── */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[660] pointer-events-none">
-            <div className="w-12 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.8)', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+          {/* ── Float Drag Handle (Mobile Only) ── */}
+          <div className="md:hidden absolute top-3 left-1/2 -translate-x-1/2 z-[660] pointer-events-none">
+            <div className="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
           </div>
 
-          {/* ── Header Image Layer ── */}
-          <div className="relative w-full shrink-0" style={{ height: 'clamp(180px, 35vh, 260px)' }}>
-            {selected.images?.[0] || selected.image ? (
+          {/* ── Header Image ── */}
+          <div className="relative w-full h-[180px] sm:h-[220px] shrink-0 bg-slate-200 dark:bg-slate-800">
+            {selected.images?.length > 0 || selected.image ? (
               <img
                 src={(selected.images?.[0] || selected.image).startsWith('http')
                   ? (selected.images?.[0] || selected.image)
@@ -73,158 +70,132 @@ const MapHotelPanel = ({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
-                <FiMapPin style={{ width: 48, height: 48, color: 'rgba(0,0,0,0.1)' }} />
+              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <FiImage className="w-8 h-8 opacity-50" />
               </div>
             )}
-            
-            {/* Gradient Overlays for better text visibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/90 via-[#0f172a]/20 to-[#0f172a]/40" />
+            {/* Soft gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-            {/* Float Close Button */}
+            {/* Close button inside image */}
             <button
               onClick={closePanel}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'white',
-              }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
             >
-              <FiX style={{ width: 16, height: 16 }} />
+              <FiX className="w-5 h-5" />
             </button>
 
-            {/* Overlaid Title & Category */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-1.5">
-              <span
-                className="self-start px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-lg"
-                style={{ background: CATEGORY_COLORS[selected.category] || '#6366f1' }}
-              >
+            {/* Image content overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+              <div className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white uppercase tracking-wide mb-1">
                 {CATEGORY_LABELS[selected.category] || selected.category}
-              </span>
-              <h2 className="text-2xl font-black text-white leading-tight drop-shadow-md line-clamp-2">
+              </div>
+              <h2 className="text-[20px] font-bold leading-tight mb-1 text-shadow-sm">
                 {selected.name}
               </h2>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <FiStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span className="text-white text-sm font-bold">{selected.rating ? selected.rating.toFixed(1) : 'Baho yo\'q'}</span>
-                </span>
-                {selected.reviewsCount > 0 && (
-                  <span className="text-white/80 text-xs font-medium">({selected.reviewsCount} sharh)</span>
-                )}
+              <div className="flex items-center gap-3 text-sm text-slate-200">
+                <div className="flex items-center gap-1 bg-black/30 px-1.5 py-0.5 rounded">
+                  <FiStar className="text-yellow-400 fill-yellow-400" />
+                  <span className="font-semibold">{selected.rating ? selected.rating.toFixed(1) : '4.5'}</span>
+                  <span className="text-slate-300 text-xs">({selected.reviewsCount || 0} sharh)</span>
+                </div>
                 {selected.city && (
-                  <>
-                    <span className="w-1 h-1 rounded-full bg-white/50" />
-                    <span className="text-white/90 text-sm font-semibold">{selected.city}</span>
-                  </>
+                  <div className="flex items-center gap-1">
+                    <FiMapPin />
+                    <span className="truncate">{selected.city}</span>
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Details Area ── */}
-          <div className="p-5 flex flex-col gap-4">
+          <div className="p-4 flex flex-col gap-4">
             
-            {/* Price Row (If available) */}
-            {price && (
-              <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background: 'var(--bg-main)', border: '1px solid var(--border)' }}>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">Boshlang'ich narx</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">{fmtPrice(price)}</span>
-                    <span className="text-xs font-bold text-gray-500">UZS</span>
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                  <FiMapPin className="w-5 h-5" />
-                </div>
-              </div>
-            )}
-
-            {/* Description Area */}
-            {(selected.descriptionShort || selected.description) && (
-              <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                {selected.descriptionShort || selected.description}
-              </p>
-            )}
-
-            {/* Active Route Context Box */}
-            {activeHotel?._id === selected._id && routeInfo && !isRouting && (
-              <div className="flex bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-4 gap-4 box-border border-l-4 border-indigo-500">
-                <div className="flex-1 flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-0.5">Masofa</span>
-                  <span className="text-lg font-black text-indigo-700 dark:text-indigo-300">{fmtDist(routeInfo.distance)}</span>
-                </div>
-                <div className="w-px bg-indigo-200 dark:bg-indigo-800" />
-                <div className="flex-1 flex flex-col justify-center">
-                  <span className="text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-0.5">Ketish vaqti</span>
-                  <span className="text-lg font-black text-teal-700 dark:text-teal-300">{fmtTime(routeInfo.duration)}</span>
+            {/* Price Block */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Boshlang'ich narx</span>
+                <div className="flex items-baseline gap-1">
+                  {getMinPrice(selected) ? (
+                    <>
+                      <span className="text-[22px] font-bold text-slate-900 dark:text-white">{fmtPrice(getMinPrice(selected))}</span>
+                      <span className="text-[13px] font-semibold text-slate-500">UZS</span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-medium text-slate-500">Narx belgilanmagan</span>
+                  )}
                 </div>
               </div>
-            )}
-
-            {/* Buttons Rack */}
-            <div className="grid grid-cols-2 gap-3 mt-2">
-              <button
-                onClick={() => navigate(`/hotel/${selected._id}`)}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-[1rem] font-bold text-sm transition-all active:scale-[0.98]"
-                style={{
-                  background: 'var(--bg-main)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-main)',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                Batafsil <FiChevronRight className="w-4 h-4 opacity-70" />
-              </button>
-
-              <button
-                onClick={() => {
-                  if (activeHotel?._id === selected._id && userPos) clearGuidance();
-                  else startGuidance(selected);
-                }}
-                disabled={isRouting}
-                className="relative flex items-center justify-center gap-2 py-3.5 rounded-[1rem] font-black text-sm text-white overflow-hidden transition-all active:scale-[0.98] disabled:opacity-75 disabled:scale-100 shadow-lg"
-                style={{
-                  background: activeHotel?._id === selected._id && userPos 
-                    ? '#ef4444' // Red if closing route
-                    : 'var(--gradient-main)', // Primary if navigating
-                }}
-              >
-                {/* Shine effect overlay */}
-                <div className="absolute inset-0 bg-white/20" style={{ clipPath: 'polygon(0 0, 30% 0, 50% 100%, 20% 100%)', opacity: 0.1 }} />
-                
-                {isRouting ? (
-                  <><FiLoader className="w-4 h-4 animate-spin" /> Hisob...</>
-                ) : activeHotel?._id === selected._id && userPos ? (
-                  <><FiX className="w-4 h-4" /> Yopish</>
-                ) : (
-                  <><FiNavigation className="w-4 h-4" /> Yo'l</>
-                )}
-              </button>
+              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <FiMapPin className="w-5 h-5" />
+              </div>
             </div>
 
-            {/* Open in external Maps (If route active) */}
-            {activeHotel?._id === selected._id && userPos && (
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
+              {selected.description || 'Bu maskan dam olish va sayohat qilish uchun ajoyib tanlov. Barcha qulayliklarga ega zamonaviy xonalar va yuqori darajadagi xizmat kafolatlanadi.'}
+            </p>
+
+            {/* Routing Info Block */}
+            {activeHotel?._id === selected._id && (routeInfo || isRouting) && (
+              <div className="flex p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 mt-2">
+                {isRouting ? (
+                  <div className="w-full flex justify-center items-center gap-2 py-2 text-blue-600 dark:text-blue-400">
+                    <FiLoader className="w-5 h-5 animate-spin" />
+                    <span className="text-sm font-semibold">Hisoblanmoqda...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1 flex flex-col justify-center px-2">
+                      <span className="text-[11px] font-semibold text-blue-500 uppercase tracking-wide mb-1">Masofa</span>
+                      <span className="text-[18px] font-bold text-slate-800 dark:text-slate-200">{fmtDist(routeInfo.distance)}</span>
+                    </div>
+                    <div className="w-px bg-blue-200 dark:bg-blue-800" />
+                    <div className="flex-1 flex flex-col justify-center px-4">
+                      <span className="text-[11px] font-semibold text-blue-500 uppercase tracking-wide mb-1">Vaqt</span>
+                      <span className="text-[18px] font-bold text-slate-800 dark:text-slate-200">{fmtTime(routeInfo.duration)}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => navigate(`/hotel/${selected._id}`)}
+                className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+              >
+                Batafsil <FiChevronRight />
+              </button>
+              
+              {activeHotel?._id === selected._id ? (
+                <button
+                  onClick={clearGuidance}
+                  className="flex-1 py-3 rounded-xl bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold flex items-center justify-center gap-2 transition-colors"
+                >
+                  <FiX /> Yopish
+                </button>
+              ) : (
+                <button
+                  onClick={() => startGuidance(selected)}
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                >
+                  <FiNavigation /> Yo'l ko'rsatish
+                </button>
+              )}
+            </div>
+
+            {activeHotel?._id === selected._id && !isRouting && routeInfo && (
               <a
                 href={googleUrl(selected, profile)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 py-3.5 rounded-[1rem] font-bold text-sm transition-all active:scale-[0.98] mt-1"
-                style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  color: '#0f172a',
-                  textDecoration: 'none',
-                }}
+                className="w-full py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-center gap-2 transition-colors mt-1"
               >
-                <FiExternalLink className="w-4 h-4 text-emerald-600" /> Google Maps orqali yurish
+                <FiExternalLink className="text-emerald-500" /> Google Maps orqali yurish
               </a>
             )}
-            
           </div>
         </div>
       </div>
