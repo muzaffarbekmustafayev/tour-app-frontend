@@ -76,7 +76,7 @@ const Login = () => {
               Xush kelibsiz!
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
-              Bronlar va sevimlilarni boshqarish uchun kiring.
+              Sevimlilar va profilni boshqarish uchun kiring.
             </p>
           </div>
 

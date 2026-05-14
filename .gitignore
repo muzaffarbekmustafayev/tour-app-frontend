@@ -1,5 +1,37 @@
-# Logs
-logs
+# ╔══════════════════════════════════════════════════════════════╗
+# ║            NAVAITOUR FRONTEND — .gitignore                  ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+
+# ── Build chiqish ─────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+*.local
+
+# ── Muhit o'zgaruvchilari (MAXFIY) ───────────────────────────
+# ⚠️  Bu fayllarni HECH QACHON commit qilmang!
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.*.local
+# ✅ .env.example COMMIT qilinadi — namuna sifatida
+
+# ── Vite cache va artifacts ──────────────────────────────────
+.vite/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ── Loglar ────────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +39,48 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# ── Muharrir / IDE ───────────────────────────────────────────
 .vscode/*
+!.vscode/settings.json
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/launch.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*~
+
+# ── Operatsion tizim ──────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── Test va coverage ──────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ── TypeScript ────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ── ESLint cache ──────────────────────────────────────────────
+.eslintcache
+
+# ── Vaqtinchalik fayllar ──────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+
+# ── Storybook ─────────────────────────────────────────────────
+storybook-static/

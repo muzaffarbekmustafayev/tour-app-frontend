@@ -30,7 +30,11 @@ export const emptyHotelTemplate = {
   city: '', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
-  amenities: [], images: [''], videoTour: '',
+  amenities: [],
+  images: [''],
+  videoTour: { url: '', captioned: false, durationSec: '' },
+  panoramas: [],
+  atmosphere: { mood: '', soundscape: '', bestTimeOfDay: '', localTip: '' },
   nearbyPlaces: [], security: [], owner: '',
   accessibility: {},
   location: { lat: '', lng: '' },
@@ -166,6 +170,47 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <label className={LabelClass}>Tavsif (Description) *</label>
                 <textarea required rows={5} value={form.description} onChange={e => handleFormChange('description', e.target.value)} className={`${InputClass} resize-none`} placeholder="Mehmonxona haqida batafsil ma'lumot..." />
               </div>
+              {/* ── Atmosfera ── */}
+              <div className="pt-2 pb-1">
+                <p className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                  🌿 Joy atmosferasi <span className="font-medium text-slate-400 normal-case tracking-normal">(foydalanuvchi bormay turib his etsin)</span>
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={LabelClass}>Umumiy kayfiyat</label>
+                    <input type="text"
+                      value={form.atmosphere?.mood || ''}
+                      onChange={e => setForm(p => ({ ...p, atmosphere: { ...p.atmosphere, mood: e.target.value } }))}
+                      className={InputClass}
+                      placeholder="Masalan: Tinch va sakin, tog' havosi" />
+                  </div>
+                  <div>
+                    <label className={LabelClass}>Eng yaxshi vaqt</label>
+                    <input type="text"
+                      value={form.atmosphere?.bestTimeOfDay || ''}
+                      onChange={e => setForm(p => ({ ...p, atmosphere: { ...p.atmosphere, bestTimeOfDay: e.target.value } }))}
+                      className={InputClass}
+                      placeholder="Masalan: Kechqurun 18-20 — quyosh botishi paytida" />
+                  </div>
+                  <div>
+                    <label className={LabelClass}>Ovoz manzarasi</label>
+                    <textarea rows={2}
+                      value={form.atmosphere?.soundscape || ''}
+                      onChange={e => setForm(p => ({ ...p, atmosphere: { ...p.atmosphere, soundscape: e.target.value } }))}
+                      className={`${InputClass} resize-none`}
+                      placeholder="Masalan: Tong pallasida qushlar sayrashi, yaqinda daryo shitirlashi..." />
+                  </div>
+                  <div>
+                    <label className={LabelClass}>Mahalliy maslahat</label>
+                    <textarea rows={2}
+                      value={form.atmosphere?.localTip || ''}
+                      onChange={e => setForm(p => ({ ...p, atmosphere: { ...p.atmosphere, localTip: e.target.value } }))}
+                      className={`${InputClass} resize-none`}
+                      placeholder="Masalan: Ertalab 7da yaqin tandirdan issiq non hidi tarqaladi..." />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={LabelClass}>Kategoriya</label>
@@ -324,33 +369,34 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
         {/* TAB 5: GALEREYA */}
         {activeTab === 'galereya' && (
-          <div className={CardClass}>
-            <div className="space-y-4">
-              {form.images.map((img, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row items-center gap-3 relative p-5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-2xl w-full animate-fade-in group">
-                  <div className="w-full flex-1 relative flex items-center">
-                    <input type="text" value={img} onChange={e => { const i = [...form.images]; i[idx] = e.target.value; setForm(p => ({ ...p, images: i })); }}
-                           className={InputClass} placeholder="https:// example... rasm silkasi" />
-                  </div>
-                  <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                    <button type="button" onClick={() => fileInputRefs.current[idx]?.click()} disabled={uploadingIdx === idx} className="flex-1 sm:flex-none px-6 py-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800/30 transition-all flex items-center justify-center min-w-[140px] shadow-sm">
-                       {uploadingIdx === idx ? <FiRotateCw className="animate-spin w-4 h-4 mr-2" /> : <FiFile className="w-4 h-4 mr-2" />}
-                       {uploadingIdx === idx ? 'Yuklanmoqda...' : 'Rasm Yuklash'}
-                    </button>
-                    {form.images.length > 1 && (
-                      <button type="button" onClick={() => setForm(p => ({ ...p, images: p.images.filter((_, i) => i !== idx) }))} className="px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-rose-500 hover:border-rose-500 hover:text-white dark:hover:bg-rose-600 transition-all shadow-sm">
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <input type="file" hidden ref={el => fileInputRefs.current[idx] = el} onChange={e => handleImageUpload(idx, e.target.files[0])} accept="image/*" />
-                </div>
-              ))}
-              <div className="pt-2">
-                <button type="button" onClick={() => setForm(p => ({ ...p, images: [...p.images, ''] }))} className="w-full py-5 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl text-[13px] font-bold text-slate-500 hover:text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/20 transition-all flex items-center justify-center gap-2">
-                  <FiPlus className="w-4 h-4" /> Yana rasm qo'shish
-                </button>
+          <div className="space-y-6">
+
+            {/* ── Rasmlar ── */}
+            <div className={CardClass}>
+              
+              {/* Rasm yuklash bo'limi qisqartirilgan */}
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  Rasm URL manzillari (har satriga bitta)
+                </label>
+                <textarea
+                  className={InputClass + " h-24 font-mono text-xs"}
+                  placeholder="https://example.com/image1.jpg"
+                  value={(form.images || []).join('\n')}
+                  onChange={e => setForm(f => ({ ...f, images: e.target.value.split('\n').filter(Boolean) }))}
+                />
               </div>
+            </div>
+
+            {/* Submit */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold px-6 py-2.5 rounded-xl transition-all text-sm"
+              >
+                {loading ? 'Saqlanmoqda...' : isEdit ? 'Saqlash' : "Qo'shish"}
+              </button>
             </div>
           </div>
         )}

@@ -59,7 +59,7 @@ const FILTER_GROUPS = [
   {
     id: 'digital', label: 'Raqamli qulaylik', icon: <MdWifi className="w-4 h-4" />,
     options: [
-      { key: 'offlineDataSupport', label: "Oflayn bron ko'rish (PWA)", param: 'offlineDataSupport' },
+      { key: 'offlineDataSupport', label: "Oflayn rejim (PWA)",         param: 'offlineDataSupport' },
       { key: 'lowDataMode',        label: 'Past internet rejimi',       param: 'lowDataMode' },
     ],
   },

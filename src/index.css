@@ -550,3 +550,40 @@ select,
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
+
+/* ── Hotel Gallery Swiper ─────────────────────────────────── */
+.gallery-swiper-main {
+  height: 280px;
+}
+
+@media (min-width: 640px) {
+  .gallery-swiper-main {
+    height: 420px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gallery-swiper-main {
+    height: 480px;
+  }
+}
+
+/* Swiper nav buttons */
+.gallery-prev,
+.gallery-next {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+}
+
+/* Thumb swiper */
+.thumb-swiper .swiper-slide {
+  width: 72px !important;
+  height: 52px !important;
+  opacity: 1 !important;
+}
+
+.thumb-swiper {
+  padding: 4px 0 !important;
+}

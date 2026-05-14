@@ -4,6 +4,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
 import Loader from './components/Loader';
+import { APP_NAME } from './config/app';
 
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
@@ -20,7 +21,7 @@ const AppContent = () => {
   const { loading } = useContext(AuthContext);
 
   if (loading) {
-    return <Loader fullScreen message="NavaiTour tizimi yuklanmoqda..." />;
+    return <Loader fullScreen message={`${APP_NAME} tizimi yuklanmoqda...`} />;
   }
 
   return (

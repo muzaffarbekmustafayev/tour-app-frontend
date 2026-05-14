@@ -44,7 +44,10 @@ const emptyHotel = {
   city: '', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
-  amenities: [], images: [''], videoTour: '',
+  amenities: [], images: [''],
+  videoTour: { url: '', captioned: false, durationSec: '' },
+  panoramas: [],
+  atmosphere: { mood: '', soundscape: '', bestTimeOfDay: '', localTip: '' },
   nearbyPlaces: [], security: [],
   accessibility: {},
   location: { lat: '', lng: '' },
@@ -581,7 +584,7 @@ const OwnerDashboard = () => {
                   </div>
 
                 </div>
-              ))}
+          ))}
             </div>
           </div>
 
@@ -645,19 +648,62 @@ const OwnerDashboard = () => {
               <button type="button" onClick={addImageField} className="text-blue-600 text-sm font-bold hover:underline">+ Rasm qo'shish</button>
             </div>
             
+            {/* Video tur */}
             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">360° Video Tour (YouTube URL)</label>
-              <div className="relative">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Video Tur</label>
+              <div className="relative mb-3">
                 <FiRotateCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="text" 
-                  value={form.videoTour || ''} 
-                  onChange={e => handleFormChange('videoTour', e.target.value)}
+                <input
+                  type="text"
+                  value={form.videoTour?.url || ''}
+                  onChange={e => setForm(p => ({ ...p, videoTour: { ...p.videoTour, url: e.target.value } }))}
                   className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://www.youtube.com/watch?v=..." 
+                  placeholder="https://www.youtube.com/watch?v=..."
                 />
               </div>
-              <p className="mt-2 text-[10px] text-gray-400 font-medium">YouTube 360° video havolasini kiriting. Bu mijozlarga mehmonxonani 360° formatda ko'rish imkonini beradi.</p>
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 cursor-pointer">
+                <input type="checkbox"
+                  checked={!!form.videoTour?.captioned}
+                  onChange={e => setForm(p => ({ ...p, videoTour: { ...p.videoTour, captioned: e.target.checked } }))}
+                  className="w-4 h-4 rounded text-blue-600"
+                />
+                Subtitr (CC) mavjud
+              </label>
+            </div>
+
+            {/* 360° Panoramalar */}
+            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">360° Panorama rasmlari</label>
+              <div className="space-y-3">
+                {(form.panoramas || []).map((pano, idx) => (
+                  <div key={idx} className="p-4 bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800/30 rounded-xl space-y-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">#{idx+1} Panorama</span>
+                      <button type="button" onClick={() => setForm(p => ({ ...p, panoramas: p.panoramas.filter((_, i) => i !== idx) }))}
+                        className="text-gray-400 hover:text-rose-500 transition-colors">✕</button>
+                    </div>
+                    <input type="text" value={pano.url || ''}
+                      onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],url:e.target.value}; return {...p,panoramas:arr}; })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                      placeholder="https://... 360° rasm URL" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" value={pano.caption || ''}
+                        onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],caption:e.target.value}; return {...p,panoramas:arr}; })}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                        placeholder="Sarlavha" />
+                      <input type="text" value={pano.room || ''}
+                        onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],room:e.target.value}; return {...p,panoramas:arr}; })}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                        placeholder="Xona nomi" />
+                    </div>
+                  </div>
+                ))}
+                <button type="button"
+                  onClick={() => setForm(p => ({ ...p, panoramas: [...(p.panoramas||[]), { url:'', caption:'', room:'' }] }))}
+                  className="w-full py-3 border-2 border-dashed border-violet-300 dark:border-violet-700 rounded-xl text-xs font-bold text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all flex items-center justify-center gap-2">
+                  + 360° panorama qo'shish
+                </button>
+              </div>
             </div>
           </div>
 
@@ -757,7 +803,7 @@ const OwnerDashboard = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
               Hamkor Paneli
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">Mehmonxonalaringizni boshqarish va bronlar</p>
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">Mehmonxonalaringizni boshqarish va tahrirlash</p>
           </div>
         </div>
         <button
@@ -808,45 +854,16 @@ const OwnerDashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${hotel.approved ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50'}`}>
-                    {hotel.approved ? 'Faol' : 'Kutilmoqda'}
+                  <span className={`px-3 py-1.5 text-[10px] font-black rounded-full uppercase tracking-wide border ${
+                    hotel.isActive
+                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                      : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                  }`}>
+                    {hotel.isActive ? 'Faol' : 'Nofaol'}
                   </span>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-center border border-slate-100/50 dark:border-slate-700/50">
-                    <p className="text-lg font-black text-yellow-500 flex items-center justify-center gap-1"><FiStar className="fill-current w-3.5 h-3.5" /> {hotel.rating?.toFixed(1) || '—'}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reyting</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl text-center border border-slate-100/50 dark:border-slate-700/50">
-                    <p className="text-lg font-black text-emerald-600">{hotel.reviewsCount || 0}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sharhlar</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t border-slate-50 dark:border-slate-800">
-                  <button onClick={() => openEditForm(hotel)} className="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm">
-                    <FiEdit2 className="w-3.5 h-3.5" /> Tahrirlash
-                  </button>
-                  <button onClick={() => navigate(`/hotel/${hotel._id}`)} className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">
-                    <FiEye className="w-3.5 h-3.5" /> Ko'rish
-                  </button>
-                  <button onClick={() => handleDeleteHotel(hotel._id)} disabled={actionLoading === hotel._id} className="w-full sm:w-14 py-3 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-100 dark:border-rose-800/50 hover:bg-rose-100 transition-all">
-                    <FiTrash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
           ))}
-          {hotels.length === 0 && (
-            <div className="text-center py-20 glass-panel">
-              <FiHome className="w-16 h-16 text-indigo-300 mx-auto mb-4" />
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Hozircha mehmonxonalar yo'q</h3>
-              <p className="text-gray-500 mb-6">Mijozlar mehmonxonangizni ko'rishlari uchun birinchi mehmonxonangizni qo'shing.</p>
-              <button onClick={openAddForm} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold active:scale-95 transition-transform">
-                + Mehmonxona Qo'shish
-              </button>
-            </div>
-          )}
         </div>
     </div>
   );

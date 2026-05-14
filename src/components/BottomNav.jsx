@@ -1,9 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { APP_NAME } from '../config/app';
 import {
   FiHome, FiSearch, FiHeart, FiUser, FiMap,
-  FiBriefcase, FiBarChart2, FiUsers, FiSettings, FiLogIn, FiLogOut
+  FiBriefcase, FiBarChart2, FiSettings, FiLogIn, FiLogOut
 } from 'react-icons/fi';
 
 const NAV_ITEMS = {
@@ -127,8 +128,9 @@ const BottomNav = () => {
                  style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}>
               <FiMap className="w-6 h-6" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-              Navai<span className="text-indigo-600 dark:text-indigo-400">Tour</span>
+            <span className="text-xl font-black tracking-tight"
+              style={{ background: 'var(--gradient-main)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              {APP_NAME}
             </span>
           </Link>
         </div>
@@ -180,7 +182,7 @@ const BottomNav = () => {
           )}
           
           <div className="pt-2 px-4">
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v1.0.0 · NavaiTour</p>
+             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v1.0.0 · {APP_NAME}</p>
           </div>
         </div>
       </aside>

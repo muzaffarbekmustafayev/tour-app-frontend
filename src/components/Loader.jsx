@@ -1,7 +1,10 @@
 import React from 'react';
 import { FiMap } from 'react-icons/fi';
+import { APP_NAME } from '../config/app';
 
-const Loader = ({ fullScreen = false, message = "NavaiTour Yuklanmoqda..." }) => {
+const Loader = ({ fullScreen = false, message }) => {
+  const defaultMessage = `${APP_NAME} yuklanmoqda...`;
+  message = message ?? defaultMessage;
   const content = (
     <div className="flex flex-col items-center justify-center p-8">
       {/* Premium Loader Animation */}
@@ -46,7 +49,7 @@ const Loader = ({ fullScreen = false, message = "NavaiTour Yuklanmoqda..." }) =>
   }
 
   return (
-    <div className="flex items-center justify-center w-full min-h-[40vh] py-10 animate-fade-in">
+    <div className="flex items-center justify-center min-h-[200px]">
       {content}
     </div>
   );

@@ -3,21 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- SEO -->
-    <title>NavaiTour — Navoiy viloyati mehmonxonalari</title>
-    <meta name="description" content="Navoiy viloyatidagi mehmonxonalarni qidiring va bron qiling. Jismoniy imkoniyatlari cheklangan mehmonlar uchun maxsus filtrlar mavjud." />
-    <meta name="keywords"    content="NavaiTour, Navoiy, mehmonxona, bron, nogironlar uchun, inklyuziv" />
-    <meta name="author"      content="NavaiTour" />
+    <title>%VITE_APP_NAME% — Navoiy viloyati mehmonxonalari</title>
+    <meta name="description" content="%VITE_APP_DESCRIPTION%" />
+    <meta name="keywords"    content="%VITE_APP_NAME%, Navoiy, mehmonxona, bron, nogironlar uchun, inklyuziv" />
+    <meta name="author"      content="%VITE_APP_NAME%" />
 
     <!-- Open Graph -->
     <meta property="og:type"        content="website" />
-    <meta property="og:title"       content="NavaiTour — Navoiy viloyati mehmonxonalari" />
-    <meta property="og:description" content="Hamma uchun qulay mehmonxona qidirish platformasi." />
+    <meta property="og:title"       content="%VITE_APP_NAME% — Navoiy viloyati mehmonxonalari" />
+    <meta property="og:description" content="%VITE_APP_DESCRIPTION%" />
     <meta property="og:locale"      content="uz_UZ" />
 
-    <!-- Web Accessibility: color-scheme, reduced-motion support -->
+    <!-- PWA / Mobile -->
+    <meta name="mobile-web-app-capable"       content="yes" />
+    <meta name="apple-mobile-web-app-capable"  content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title"   content="%VITE_APP_NAME%" />
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1120"  media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
 
     <!-- Tailwind CDN -->
@@ -28,35 +34,26 @@
         theme: {
           extend: {
             colors: {
-              primary: { DEFAULT: '#2563eb', hover: '#1d4ed8' }
+              primary: { DEFAULT: '#4f46e5', hover: '#4338ca' }
             }
           }
         }
       }
-      // Apply theme on initial load
-      if (
-        localStorage.theme === 'dark' ||
-        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      ) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      // Dark mode flicker oldini olish
+      try {
+        const dark = localStorage.getItem('darkMode');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark === 'true' || (dark === null && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch(e) {}
     </script>
   </head>
 
   <body class="bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-
-    <!-- Skip-to-content: first focusable element for screen readers / keyboard users -->
-    <a
-      href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999]
-             bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-xl"
-    >
-      Asosiy kontentga o'tish
-    </a>
-
-    <div id="root" role="application" aria-label="NavaiTour ilovasi"></div>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
+import { APP_NAME } from '../config/app';
 import { FiUser, FiMail, FiLock, FiChevronDown, FiMapPin, FiEye, FiEyeOff, FiAlertTriangle, FiPhone } from 'react-icons/fi';
 
 const Register = () => {
@@ -77,7 +78,7 @@ const Register = () => {
               <FiMapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-2xl font-black mb-1.5" style={{ color: 'var(--text-main)' }}>
-              NavaiTour'ga qo'shiling
+              {APP_NAME}'ga qo'shiling
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
               Eng yaxshi mehmonxonalarni band qilish uchun ro'yxatdan o'ting.
