@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -121,13 +122,20 @@ const fmtTime = s => {
 // ── Xarita ichki qavat ────────────────────────────────────────────────────────
 const MapInner = ({ lat, lng, hasCoords, userPos, routeCoords, fitTarget }) => {
   const map = useMap();
-  useEffect(() => { setTimeout(() => map.invalidateSize(), 150); }, []);
+  const { darkMode } = useContext(AuthContext);
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => {
+      map.invalidateSize({ animate: true });
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
 
   return (
     <>
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url={darkMode ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
       />
 
       {fitTarget.length > 0 && <FitBounds points={fitTarget} />}
@@ -354,7 +362,7 @@ const MapView = ({ hotel, userPos: externalUserPos, onClearGuidance }) => {
   return (
     <>
       {/* ── Inline xarita ── */}
-      <div className="relative overflow-hidden w-full"
+      <div className="relative overflow-hidden w-full animate-fade-in"
         style={{
           height: 'clamp(260px, 35vh, 380px)',
           borderRadius: '2.5rem',

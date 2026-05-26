@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FiHeart, FiStar, FiMapPin, FiArrowRight } from 'react-icons/fi';
@@ -6,11 +6,11 @@ import {
   MdAccessible, MdFamilyRestroom, MdLocalHospital, MdSignLanguage, MdElectricBolt,
 } from 'react-icons/md';
 import { TbWheelchair, TbEar, TbBraille, TbHandStop } from 'react-icons/tb';
+import { calcAccessibilityScore, getScoreStyle } from '../utils/accessibilityScore';
 
 const HotelCard = ({ hotel }) => {
   const { user, favorites, toggleFavorite } = useContext(AuthContext);
   const isFav = favorites?.includes(hotel._id);
-  const [tapped, setTapped] = useState(false);
 
   const name = hotel.name || "Nomi yo'q";
 
@@ -59,13 +59,21 @@ const HotelCard = ({ hotel }) => {
   const price = hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0;
   const formattedPrice = price > 0 ? new Intl.NumberFormat('uz-UZ').format(price) : null;
 
+  const accScore = calcAccessibilityScore(hotel);
+  const scoreStyle = getScoreStyle(accScore);
+  const srText = hotel.digitalInclusion?.screenReaderDescription || hotel.description || '';
+
   return (
     <article
       className="premium-card group relative flex flex-col"
       aria-label={`${name} mehmonxonasi`}
+      aria-describedby={srText ? `sr-${hotel._id}` : undefined}
     >
+      {srText && (
+        <p id={`sr-${hotel._id}`} className="sr-only">{srText}</p>
+      )}
       {/* ── Image ── */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: '16/10', minHeight: 180 }}>
+      <div className="relative overflow-hidden" style={{ aspectRatio: '4/3', minHeight: 0 }}>
         {/* Skeleton */}
         <div className="absolute inset-0 shimmer" aria-hidden="true" />
         <img
@@ -85,6 +93,16 @@ const HotelCard = ({ hotel }) => {
               style={{ background: 'rgba(79,70,229,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
               <MdAccessible className="w-3 h-3" />
               {accessCount} qulaylik
+            </div>
+          )}
+          {/* Reja 6: Accessibility skori badge */}
+          {accScore > 0 && (
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
+              style={{ background: scoreStyle.bg, color: scoreStyle.color, backdropFilter: 'blur(8px)', border: `1px solid ${scoreStyle.color}40` }}
+              title={`Inklyuzivlik darajasi: ${scoreStyle.label}`}
+            >
+              ♿ {accScore}%
             </div>
           )}
         </div>
@@ -131,7 +149,7 @@ const HotelCard = ({ hotel }) => {
       </div>
 
       {/* ── Content ── */}
-      <div className="flex flex-col flex-1 p-4">
+      <div className="flex flex-col flex-1 p-3.5 sm:p-4">
         {/* Name + location */}
         <div className="mb-3">
           <h3 className="font-extrabold text-base line-clamp-1 mb-1"
@@ -143,6 +161,14 @@ const HotelCard = ({ hotel }) => {
             <span className="truncate">{[hotel.city, hotel.country].filter(Boolean).join(', ')}</span>
           </div>
         </div>
+
+        {/* Reja 3.1: Qisqa hissiy tavsif */}
+        {hotel.descriptionShort && (
+          <p className="text-xs line-clamp-2 mb-3 leading-relaxed"
+            style={{ color: 'var(--text-muted)' }}>
+            {hotel.descriptionShort}
+          </p>
+        )}
 
         {/* Accessibility icons */}
         {accessBadges.length > 0 && (
@@ -188,12 +214,12 @@ const HotelCard = ({ hotel }) => {
           <Link
             to={`/hotel/${hotel._id}`}
             aria-label={`${name} mehmonxonasini batafsil ko'rish`}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 hover:brightness-110"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 active:opacity-90 hover:brightness-110 press-effect"
             style={{
               background: 'var(--gradient-main)',
               boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)',
               textDecoration: 'none',
-              minHeight: 'unset',
+              minHeight: 46,
             }}
           >
             Batafsil ko'rish

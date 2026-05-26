@@ -3,8 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FiStar, FiAward } from 'react-icons/fi';
 
+const SkeletonCard = () => (
+  <div className="animate-pulse bg-white/10 rounded-2xl p-4 border border-white/20">
+    <div className="flex justify-between items-start mb-2">
+      <div className="h-4 w-16 bg-white/20 rounded-full" />
+      <div className="h-4 w-10 bg-white/20 rounded-full" />
+    </div>
+    <div className="w-full h-20 bg-white/15 rounded-xl mb-2" />
+    <div className="h-4 w-3/4 bg-white/20 rounded-full mb-1" />
+    <div className="h-3 w-1/2 bg-white/15 rounded-full" />
+  </div>
+);
+
 const AIRecommendations = () => {
   const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,10 +26,11 @@ const AIRecommendations = () => {
         const data = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
         setHotels(data.slice(0, 3));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  if (hotels.length === 0) return null;
+  if (!loading && hotels.length === 0) return null;
 
   return (
     <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
@@ -29,7 +43,9 @@ const AIRecommendations = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {hotels.map((hotel, i) => (
+          {loading ? (
+            [1, 2, 3].map(i => <SkeletonCard key={i} />)
+          ) : hotels.map((hotel, i) => (
             <button
               key={hotel._id}
               onClick={() => navigate(`/hotel/${hotel._id}`)}

@@ -6,9 +6,10 @@ import {
   FiMap, FiDollarSign, FiUsers, FiImage,
   FiClock, FiFile, FiBell, FiCheck, FiCommand,
   FiLock, FiPlus, FiHome, FiStar, FiEdit2, FiEye, FiTrash2,
-  FiRotateCw
+  FiRotateCw, FiAlertTriangle, FiX, FiMessageCircle, FiSend, FiUser
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
+import FullHotelForm from '../components/FullHotelForm';
 
 
 const amenitiesList = ['Free WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Bar', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception'];
@@ -41,7 +42,7 @@ const securityList = [
 
 const emptyHotel = {
   name: '', description: '', shortDescription: '',
-  city: '', country: 'Uzbekistan', address: '',
+  city: 'Navoiy', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [], images: [''],
@@ -68,6 +69,115 @@ const OwnerDashboard = () => {
   const [gpsLoading, setGpsLoading] = useState(false);
   const fileInputRefs = useRef({});
   const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState('hotels');
+  const [conversations, setConversations] = useState([]);
+  const [activeConv, setActiveConv] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [inboxLoading, setInboxLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // Poll conversations & selected chat
+  useEffect(() => {
+    let interval;
+
+    const pollInboxData = async () => {
+      try {
+        const res = await api.get('/chat/owner/inbox');
+        setConversations(res.data);
+
+        if (activeConv) {
+          // Find if there is updated version of activeConv to keep active state in sync
+          const updatedConv = res.data.find(c => c.id === activeConv.id);
+          if (updatedConv && updatedConv.unreadCount > 0) {
+            // If there are new unread messages, fetching history will mark them as read
+            const chatRes = await api.get(`/chat/history/${activeConv.hotel._id}/${activeConv.customer._id}`);
+            setChatMessages(chatRes.data);
+          } else {
+            const chatRes = await api.get(`/chat/history/${activeConv.hotel._id}/${activeConv.customer._id}`);
+            setChatMessages(chatRes.data);
+          }
+        }
+      } catch (err) {
+        console.error('Error polling inbox:', err);
+      }
+    };
+
+    if (activeTab === 'messages') {
+      pollInboxData();
+      interval = setInterval(pollInboxData, 3000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTab, activeConv]);
+
+  // Scroll active chat to bottom
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
+
+  const selectConversation = async (conv) => {
+    setActiveConv(conv);
+    setInboxLoading(true);
+    try {
+      const chatRes = await api.get(`/chat/history/${conv.hotel._id}/${conv.customer._id}`);
+      setChatMessages(chatRes.data);
+      
+      // Update unread count immediately in local state
+      setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c));
+    } catch (err) {
+      console.error('Failed to load chat history:', err);
+    } finally {
+      setInboxLoading(false);
+    }
+  };
+
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !activeConv) return;
+
+    const messageText = chatInput.trim();
+    setChatInput('');
+
+    // Optimistic UI update
+    const tempId = Date.now().toString();
+    const optimisticMessage = {
+      _id: tempId,
+      sender: { _id: 'owner' },
+      receiver: { _id: activeConv.customer._id },
+      hotel: activeConv.hotel._id,
+      content: messageText,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+
+    setChatMessages(prev => [...prev, optimisticMessage]);
+
+    try {
+      const res = await api.post('/chat/send', {
+        hotelId: activeConv.hotel._id,
+        receiverId: activeConv.customer._id,
+        content: messageText
+      });
+      
+      // Update with exact data from backend
+      setChatMessages(prev => prev.map(m => m._id === tempId ? res.data : m));
+      
+      // Refresh inbox list to update last message preview immediately
+      const resInbox = await api.get('/chat/owner/inbox');
+      setConversations(resInbox.data);
+    } catch (err) {
+      console.error('Failed to send reply:', err);
+      setChatMessages(prev => prev.filter(m => m._id !== tempId));
+    }
+  };
+
+  const totalUnreadMessages = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
 
   const handleImageUpload = async (idx, file) => {
     if (!file) return;
@@ -388,397 +498,8 @@ const OwnerDashboard = () => {
           </div>
         )}
 
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiEdit3 className="text-blue-500" /> Basic Information</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Hotel Name *</label>
-                <input type="text" required value={form.name} onChange={e => handleFormChange('name', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder=" Navai City" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Description *</label>
-                <textarea required rows={4} value={form.description} onChange={e => handleFormChange('description', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-medium outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Describe your hotel..." />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Kategoriya</label>
-                  <select value={form.category} onChange={e => handleFormChange('category', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500">
-                    {['hotel', 'resort', 'hostel', 'boutique', 'motel', 'guesthouse'].map(c => (
-                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Xonalar soni *</label>
-                  <input type="number" required value={form.roomsAvailable} onChange={e => handleFormChange('roomsAvailable', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 10" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bir kecha uchun narx (UZS) *</label>
-                <input type="number" required value={form.pricePerNight} onChange={e => handleFormChange('pricePerNight', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 500000" />
-              </div>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiMapPin className="text-red-500" /> Location</h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">City *</label>
-                  <input type="text" required value={form.city} onChange={e => handleFormChange('city', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Navoiy" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Country</label>
-                  <input type="text" value="Uzbekistan" readOnly
-                    className="w-full px-4 py-3 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none opacity-70 cursor-not-allowed" />
-                </div>
-
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Address</label>
-                <input type="text" value={form.address} onChange={e => handleFormChange('address', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="" />
-              </div>
-              {/* GPS Koordinatalar */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">GPS Koordinatalar *</label>
-                  <div className="flex gap-2">
-                    <a
-                      href="https://www.google.com/maps"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 text-[11px] font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 transition"
-                    >
-                      <FiMap className="w-3.5 h-3.5" /> Xaritadan qidirish
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => handleGetGPS(true)}
-                      disabled={gpsLoading}
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${
-                        gpsLoading
-                          ? 'bg-gray-100 text-gray-400'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      }`}
-                    >
-                      {gpsLoading ? (
-                        <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : <FiNavigation className="w-3.5 h-3.5" />}
-                      {gpsLoading ? 'Qidirilmoqda...' : 'GPSni aniqlash'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Latitude (Kenglik)</label>
-                    <input
-                      type="number" step="any"
-                      value={form.location?.lat || ''}
-                      onChange={e => setForm(prev => ({ ...prev, location: { ...prev.location, lat: e.target.value } }))}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      placeholder="Masalan: 40.1023"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Longitude (Uzunlik)</label>
-                    <input
-                      type="number" step="any"
-                      value={form.location?.lng || ''}
-                      onChange={e => setForm(prev => ({ ...prev, location: { ...prev.location, lng: e.target.value } }))}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      placeholder="Masalan: 65.3733"
-                    />
-                  </div>
-                </div>
-                
-                <p className="mt-3 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400 bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100/50 dark:border-blue-800/30">
-                  <span className="font-bold text-blue-600 dark:text-blue-400 underline mr-1">Maslahat:</span> 
-                  Agar GPS ishlamasa, <strong>"Xaritadan qidirish"</strong> tugmasini bosing, Google Maps da joyingizni topib, ustiga bosing va pastda chiqqan koordinatalarni bu yerga kiriting.
-                </p>
-
-                {form.location?.lat && form.location?.lng && (
-                  <div className="mt-3 flex justify-end">
-                    <a
-                      href={`https://www.google.com/maps?q=${form.location.lat},${form.location.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:underline px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg"
-                    >
-                      <FiEye className="w-3.5 h-3.5" /> Koordinatalarni xaritada tekshirish
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-
-
-
-
-          {/* Room Types */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><FiHome className="text-indigo-500" /> Xona turlari</h2>
-              <button type="button" onClick={addRoomType} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-100 dark:border-indigo-800/30 hover:bg-indigo-100 transition">
-                <FiPlus className="w-3.5 h-3.5" /> Xona turi qo'shish
-              </button>
-            </div>
-            <div className="space-y-4">
-              {form.rooms.map((room, idx) => (
-                <div key={idx} className="p-4 bg-gray-50/50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 relative group">
-                  {form.rooms.length > 1 && (
-                    <button type="button" onClick={() => removeRoomType(idx)} className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Xona Kategoriyasi</label>
-                      <select value={room.category || 'Standard'} onChange={e => handleRoomFieldChange(idx, 'category', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                        {['Standard', 'Comfort', 'Deluxe', 'Suite', 'Luxury / VIP'].map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Sig'imi (Kishi)</label>
-                        <select value={room.capacity} onChange={e => handleRoomFieldChange(idx, 'capacity', e.target.value)}
-                          className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                          {[1, 2, 3, 4, 5, 6, 8, 10].map(n => <option key={n} value={n}>{n} kishilik</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Soni (Jami)</label>
-                        <input type="number" min={1} value={room.totalRooms} required onChange={e => handleRoomFieldChange(idx, 'totalRooms', e.target.value)}
-                          className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Bir kecha uchun narxi (UZS)</label>
-                      <input type="number" min={0} value={room.pricePerNight} required onChange={e => handleRoomFieldChange(idx, 'pricePerNight', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 text-green-600" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Xona turi (Bino ko'rinishi)</label>
-                      <select value={room.roomType} onChange={e => handleRoomFieldChange(idx, 'roomType', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                        {['Single Room', 'Double Room', 'Triple Room', 'Quad Room', 'Family Room'].map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                </div>
-          ))}
-            </div>
-          </div>
-
-          {/* Pricing & Time (General) */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiClock className="text-green-500" /> Vaqt va Umumiy ma'lumotlar</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Check-in Time</label>
-                <input type="time" value={form.checkInTime} onChange={e => handleFormChange('checkInTime', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Check-out Time</label>
-                <input type="time" value={form.checkOutTime} onChange={e => handleFormChange('checkOutTime', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-            </div>
-            <div className="mt-4 hidden">
-              {/* Fallback metrics if needed */}
-              <input type="hidden" value={form.basePricePerNight} />
-              <input type="hidden" value={form.roomsAvailable} />
-            </div>
-          </div>
-
-
-          {/* Images */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiImage className="text-purple-500" /> Rasmlar</h2>
-            <div className="space-y-3">
-              {form.images.map((img, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex gap-2">
-                    <input type="text" value={img} onChange={e => handleImageChange(idx, e.target.value)}
-                      className="flex-1 px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="https://... yoki quyidagi tugma orqali yuklang" />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRefs.current[idx]?.click()}
-                      disabled={uploadingIdx === idx}
-                      className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition whitespace-nowrap disabled:opacity-50"
-                    >
-                      {uploadingIdx === idx ? <FiClock className="animate-spin w-4 h-4" /> : <><FiFile className="mr-1" /> Fayl</>}
-                    </button>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      ref={el => fileInputRefs.current[idx] = el}
-                      onChange={e => handleImageUpload(idx, e.target.files[0])}
-                    />
-                    {form.images.length > 1 && (
-                      <button type="button" onClick={() => removeImageField(idx)} className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl hover:bg-red-100 transition">✕</button>
-                    )}
-                  </div>
-                  {img && img.startsWith('http') && (
-                    <img src={img} alt="preview" className="h-20 w-32 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
-                  )}
-                </div>
-              ))}
-              <button type="button" onClick={addImageField} className="text-blue-600 text-sm font-bold hover:underline">+ Rasm qo'shish</button>
-            </div>
-            
-            {/* Video tur */}
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Video Tur</label>
-              <div className="relative mb-3">
-                <FiRotateCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={form.videoTour?.url || ''}
-                  onChange={e => setForm(p => ({ ...p, videoTour: { ...p.videoTour, url: e.target.value } }))}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
-              </div>
-              <label className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 cursor-pointer">
-                <input type="checkbox"
-                  checked={!!form.videoTour?.captioned}
-                  onChange={e => setForm(p => ({ ...p, videoTour: { ...p.videoTour, captioned: e.target.checked } }))}
-                  className="w-4 h-4 rounded text-blue-600"
-                />
-                Subtitr (CC) mavjud
-              </label>
-            </div>
-
-            {/* 360° Panoramalar */}
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">360° Panorama rasmlari</label>
-              <div className="space-y-3">
-                {(form.panoramas || []).map((pano, idx) => (
-                  <div key={idx} className="p-4 bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800/30 rounded-xl space-y-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">#{idx+1} Panorama</span>
-                      <button type="button" onClick={() => setForm(p => ({ ...p, panoramas: p.panoramas.filter((_, i) => i !== idx) }))}
-                        className="text-gray-400 hover:text-rose-500 transition-colors">✕</button>
-                    </div>
-                    <input type="text" value={pano.url || ''}
-                      onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],url:e.target.value}; return {...p,panoramas:arr}; })}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
-                      placeholder="https://... 360° rasm URL" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input type="text" value={pano.caption || ''}
-                        onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],caption:e.target.value}; return {...p,panoramas:arr}; })}
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
-                        placeholder="Sarlavha" />
-                      <input type="text" value={pano.room || ''}
-                        onChange={e => setForm(p => { const arr=[...p.panoramas]; arr[idx]={...arr[idx],room:e.target.value}; return {...p,panoramas:arr}; })}
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-400"
-                        placeholder="Xona nomi" />
-                    </div>
-                  </div>
-                ))}
-                <button type="button"
-                  onClick={() => setForm(p => ({ ...p, panoramas: [...(p.panoramas||[]), { url:'', caption:'', room:'' }] }))}
-                  className="w-full py-3 border-2 border-dashed border-violet-300 dark:border-violet-700 rounded-xl text-xs font-bold text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all flex items-center justify-center gap-2">
-                  + 360° panorama qo'shish
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Amenities */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiBell className="text-yellow-500" /> Amenities</h2>
-            <div className="flex flex-wrap gap-2">
-              {amenitiesList.map(a => (
-                <button key={a} type="button" onClick={() => toggleAmenity(a)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${form.amenities.includes(a)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-400'
-                    }`}>
-                  {form.amenities.includes(a) && <FiCheck className="inline mr-1" />}{a}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Accessibility */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiCommand className="text-blue-500" /> Nogironlar uchun qulayliklar</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {accessibilityList.map(opt => (
-                <label key={opt.key} className="flex items-center cursor-pointer group">
-                  <input type="checkbox" checked={!!form.accessibility[opt.key]} onChange={() => toggleAccessibility(opt.key)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">{opt.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Nearby Places */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiMapPin className="text-red-500" /> Yaqin turistik joylar</h2>
-            <div className="flex flex-wrap gap-2">
-              {nearbyPlacesList.map(p => (
-                <button key={p} type="button" onClick={() => toggleNearbyPlace(p)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${form.nearbyPlaces.includes(p)
-                    ? 'bg-red-600 text-white border-red-600 shadow-md shadow-red-200 dark:shadow-none'
-                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-red-400'
-                    }`}>
-                  {form.nearbyPlaces.includes(p) && <FiCheck className="inline mr-1" />}{p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Security */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2"><FiLock className="text-gray-500" /> Xavfsizlik tizimlari</h2>
-            <div className="flex flex-wrap gap-2">
-              {securityList.map(s => (
-                <button key={s} type="button" onClick={() => toggleSecurity(s)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${form.security.includes(s)
-                    ? 'bg-slate-700 text-white border-slate-700 shadow-md shadow-gray-200 dark:shadow-none'
-                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-400'
-                    }`}>
-                  {form.security.includes(s) && <FiCheck className="inline mr-1" />}{s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={formLoading}
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center ${formLoading ? 'opacity-60' : ''}`}
-          >
-            {formLoading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
-            {formLoading ? 'Saqlanmoqda...' : editingId ? 'Yangilash' : 'Mehmonxona qo\'shish'}
-          </button>
+        <form onSubmit={handleSubmit}>
+          <FullHotelForm form={form} setForm={setForm} loading={formLoading} isEdit={!!editingId} />
         </form>
       </div>
     );
@@ -796,6 +517,7 @@ const OwnerDashboard = () => {
 
   return (
     <div className="pb-28 md:pb-8 pt-6 px-4 max-w-7xl mx-auto min-h-screen">
+      {/* Dashboard Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm gap-4">
         <div className="flex items-center gap-4">
           <BackButton />
@@ -803,7 +525,9 @@ const OwnerDashboard = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
               Hamkor Paneli
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">Mehmonxonalaringizni boshqarish va tahrirlash</p>
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">
+              Mehmonxonalaringizni boshqarish va mijozlar bilan muloqot
+            </p>
           </div>
         </div>
         <button
@@ -815,36 +539,71 @@ const OwnerDashboard = () => {
         </button>
       </div>
 
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-        {[
-          { label: 'Mening Hotellarim', value: hotels.length, color: 'bg-indigo-600', icon: <FiHome className="w-5 h-5" /> },
-          { label: 'O\'rtacha Reyting', value: '4.8', color: 'bg-amber-500', icon: <FiStar className="w-5 h-5" /> },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 ${stat.color} text-white rounded-xl flex items-center justify-center shadow-sm`}>
-                {stat.icon}
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">{stat.label}</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{stat.value}</h3>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Tabs Navigation */}
+      <div className="flex gap-6 border-b border-slate-200 dark:border-slate-800 mb-8 pb-px">
+        <button
+          onClick={() => setActiveTab('hotels')}
+          className={`pb-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'hotels'
+              ? 'border-indigo-600 text-indigo-600 dark:text-white dark:border-white'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <FiHome className="w-4 h-4" />
+          Mehmonxonalar
+        </button>
+        <button
+          onClick={() => setActiveTab('messages')}
+          className={`pb-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 relative ${
+            activeTab === 'messages'
+              ? 'border-indigo-600 text-indigo-600 dark:text-white dark:border-white'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <FiMessageCircle className="w-4 h-4" />
+          Kelgan Xabarlar
+          {totalUnreadMessages > 0 && (
+            <span className="bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
+              {totalUnreadMessages}
+            </span>
+          )}
+        </button>
       </div>
 
-      <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Mening Mehmonxonalarim</h2>
+      {/* ── TAB 1: HOTELS LIST ── */}
+      {activeTab === 'hotels' && (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            {[
+              { label: 'Mening Hotellarim', value: hotels.length, color: 'bg-indigo-600', icon: <FiHome className="w-5 h-5" /> },
+              { label: 'O\'rtacha Reyting', value: '4.8', color: 'bg-amber-500', icon: <FiStar className="w-5 h-5" /> },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 ${stat.color} text-white rounded-xl flex items-center justify-center shadow-sm`}>
+                    {stat.icon}
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">{stat.label}</p>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{stat.value}</h3>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* Hotels List */}
-      <div className="space-y-4">
-          {hotels.map(hotel => (
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Mening Mehmonxonalarim</h2>
+
+          {/* Hotels List Cards */}
+          <div className="space-y-4">
+            {hotels.map(hotel => (
               <div key={hotel._id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors truncate">{hotel.name}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors truncate">
+                      {hotel.name}
+                    </h3>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
                         <FiMapPin className="text-rose-500 w-3.5 h-3.5" /> {hotel.city}
@@ -854,17 +613,264 @@ const OwnerDashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <span className={`px-3 py-1.5 text-[10px] font-black rounded-full uppercase tracking-wide border ${
-                    hotel.isActive
-                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
-                      : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
-                  }`}>
-                    {hotel.isActive ? 'Faol' : 'Nofaol'}
-                  </span>
+                  <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
+                    <span className={`px-3 py-1.5 text-[10px] font-black rounded-full uppercase tracking-wide border ${
+                      hotel.isActive !== false
+                        ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                        : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                    }`}>
+                      {hotel.isActive !== false ? 'Faol' : 'Nofaol'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Modern Action Buttons */}
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    onClick={() => navigate(`/hotel/${hotel._id}`)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-xl transition-all flex items-center gap-2"
+                  >
+                    <FiEye className="w-4 h-4" />
+                    Ko'rish
+                  </button>
+                  <button
+                    onClick={() => openEditForm(hotel)}
+                    className="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-white bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-600 dark:hover:bg-indigo-600 rounded-xl transition-all flex items-center gap-2"
+                  >
+                    <FiEdit2 className="w-4 h-4" />
+                    Tahrirlash
+                  </button>
+                  <button
+                    onClick={() => handleDeleteHotel(hotel._id)}
+                    disabled={actionLoading === hotel._id}
+                    className="px-4 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-white bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-600 dark:hover:bg-rose-600 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                    {actionLoading === hotel._id ? "O'chirilmoqda..." : "O'chirish"}
+                  </button>
                 </div>
               </div>
-          ))}
+            ))}
+            {hotels.length === 0 && (
+              <div className="text-center p-12 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
+                <FiHome className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                  Hozircha mehmonxona qo'shilmagan.
+                </p>
+                <button
+                  onClick={openAddForm}
+                  className="mt-4 px-6 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:scale-102"
+                >
+                  Birinchi mehmonxonani qo'shish
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── TAB 2: INBOX (CHAT CLIENT) ── */}
+      {activeTab === 'messages' && (
+        <div className="flex flex-col md:flex-row h-[600px] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-xl overflow-hidden">
+          
+          {/* Left Panel: Conversations List */}
+          <div className="w-full md:w-[350px] shrink-0 border-r border-slate-200/60 dark:border-slate-800/80 flex flex-col h-1/2 md:h-full bg-slate-50/30 dark:bg-slate-900/20">
+            <div className="p-5 border-b border-slate-200/60 dark:border-slate-800/80 shrink-0">
+              <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <FiMessageCircle className="text-indigo-600 dark:text-indigo-400" />
+                Muloqotlar
+              </h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {conversations.map((conv) => {
+                const isActive = activeConv && activeConv.id === conv.id;
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => selectConversation(conv)}
+                    className={`w-full text-left p-4 rounded-2xl transition-all border flex items-start gap-3 group relative ${
+                      isActive
+                        ? 'bg-indigo-600 text-white border-transparent shadow-lg shadow-indigo-600/10'
+                        : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700/60'
+                    }`}
+                  >
+                    {/* User Avatar Placeholder */}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 uppercase border ${
+                      isActive 
+                        ? 'bg-white/20 border-white/10 text-white' 
+                        : 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/30 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                    }`}>
+                      {conv.customer.name ? conv.customer.name.substring(0, 2) : 'MI'}
+                    </div>
+
+                    {/* Meta info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center gap-1 mb-0.5">
+                        <h4 className="font-bold text-xs truncate">
+                          {conv.customer.name}
+                        </h4>
+                        <span className={`text-[9px] font-medium shrink-0 opacity-70`}>
+                          {new Date(conv.lastMessage.createdAt).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <p className={`text-[10px] font-bold mb-1 truncate ${isActive ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {conv.hotel.name}
+                      </p>
+                      <p className={`text-xs truncate ${isActive ? 'text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {conv.lastMessage.content}
+                      </p>
+                    </div>
+
+                    {/* Unread Badge */}
+                    {conv.unreadCount > 0 && !isActive && (
+                      <span className="absolute right-4 bottom-4 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-pulse shrink-0">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {conversations.length === 0 && (
+                <div className="text-center p-8 text-slate-400 dark:text-slate-600">
+                  <FiMessageCircle className="w-10 h-10 mx-auto opacity-40 mb-3 stroke-[1.5]" />
+                  <p className="text-xs font-semibold">Kelgan xabarlar mavjud emas</p>
+                  <p className="text-[10px] opacity-75 mt-1 max-w-[200px] mx-auto leading-relaxed">
+                    Mijozlar sizning mehmonxonalaringiz sahifasida chat widget orqali yozishganda bu yerda paydo bo'ladi.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel: Active Chat Room */}
+          <div className="flex-1 flex flex-col h-1/2 md:h-full bg-slate-50/40 dark:bg-slate-950/20">
+            {activeConv ? (
+              <>
+                {/* Chat Header */}
+                <div className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between shrink-0 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs uppercase">
+                        {activeConv.customer.name ? activeConv.customer.name.substring(0, 2) : 'MI'}
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800 dark:text-white leading-tight">
+                        {activeConv.customer.name}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">
+                        {activeConv.hotel.name}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Messages Thread */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {inboxLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
+                    </div>
+                  ) : (
+                    chatMessages.map((msg) => {
+                      // Check if owner sent the message
+                      const isOwn = msg.sender._id === 'owner' || msg.sender === 'owner' || (msg.sender && (msg.sender._id || msg.sender) === activeConv.hotel.owner?._id || (msg.sender && (msg.sender._id || msg.sender) === activeConv.hotel.owner));
+                      
+                      return (
+                        <div
+                          key={msg._id}
+                          className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}
+                        >
+                          <div
+                            className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm shadow-sm relative group ${
+                              isOwn
+                                ? 'bg-indigo-600 text-white rounded-tr-none'
+                                : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-tl-none'
+                            }`}
+                          >
+                            <p className="break-words leading-relaxed font-medium">{msg.content}</p>
+                            
+                            {/* Meta row: Time + read checks */}
+                            <div
+                              className={`flex items-center justify-end gap-1 mt-1 text-[9px] select-none opacity-70 ${
+                                isOwn ? 'text-indigo-200' : 'text-slate-400'
+                              }`}
+                            >
+                              <span>
+                                {new Date(msg.createdAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                              {isOwn && (
+                                <span className="inline-flex">
+                                  {msg.isRead ? (
+                                    <span className="flex text-emerald-300 font-bold" title="Mijoz o'qidi">
+                                      <FiCheck className="w-3 h-3" />
+                                      <FiCheck className="w-3 h-3 -ml-1.5" />
+                                    </span>
+                                  ) : (
+                                    <span className="text-indigo-300" title="Yuborildi">
+                                      <FiCheck className="w-3 h-3" />
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Reply Form */}
+                <form
+                  onSubmit={handleSendReply}
+                  className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center gap-3 shrink-0"
+                >
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Mijozga javob yozing..."
+                    className="flex-1 px-4 py-3 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 border-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-medium"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!chatInput.trim()}
+                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 shadow-md shadow-indigo-500/10"
+                    style={{ background: 'var(--gradient-main, linear-gradient(135deg, #4f46e5, #6366f1))' }}
+                  >
+                    <FiSend className="text-base" />
+                  </button>
+                </form>
+              </>
+            ) : (
+              // Empty State for Room
+              <div className="flex flex-col items-center justify-center h-full text-center p-12 text-slate-400 dark:text-slate-600">
+                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center text-slate-300 dark:text-slate-700 mb-4 animate-pulse">
+                  <FiMessageCircle className="text-3xl stroke-[1.5]" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
+                  Suhbatni tanlang
+                </h4>
+                <p className="text-xs opacity-75 mt-1 max-w-[280px] leading-relaxed">
+                  Chap tarafdagi ro'yxatdan mijozni tanlang, u bilan kelgan xabarlarni ko'rish va bevosita javob qaytarish imkoni ochiladi.
+                </p>
+              </div>
+            )}
+          </div>
+
         </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,49 @@
-import React, { useRef, useState } from 'react';
-import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye } from 'react-icons/fi';
+import React, { useRef, useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye, FiX } from 'react-icons/fi';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
+
+// Fix default marker icon url issue in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+const MapEventsHandler = ({ onMapClick }) => {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng);
+    },
+  });
+  return null;
+};
+
+const RecenterMap = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+      map.setView([lat, lng], map.getZoom() || 13);
+    }
+  }, [lat, lng, map]);
+  return null;
+};
+
+const MapResizer = () => {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => {
+      map.invalidateSize({ animate: true });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [map]);
+  return null;
+};
 
 const amenitiesList = ['Free WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Bar', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception'];
 const accessibilityList = [
@@ -27,7 +70,7 @@ const securityList = [
 
 export const emptyHotelTemplate = {
   name: '', description: '', shortDescription: '',
-  city: '', country: 'Uzbekistan', address: '',
+  city: 'Navoiy', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [],
@@ -42,9 +85,11 @@ export const emptyHotelTemplate = {
 };
 
 const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
+  const { darkMode } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('umumiy');
   const [uploadingIdx, setUploadingIdx] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const fileInputRefs = useRef({});
 
   const handleFormChange = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
@@ -100,6 +145,16 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
       () => setGpsLoading(false),
       { enableHighAccuracy: true, timeout: 5000 }
     );
+  };
+
+  const handleMapClick = (latlng) => {
+    setForm(prev => ({
+      ...prev,
+      location: {
+        lat: latlng.lat.toFixed(6),
+        lng: latlng.lng.toFixed(6)
+      }
+    }));
   };
 
   const toggleArray = (field, item) => {
@@ -238,33 +293,155 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={LabelClass}>Shahar *</label>
-                  <input type="text" required value={form.city} onChange={e => handleFormChange('city', e.target.value)} className={InputClass} placeholder="Samarqand" />
+                  <input 
+                    type="text" 
+                    required 
+                    readOnly 
+                    value={form.city || 'Navoiy'} 
+                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm outline-none opacity-75 cursor-not-allowed text-slate-900 dark:text-white" 
+                  />
                 </div>
                 <div>
                   <label className={LabelClass}>Manzil *</label>
                   <input type="text" required value={form.address} onChange={e => handleFormChange('address', e.target.value)} className={InputClass} placeholder="Registon maydoni 1" />
                 </div>
               </div>
+              
               <div className="p-5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-700/50 mt-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 w-40 h-40 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-bl-full pointer-events-none"></div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4 relative z-10">
-                  <div>
-                    <label className={LabelClass + " !mb-1.5"}>Markaziy GPS Koordinatalar *</label>
-                    <p className="text-xs text-slate-500">Xarita markazini belgilaydi</p>
-                  </div>
-                  <button type="button" onClick={handleGetGPS} disabled={gpsLoading} className="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-[0_4px_12px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2 active:scale-95">
+                
+                {/* Visual Status Indicator for Location Selection */}
+                <div className="mb-6 relative z-10">
+                  <label className={LabelClass + " !mb-2"}>GPS Lokatsiya Holati</label>
+                  {form.location?.lat && form.location?.lng ? (
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30 text-emerald-800 dark:text-emerald-400 animate-scale-in">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                        <FiCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black">Lokatsiya muvaffaqiyatli tanlandi!</p>
+                        <p className="text-[11px] font-mono opacity-85 mt-0.5">Kenglik: {form.location.lat} | Uzunlik: {form.location.lng}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 text-amber-800 dark:text-amber-400">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                        <span className="text-sm">⚠️</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black">Lokatsiya hali tanlanmagan!</p>
+                        <p className="text-[11px] opacity-85 mt-0.5">Iltimos, xaritadan joylashuvni tanlang yoki GPS orqali toping.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Control Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 relative z-10 mb-6">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowMapModal(true)} 
+                    className="w-full sm:flex-1 py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-[0_4px_12px_rgba(79,70,229,0.25)] flex items-center justify-center gap-2 active:scale-95"
+                  >
+                    <FiMap className="w-4 h-4" />
+                    Xaritadan tanlash
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    onClick={handleGetGPS} 
+                    disabled={gpsLoading} 
+                    className="w-full sm:flex-1 py-3 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95"
+                  >
                     {gpsLoading ? <FiRotateCw className="animate-spin w-4 h-4" /> : <FiNavigation className="w-4 h-4" />}
                     {gpsLoading ? 'Izlanmoqda...' : 'GPS orqali topish'}
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+
+                {/* Latitude/Longitude Fields for Manual Input */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10 border-t border-slate-200/40 dark:border-slate-800/40 pt-5">
                   <div>
-                    <input type="number" step="any" required placeholder="Kenglik (Latitude)" value={form.location?.lat || ''} onChange={e => setForm(p => ({ ...p, location: { ...p.location, lat: e.target.value } }))} className={InputClass} />
+                    <label className={LabelClass}>Kenglik (Latitude)</label>
+                    <input type="number" step="any" required placeholder="Masalan: 40.084200" value={form.location?.lat || ''} onChange={e => setForm(p => ({ ...p, location: { ...p.location, lat: e.target.value } }))} className={InputClass} />
                   </div>
                   <div>
-                    <input type="number" step="any" required placeholder="Uzunlik (Longitude)" value={form.location?.lng || ''} onChange={e => setForm(p => ({ ...p, location: { ...p.location, lng: e.target.value } }))} className={InputClass} />
+                    <label className={LabelClass}>Uzunlik (Longitude)</label>
+                    <input type="number" step="any" required placeholder="Masalan: 65.379100" value={form.location?.lng || ''} onChange={e => setForm(p => ({ ...p, location: { ...p.location, lng: e.target.value } }))} className={InputClass} />
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* INTERACTIVE LEAFLET MAP MODAL */}
+        {showMapModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-scale-in">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <FiMap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Xaritadan joylashuvni belgilang</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMapModal(false)}
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors text-slate-500"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Map Body */}
+              <div className="flex-1 min-h-[380px] relative bg-slate-100 dark:bg-slate-950">
+                  <MapContainer
+                    center={form.location?.lat && form.location?.lng && !isNaN(Number(form.location.lat)) && !isNaN(Number(form.location.lng)) ? [Number(form.location.lat), Number(form.location.lng)] : [40.0842, 65.3791]}
+                    zoom={13}
+                    style={{ width: '100%', height: '380px' }}
+                    zoomControl={true}
+                  >
+                    <MapResizer />
+                    <TileLayer
+                      attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                      url={darkMode ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
+                    />
+                  <MapEventsHandler onMapClick={handleMapClick} />
+                  {form.location?.lat && form.location?.lng && !isNaN(Number(form.location.lat)) && !isNaN(Number(form.location.lng)) && (
+                    <>
+                      <Marker 
+                        position={[Number(form.location.lat), Number(form.location.lng)]} 
+                        draggable={true}
+                        eventHandlers={{
+                          dragend: (e) => {
+                            const pos = e.target.getLatLng();
+                            setForm(p => ({ ...p, location: { lat: pos.lat.toFixed(6), lng: pos.lng.toFixed(6) } }));
+                          }
+                        }}
+                      />
+                      <RecenterMap lat={Number(form.location.lat)} lng={Number(form.location.lng)} />
+                    </>
+                  )}
+                </MapContainer>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50 dark:bg-slate-900/40 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 text-xs font-mono font-black text-indigo-600 dark:text-indigo-400">
+                    LAT: {form.location?.lat || 'Tanlanmagan'}
+                  </div>
+                  <div className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 text-xs font-mono font-black text-indigo-600 dark:text-indigo-400">
+                    LNG: {form.location?.lng || 'Tanlanmagan'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMapModal(false)}
+                  className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                >
+                  Tanlovni Tasdiqlash
+                </button>
               </div>
             </div>
           </div>

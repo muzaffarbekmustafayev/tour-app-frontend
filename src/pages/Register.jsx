@@ -22,8 +22,8 @@ const Register = () => {
     try {
       await register(formData);
       navigate('/');
-    } catch {
-      setError("Ro'yxatdan o'tishda xatolik. Qayta urinib ko'ring.");
+    } catch (err) {
+      setError(err.message || "Ro'yxatdan o'tishda xatolik. Qayta urinib ko'ring.");
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden lg:pl-32"
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden"
 
       style={{ background: 'var(--gradient-bg)' }}>
       {/* Background blobs */}
@@ -70,7 +70,7 @@ const Register = () => {
       <div className="w-full max-w-sm relative z-10">
         <div className="mb-5"><BackButton /></div>
 
-        <div className="glass-panel p-8" style={{ borderRadius: '2rem' }}>
+        <div className="glass-panel p-6 sm:p-8" style={{ borderRadius: '2rem' }}>
           {/* Brand */}
           <div className="text-center mb-7">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
@@ -81,7 +81,7 @@ const Register = () => {
               {APP_NAME}'ga qo'shiling
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>
-              Eng yaxshi mehmonxonalarni band qilish uchun ro'yxatdan o'ting.
+              Sevimli mehmonxonalarni saqlash va profilingizni boshqarish uchun ro'yxatdan o'ting.
             </p>
           </div>
 

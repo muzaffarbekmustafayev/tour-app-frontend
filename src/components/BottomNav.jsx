@@ -46,16 +46,26 @@ const NavItem = ({ item, active, inactiveColor, hoverBg, mobile = false }) => {
         to={to}
         aria-label={item.label}
         aria-current={active ? 'page' : undefined}
-        className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-[1.25rem] transition-all active:scale-90"
+        className="flex flex-col items-center justify-center gap-1 rounded-[1rem] transition-all active:scale-90 press-effect"
         style={{
-          minWidth: 52,
+          minWidth: 56,
+          padding: '7px 10px 6px',
           background: active ? 'var(--gradient-main)' : 'transparent',
           boxShadow: active ? 'var(--shadow-colored)' : 'none',
-          transform: active ? 'translateY(-2px)' : 'none',
+          transform: active ? 'translateY(-1px)' : 'none',
+          transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
         }}
       >
-        <Icon style={{ width: 20, height: 20, color: active ? 'white' : 'var(--text-muted)' }} />
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.03em', color: active ? 'white' : 'var(--text-muted)', whiteSpace: 'nowrap', lineHeight: 1 }}>
+        <Icon style={{ width: 21, height: 21, color: active ? 'white' : 'var(--text-muted)', transition: 'color 0.2s ease' }} />
+        <span style={{
+          fontSize: 9.5,
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+          color: active ? 'white' : 'var(--text-muted)',
+          whiteSpace: 'nowrap',
+          lineHeight: 1.2,
+          transition: 'color 0.2s ease',
+        }}>
           {item.label}
         </span>
       </Link>
@@ -108,11 +118,12 @@ const BottomNav = () => {
     <>
       {/* ── Mobile Bottom Nav (< md) ── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 w-full z-[200] border-t border-slate-200/50 dark:border-slate-800/50"
+        className="md:hidden fixed bottom-0 left-0 w-full z-[200] border-t border-slate-200/40 dark:border-slate-800/60"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Mobil navigatsiya"
       >
-        <div className="flex items-center justify-around px-2 py-2 bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-xl">
+        <div className="flex items-center justify-around px-1 py-1.5 bg-white/97 dark:bg-[#0B1120]/97 backdrop-blur-2xl"
+          style={{ boxShadow: '0 -4px 24px -6px rgba(0,0,0,0.1)' }}>
           {items.map((item, i) => (
             <NavItem key={i} item={item} active={isActive(item)} mobile />
           ))}

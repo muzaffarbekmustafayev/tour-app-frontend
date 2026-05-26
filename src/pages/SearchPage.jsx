@@ -176,17 +176,22 @@ const SearchPage = () => {
       if (filters.minPrice)  p.set('minPrice',  filters.minPrice);
       if (filters.maxPrice)  p.set('maxPrice',  filters.maxPrice);
       if (filters.minRating) p.set('minRating', filters.minRating);
+      // Accessibility filtrlari — backend ACC_MAP bilan mos keladi
       Object.entries(filters.access).forEach(([key, active]) => {
         if (active) {
           const opt = FILTER_GROUPS.flatMap(g => g.options).find(o => o.key === key);
           if (opt) p.set(opt.param, 'true');
         }
       });
+      p.set('limit', '50'); // bir sahifada ko'p natija
       const res  = await api.get(`/hotels?${p.toString()}`);
-      const data = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
+      // Pagination formatini qo'llab-quvvatlash: { data, total } yoki oddiy array
+      const data  = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
+      const total = res.data.total ?? data.length;
       setHotels(data);
-      setTotalHotels(res.data.pagination?.total ?? data.length);
-    } catch {
+      setTotalHotels(total);
+    } catch (err) {
+      console.error('[SearchPage] Qidiruv xatosi:', err.message);
       setHotels([]); setTotalHotels(0);
     } finally {
       setLoading(false);
@@ -340,26 +345,28 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="pb-24 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
+    <div className="pb-28 md:pb-8 pt-3 sm:pt-4 px-4 max-w-7xl mx-auto min-h-screen">
 
       {/* ── Top bar ── */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-2.5 mb-5">
         <BackButton />
         <div className="flex-1 relative">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5"
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ color: 'var(--text-muted)', width: 18, height: 18 }} />
           <input
             type="search"
             placeholder="Mehmonxona yoki shahar..."
             value={filters.search}
             onChange={e => set('search', e.target.value)}
-            className="w-full pl-11 pr-5 py-3.5 font-bold text-sm outline-none transition-all"
+            className="w-full pl-11 pr-5 font-bold outline-none transition-all"
             style={{
               borderRadius: '2rem',
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
               boxShadow: 'var(--shadow-sm)',
               color: 'var(--text-main)',
+              height: 50,
+              fontSize: 15,
             }}
             onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px var(--primary-light)'; }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
@@ -368,11 +375,13 @@ const SearchPage = () => {
         {/* Mobile filter button */}
         <button
           onClick={() => setShowFilters(true)}
-          className="md:hidden relative flex items-center gap-2 px-4 py-3.5 rounded-2xl font-bold text-sm shrink-0 transition-all active:scale-95"
+          className="md:hidden relative flex items-center justify-center gap-1.5 px-4 rounded-2xl font-bold text-sm shrink-0 transition-all active:scale-95 press-effect"
           style={{
             background: activeCount > 0 ? '#6366f1' : 'var(--bg-card)',
             border: '1px solid var(--border)',
             color: activeCount > 0 ? 'white' : 'var(--text-main)',
+            height: 50,
+            minWidth: 50,
           }}
         >
           <FiFilter className="w-4 h-4" />

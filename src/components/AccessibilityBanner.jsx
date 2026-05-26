@@ -51,7 +51,14 @@ const FEATURES = [
 
 const AccessibilityBanner = () => {
   const navigate = useNavigate();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem('accessBannerDismissed') === '1'
+  );
+
+  const handleDismiss = () => {
+    localStorage.setItem('accessBannerDismissed', '1');
+    setDismissed(true);
+  };
 
   if (dismissed) return null;
 
@@ -66,7 +73,7 @@ const AccessibilityBanner = () => {
     >
       {/* Dismiss button */}
       <button
-        onClick={() => setDismissed(true)}
+        onClick={handleDismiss}
         className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full"
         style={{ background: 'rgba(255,255,255,0.1)', color: 'white', minWidth: 32, minHeight: 32 }}
         aria-label="Yopish"

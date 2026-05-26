@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     if (saved !== null) return saved === 'true';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return false; // Default to Light Mode
   });
 
   useEffect(() => {
@@ -47,6 +47,15 @@ export const AuthProvider = ({ children }) => {
     return res.data.user;
   };
 
+  /** Google OAuth — access_token ni backendga yuborish */
+  const loginWithGoogle = async (access_token) => {
+    const res = await api.post('/auth/google', { access_token });
+    localStorage.setItem('token', res.data.token);
+    setUser(res.data.user);
+    fetchFavorites();
+    return res.data.user;
+  };
+
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
     localStorage.setItem('token', res.data.token);
@@ -72,7 +81,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, favorites, toggleFavorite, darkMode, setDarkMode }}>
+    <AuthContext.Provider value={{ user, login, loginWithGoogle, register, logout, loading, favorites, toggleFavorite, darkMode, setDarkMode }}>
       {children}
     </AuthContext.Provider>
   );

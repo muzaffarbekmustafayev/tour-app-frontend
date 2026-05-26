@@ -8,22 +8,14 @@ import heroBg from '../assets/image.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
-  FiArrowRight, FiHome, FiSun, FiUsers, FiAward,
-  FiDollarSign, FiBriefcase, FiChevronRight,
-  FiClock, FiFeather
+  FiArrowRight, FiHome, FiSun, FiAward,
+  FiDollarSign, FiBriefcase, FiChevronRight
 } from 'react-icons/fi';
 import {
   MdAccessible, MdHearing, MdVisibility,
   MdFamilyRestroom, MdElderly, MdSignLanguage,
 } from 'react-icons/md';
 import { TbWheelchair, TbBraille } from 'react-icons/tb';
-
-/* ── Navoiy landmark stats ── */
-const STATS = [
-  { icon: <FiClock className="w-5 h-5 text-amber-400" />, value: '2500+', label: 'Yillik tarix' },
-  { icon: <FiFeather className="w-5 h-5 text-emerald-400" />, value: '43', label: 'Yodgorliklar' },
-  { icon: <FiStar className="w-5 h-5 text-yellow-400" style={{ fill: '#facc15' }} />, value: '4.8', label: "O'rtacha baho" },
-];
 
 /* ── Category chips ── */
 const CATEGORIES = [
@@ -85,7 +77,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════
           HERO — Navoiy vibe
       ══════════════════════════════════════════ */}
-      <header className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(480px, 80vh, 720px)' }}>
+      <header className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(420px, 85svh, 720px)' }}>
 
         {/* Background */}
         <img
@@ -110,10 +102,10 @@ const Home = () => {
         {/* Top border removed for classic clean look */}
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-8 text-center pb-12 sm:pb-16">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-5 sm:px-8 text-center pb-16 sm:pb-20">
 
           {/* Location pill */}
-          <div className="flex items-center gap-2 mb-5 px-4 py-2 rounded-full animate-fade-in"
+          <div className="flex items-center gap-2 mb-4 sm:mb-5 px-4 py-2 rounded-full animate-fade-in"
             style={{
               background: 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(16px)',
@@ -126,15 +118,15 @@ const Home = () => {
 
           {/* Main heading */}
           <h1
-            className="text-white font-black leading-[1.08] mb-5 animate-fade-in"
+            className="text-white font-black leading-[1.08] mb-3 sm:mb-5 animate-fade-in"
             style={{
-              fontSize: 'clamp(2.6rem, 8vw, 5rem)',
+              fontSize: 'clamp(2rem, 9vw, 5rem)',
               textShadow: '0 8px 40px rgba(0,0,0,0.6)',
               animationDelay: '0.2s',
               letterSpacing: '-0.02em',
             }}
           >
-            Navoiydagi
+            Navoiy viloyatidagi
             <br />
             <span style={{
               background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 40%, #a78bfa 100%)',
@@ -142,31 +134,31 @@ const Home = () => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              dam olish maskanlari
+              Ko'ngil ochar maskanlar
             </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-white/80 font-medium mb-8 max-w-lg animate-fade-in hidden sm:block"
-            style={{ fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', lineHeight: 1.7, animationDelay: '0.3s' }}>
-            Qadimiy Navoiy shahri va uning atrofidagi eng sara mehmonxonalar, resortlar va dam olish maskanlarini kashf eting.
+          {/* Subtitle — mobilda ham ko'rinadi */}
+          <p className="text-white/75 font-medium mb-6 sm:mb-8 max-w-xs sm:max-w-lg animate-fade-in"
+            style={{ fontSize: 'clamp(0.8rem, 3.5vw, 1.1rem)', lineHeight: 1.6, animationDelay: '0.3s' }}>
+            Eng sara mehmonxonalar, resortlar va dam olish maskanlarini kashf eting.
           </p>
 
           {/* Search shortcut button */}
           <button
             onClick={() => navigate('/search')}
-            className="w-full max-w-sm animate-fade-in flex items-center gap-3 px-5 py-4 rounded-[2rem] font-bold text-sm transition-all hover:bg-white/5 active:scale-[0.99]"
+            className="w-full max-w-sm animate-fade-in flex items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4 rounded-[2rem] font-bold text-sm transition-all hover:bg-white/5 active:scale-[0.98]"
             style={{
               background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(16px)',
-              border: '1.5px solid rgba(255,255,255,0.3)',
-              color: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1.5px solid rgba(255,255,255,0.35)',
+              color: 'rgba(255,255,255,0.95)',
               animationDelay: '0.4s',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
             }}
           >
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(255,255,255,0.2)' }}>
+              style={{ background: 'rgba(255,255,255,0.25)' }}>
               <FiSearch className="w-4 h-4" />
             </div>
             <span className="flex-1 text-left opacity-80">Mehmonxona qidirish...</span>
@@ -186,16 +178,20 @@ const Home = () => {
 
         {/* ── Stats strip ── */}
         {!loading && hotels.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 -mt-6 mb-10 sm:mb-12 relative z-10">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-1">
             {[
-              { icon: <FiHome className="w-5 h-5 text-indigo-500" />, value: hotels.length + '+', label: 'Mehmonxona', color: '#6366f1' },
-              { icon: <FiMapPin className="w-5 h-5 text-rose-500" />, value: [...new Set(hotels.map(h => h.city).filter(Boolean))].length + '+', label: 'Hudud', color: '#f43f5e' },
-              { icon: <FiStar className="w-5 h-5 text-amber-500" />, value: hotels.length ? (hotels.reduce((s, h) => s + (h.rating || 0), 0) / hotels.length).toFixed(1) : '—', label: 'Reyting', color: '#f59e0b' },
+              { icon: <FiHome className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" />, value: hotels.length + '+', label: 'Mehmonxona', color: '#6366f1' },
+              { icon: <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />, value: [...new Set(hotels.map(h => h.city).filter(Boolean))].length + '+', label: 'Hudud', color: '#f43f5e' },
+              { icon: <FiStar className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />, value: hotels.length ? (hotels.reduce((s, h) => s + (h.rating || 0), 0) / hotels.length).toFixed(1) : '—', label: 'Reyting', color: '#f59e0b' },
             ].map(s => (
-              <div key={s.label} className="glass-panel flex flex-col items-center gap-1 sm:gap-1.5 py-3 sm:py-4 px-1 sm:px-2 text-center"
-                style={{ borderRadius: '1.5rem', borderTop: `3px solid ${s.color}` }}>
+              <div key={s.label} className="glass-panel flex flex-col items-center gap-1 sm:gap-1.5 py-3.5 sm:py-4 px-1 sm:px-2 text-center"
+                style={{
+                  borderRadius: '1.25rem',
+                  borderTop: `3px solid ${s.color}`,
+                  boxShadow: `0 4px 20px -6px ${s.color}30`,
+                }}>
                 {s.icon}
-                <p className="text-lg sm:text-xl font-black" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-base sm:text-xl font-black leading-tight" style={{ color: s.color }}>{s.value}</p>
                 <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
               </div>
             ))}
@@ -246,26 +242,26 @@ const Home = () => {
         {/* ── Map quick link ── */}
         <button
           onClick={() => navigate('/map')}
-          className="w-full mb-12 flex items-center gap-4 p-5 rounded-[1.75rem] transition-all active:scale-[0.99] hover:shadow-md text-left"
+          className="w-full mb-10 sm:mb-12 flex items-center gap-4 p-4 sm:p-5 rounded-[1.5rem] transition-all active:scale-[0.98] hover:shadow-md text-left press-effect"
           style={{
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%)',
-            border: '1.5px solid rgba(99,102,241,0.2)',
-            boxShadow: '0 4px 20px -8px rgba(99,102,241,0.2)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.09) 0%, rgba(139,92,246,0.07) 100%)',
+            border: '1.5px solid rgba(99,102,241,0.22)',
+            boxShadow: '0 4px 24px -8px rgba(99,102,241,0.22)',
           }}
         >
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 6px 16px -4px rgba(99,102,241,0.5)' }}>
-            <FiMap className="w-6 h-6 text-white" />
+            <FiMap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-extrabold text-base mb-0.5" style={{ color: 'var(--text-main)' }}>
+            <p className="font-extrabold text-sm sm:text-base mb-0.5" style={{ color: 'var(--text-main)' }}>
               Mehmonxonalar xaritasi
             </p>
-            <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-              Navoiy shahridagi barcha dam olish maskanlarini xaritada ko'ring
+            <p className="text-xs font-medium line-clamp-1" style={{ color: 'var(--text-muted)' }}>
+              Barcha dam olish maskanlarini xaritada ko'ring
             </p>
           </div>
-          <FiArrowRight className="w-5 h-5 shrink-0 text-indigo-400" />
+          <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-indigo-400" />
         </button>
 
         {/* ── Accessibility Banner ── */}
@@ -325,7 +321,7 @@ const Home = () => {
       {showTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-28 right-5 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.95]"
+          className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.92] press-effect"
           style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}
           aria-label="Yuqoriga"
         >

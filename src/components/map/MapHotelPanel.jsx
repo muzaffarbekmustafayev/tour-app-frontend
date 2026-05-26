@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar } from 'react-icons/fi';
 import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtPrice, fmtDist, fmtTime, getMinPrice } from './mapUtils';
+import { calcAccessibilityScore, getScoreStyle } from '../../utils/accessibilityScore';
 
 const MapHotelPanel = ({
   selected,
@@ -97,7 +98,7 @@ const MapHotelPanel = ({
                 <div className="flex items-center gap-1 bg-black/30 px-1.5 py-0.5 rounded">
                   <FiStar className="text-yellow-400 fill-yellow-400" />
                   <span className="font-semibold">{selected.rating ? selected.rating.toFixed(1) : '4.5'}</span>
-                  <span className="text-slate-300 text-xs">({selected.reviewsCount || 0} sharh)</span>
+                  <span className="text-slate-300 text-xs">({selected.reviewsCount || 0} ta sharh)</span>
                 </div>
                 {selected.city && (
                   <div className="flex items-center gap-1">
@@ -123,7 +124,7 @@ const MapHotelPanel = ({
                       <span className="text-[13px] font-semibold text-slate-500">UZS</span>
                     </>
                   ) : (
-                    <span className="text-lg font-medium text-slate-500">Narx belgilanmagan</span>
+                    <span className="text-lg font-medium text-slate-500">Narxlar belgilanmagan</span>
                   )}
                 </div>
               </div>
@@ -131,6 +132,20 @@ const MapHotelPanel = ({
                 <FiMapPin className="w-5 h-5" />
               </div>
             </div>
+
+            {/* Accessibility Score Badge */}
+            {calcAccessibilityScore(selected) > 0 && (
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-xs uppercase"
+                style={{
+                  background: getScoreStyle(calcAccessibilityScore(selected)).bg,
+                  color: getScoreStyle(calcAccessibilityScore(selected)).color,
+                  border: `1px solid ${getScoreStyle(calcAccessibilityScore(selected)).color}30`
+                }}
+              >
+                ♿ Inklyuzivlik: {calcAccessibilityScore(selected)}%
+              </div>
+            )}
 
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
               {selected.description || 'Bu maskan dam olish va sayohat qilish uchun ajoyib tanlov. Barcha qulayliklarga ega zamonaviy xonalar va yuqori darajadagi xizmat kafolatlanadi.'}
@@ -140,9 +155,9 @@ const MapHotelPanel = ({
             {activeHotel?._id === selected._id && (routeInfo || isRouting) && (
               <div className="flex p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 mt-2">
                 {isRouting ? (
-                  <div className="w-full flex justify-center items-center gap-2 py-2 text-blue-600 dark:text-blue-400">
+                  <div className="w-full flex justify-center items-center gap-2 py-2 text-indigo-600 dark:text-indigo-400">
                     <FiLoader className="w-5 h-5 animate-spin" />
-                    <span className="text-sm font-semibold">Hisoblanmoqda...</span>
+                    <span className="text-sm font-semibold">Yo'nalish hisoblanmoqda...</span>
                   </div>
                 ) : (
                   <>
@@ -174,14 +189,14 @@ const MapHotelPanel = ({
                   onClick={clearGuidance}
                   className="flex-1 py-3 rounded-xl bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold flex items-center justify-center gap-2 transition-colors"
                 >
-                  <FiX /> Yopish
+                  <FiX /> Yo'lni yopish
                 </button>
               ) : (
                 <button
                   onClick={() => startGuidance(selected)}
-                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  className="btn-primary flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"
                 >
-                  <FiNavigation /> Yo'l ko'rsatish
+                  <FiNavigation /> Marshrut
                 </button>
               )}
             </div>
@@ -193,7 +208,7 @@ const MapHotelPanel = ({
                 rel="noreferrer"
                 className="w-full py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-center gap-2 transition-colors mt-1"
               >
-                <FiExternalLink className="text-emerald-500" /> Google Maps orqali yurish
+                <FiExternalLink className="text-emerald-500" /> Google Maps
               </a>
             )}
           </div>

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
@@ -43,7 +43,7 @@ const AppContent = () => {
               <div className="flex flex-col items-center justify-center min-h-[70vh]">
                 <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">404</h1>
                 <p className="text-gray-500 mb-6">Sahifa topilmadi</p>
-                <a href="/" className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition">Bosh sahifaga qaytish</a>
+                <Link to="/" className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition">Bosh sahifaga qaytish</Link>
               </div>
             } />
           </Routes>

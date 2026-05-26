@@ -47,12 +47,17 @@ api.interceptors.response.use(
     const message = error.response?.data?.message;
 
     // 401 - Token muddati tugagan: avtomatik chiqish
+    // Auth endpointlarida (login/register) redirect qilmaymiz — u yerda 401 normal xato
     if (status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+      if (!isAuthEndpoint) {
+        localStorage.removeItem(TOKEN_KEY);
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
-      return Promise.reject(new Error('Sessiya muddati tugadi. Qayta kiring.'));
+      return Promise.reject(new Error(message || 'Sessiya muddati tugadi. Qayta kiring.'));
     }
 
     // 403 - Ruxsat yo'q

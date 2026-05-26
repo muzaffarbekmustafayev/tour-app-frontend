@@ -1,10 +1,11 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import MapView from '../components/MapView';
+// Removed MapView import
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
+import ChatWidget from '../components/ChatWidget';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';
@@ -18,7 +19,7 @@ import {
   FiUsers, FiStar, FiCheck, FiPhone, FiMail,
   FiVolume2, FiX, FiCalendar, FiAward,
   FiRotateCw, FiMaximize, FiExternalLink, FiFeather,
-  FiSun, FiMusic
+  FiSun, FiMusic, FiNavigation
 } from 'react-icons/fi';
 import {
   MdAccessible, MdHearing, MdVisibility,
@@ -26,6 +27,7 @@ import {
   MdElectricBolt,
 } from 'react-icons/md';
 import { TbWheelchair, TbBraille, TbEar, TbHandStop } from 'react-icons/tb';
+import { calcAccessibilityScore, getScoreStyle } from '../utils/accessibilityScore';
 
 const AMENITY_ICONS = {
   'Free WiFi': <FiWifi className="w-4 h-4" />,
@@ -41,10 +43,10 @@ const AMENITY_ICONS = {
 };
 
 const Section = ({ title, icon, children, className = '', id = '' }) => (
-  <div className={`bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-5 rounded-lg mb-6 shadow-sm ${className}`} id={id}>
+  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm transition-all hover:shadow-md ${className}`} id={id}>
     {title && (
-      <h2 className="flex items-center gap-2 text-lg font-bold mb-4 pb-3 border-b border-gray-100 dark:border-slate-800 text-gray-800 dark:text-white">
-        <span className="text-blue-600 dark:text-blue-400">{icon}</span> {title}
+      <h2 className="flex items-center gap-3 text-[13px] font-black mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
+        <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm">{icon}</span> {title}
       </h2>
     )}
     {children}
@@ -72,7 +74,7 @@ const HotelDetail = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [reviewForm, setReviewForm]     = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting]     = useState(false);
-  const [audioModal, setAudioModal]       = useState(false);
+  const [audioPlaying, setAudioPlaying]   = useState(false);
   const [videoModal, setVideoModal]       = useState(false);
   const [panoramaModal, setPanoramaModal] = useState(null); // aktiv panorama indeksi
 
@@ -120,9 +122,35 @@ const HotelDetail = () => {
       const res = await api.post('/reviews', { hotelId: id, ...reviewForm });
       setReviews(p => [{ ...res.data, user: { name: user.name } }, ...p]);
       setReviewForm({ rating: 5, comment: '' });
-    } catch { /* ignore */ }
-    finally { setSubmitting(false); }
+    } catch (err) {
+      console.error('[HotelDetail] Sharh yuborishda xatolik:', err.message);
+    } finally { setSubmitting(false); }
   };
+
+  // Reja 5: Haqiqiy ovozli tavsif — SpeechSynthesis (o'zbek tili)
+  const speakDescription = () => {
+    if (audioPlaying) {
+      window.speechSynthesis.cancel();
+      setAudioPlaying(false);
+      return;
+    }
+    const text = hotel?.digitalInclusion?.screenReaderDescription || hotel?.description;
+    if (!text) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'uz-UZ';
+    utterance.rate = 0.85;
+    utterance.onend = () => setAudioPlaying(false);
+    utterance.onerror = () => setAudioPlaying(false);
+    setAudioPlaying(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Cleanup: sahifadan chiqilganda audio to'xtatilsin
+  useEffect(() => {
+    return () => window.speechSynthesis.cancel();
+  }, []);
+
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[80vh]">
@@ -169,6 +197,11 @@ const HotelDetail = () => {
     [hotel.familyAndElderly?.medicalServiceOnSite,        <MdLocalHospital className="w-4 h-4 text-red-500" />,  'Tibbiy yordam punkti'],
   ].filter(([cond]) => cond);
 
+  // Reja 6: accessibility skori hisoblash
+  const accScore   = calcAccessibilityScore(hotel);
+  const scoreStyle = getScoreStyle(accScore);
+  const srText     = hotel?.digitalInclusion?.screenReaderDescription || '';
+
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">
@@ -181,40 +214,59 @@ const HotelDetail = () => {
            </div>
         </div>
 
-        {/* ── Floating Mobile Bar ── */}
+        {/* ── Floating Mobile Bar ── — Kirish/Chiqish vaqtlari */}
         <div className="md:hidden fixed bottom-6 left-0 right-0 z-[150] px-4 animate-slide-up">
           <div className="bg-white dark:bg-slate-900 p-4 flex items-center justify-between shadow-2xl border border-gray-100 dark:border-slate-800 rounded-2xl">
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Narxlar boshlanadi</p>
-              <p className="text-lg font-bold text-blue-600 dark:text-blue-400 leading-none">
-                {new Intl.NumberFormat('uz-UZ').format(price)} <span className="text-[10px] text-gray-500 uppercase">UZS</span>
-              </p>
+            <div className="flex items-center gap-4 text-sm">
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Kirish</p>
+                <p className="font-bold text-gray-900 dark:text-white">{hotel?.checkIn || '14:00'}</p>
+              </div>
+              <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Chiqish</p>
+                <p className="font-bold text-gray-900 dark:text-white">{hotel?.checkOut || '12:00'}</p>
+              </div>
             </div>
+            {hotel?.contact?.phone && (
+              <a href={`tel:${hotel.contact.phone}`}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white shrink-0 transition-all hover:brightness-110"
+                style={{ background: 'var(--gradient-main)' }}
+              >
+                <FiPhone className="w-4 h-4" /> Bog'lanish
+              </a>
+            )}
           </div>
         </div>
 
         {/* ── Header ── */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div>
+        <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-6">
+          <div className="flex-1 min-w-0">
             <div className="mb-4"><BackButton /></div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">
-                {hotel.category}
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                hotel.category === 'resort' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30' :
+                hotel.category === 'hostel' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30' :
+                'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30'
+              }`}>
+                {hotel.category === 'hotel' ? 'Mehmonxona' : hotel.category === 'resort' ? 'Dam olish maskani' : 'Hostel'}
               </span>
-              <StarRow rating={hotel.stars} />
+              <div className="flex items-center bg-slate-50 dark:bg-slate-900/80 px-2 py-1 rounded-full border border-slate-100 dark:border-slate-800">
+                <StarRow rating={hotel.stars} />
+              </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">{name}</h1>
-            <p className="flex items-center gap-1.5 text-gray-600 dark:text-slate-400 text-sm">
-              <FiMapPin className="text-gray-400" /> {hotel.address}, {hotel.city}
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 leading-tight">{name}</h1>
+            <p className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm font-semibold">
+              <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> <span className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">{hotel.address}, {hotel.city}</span>
             </p>
           </div>
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-center gap-3 border border-blue-100 dark:border-blue-900/30">
-             <div className="bg-blue-600 text-white w-10 h-10 rounded flex items-center justify-center font-bold text-lg">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/20 dark:to-indigo-900/10 p-4 rounded-2xl flex items-center gap-3.5 border border-indigo-100/80 dark:border-indigo-900/30 shadow-sm shrink-0 hover:scale-[1.02] transition-transform duration-300">
+             <div className="bg-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-md shadow-indigo-600/20 shrink-0">
                 {hotel.rating?.toFixed(1) || '0.0'}
              </div>
              <div>
-                <p className="font-bold text-blue-900 dark:text-blue-300 text-sm">Juda yaxshi</p>
-                <p className="text-xs text-blue-700 dark:text-blue-400">{reviews.length} ta sharh</p>
+                <p className="font-black text-indigo-950 dark:text-indigo-200 text-sm leading-tight">{hotel.rating >= 4.7 ? 'Mukammal' : hotel.rating >= 4.3 ? 'Juda yaxshi' : hotel.rating >= 4.0 ? 'Ajoyib' : 'Yaxshi'}</p>
+                <p className="text-xs font-bold text-indigo-600/85 dark:text-indigo-400/85 mt-0.5">{reviews.length} ta sharh</p>
              </div>
           </div>
         </div>
@@ -316,59 +368,62 @@ const HotelDetail = () => {
           <div className="flex-1 min-w-0">
             
             <Section title="Mehmonxona haqida" icon={<FiAward />}>
-              <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{desc}</p>
+              {/* Reja 3.3: screenReaderDescription ARIA ulash */}
+              <article aria-describedby={srText ? `sr-desc-${hotel._id}` : undefined}>
+                {srText && <p id={`sr-desc-${hotel._id}`} className="sr-only">{srText}</p>}
+                <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{desc}</p>
+              </article>
+              {/* Reja 5: Haqiqiy ovozli tavsif */}
               <button
-                onClick={() => {
-                  const text = hotel.digitalInclusion?.screenReaderDescription || desc;
-                  if (!text) return;
-                  window.speechSynthesis.cancel();
-                  const u = new SpeechSynthesisUtterance(text);
-                  u.lang = 'ru-RU'; u.rate = 0.9;
-                  window.speechSynthesis.speak(u);
-                }}
-                className="mt-4 text-blue-600 font-bold text-xs hover:underline flex items-center gap-1.5"
+                onClick={speakDescription}
+                className={`mt-4 font-bold text-xs flex items-center gap-1.5 transition-colors ${
+                  audioPlaying
+                    ? 'text-red-500 hover:text-red-600'
+                    : 'text-blue-600 hover:text-blue-700'
+                }`}
               >
-                <FiVolume2 /> Ovozli ma'lumot
+                <FiVolume2 />
+                {audioPlaying ? 'To\'xtatish' : 'Ovozli tinglash (o\'zbek tili)'}
               </button>
             </Section>
 
             {/* ── Atmosfera ── */}
             {hotel.atmosphere && (hotel.atmosphere.mood || hotel.atmosphere.soundscape || hotel.atmosphere.bestTimeOfDay || hotel.atmosphere.localTip) && (
               <Section title="Joy atmosferasi" icon={<FiFeather />}>
-                <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {hotel.atmosphere.mood && (
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg shrink-0">🌿</span>
+                    <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                      <span className="text-xl shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500">🌿</span>
                       <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Umumiy kayfiyat</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{hotel.atmosphere.mood}</p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Umumiy kayfiyat</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{hotel.atmosphere.mood}</p>
                       </div>
                     </div>
                   )}
                   {hotel.atmosphere.bestTimeOfDay && (
-                    <div className="flex items-start gap-3">
-                      <span className="text-lg shrink-0">🕐</span>
+                    <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                      <span className="text-xl shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500">🕐</span>
                       <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Eng yaxshi vaqt</p>
-                        <p className="text-sm text-gray-700 dark:text-slate-300">{hotel.atmosphere.bestTimeOfDay}</p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Eng yaxshi vaqt</p>
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{hotel.atmosphere.bestTimeOfDay}</p>
                       </div>
                     </div>
                   )}
                   {hotel.atmosphere.soundscape && (
-                    <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3">
-                      <span className="text-lg shrink-0">🎵</span>
+                    <div className="flex items-start gap-3 bg-indigo-50/50 dark:bg-indigo-950/10 rounded-xl p-4 border border-indigo-100/30 dark:border-indigo-900/10 md:col-span-2 shadow-sm">
+                      <span className="text-xl shrink-0 p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">🎵</span>
                       <div>
-                        <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-0.5">Ovoz manzarasi</p>
-                        <p className="text-sm italic text-gray-700 dark:text-slate-300 leading-relaxed">"{hotel.atmosphere.soundscape}"</p>
+                        <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1">Ovoz manzarasi</p>
+                        <p className="text-sm italic font-medium text-slate-700 dark:text-slate-300 leading-relaxed">"{hotel.atmosphere.soundscape}"</p>
                       </div>
                     </div>
                   )}
                   {hotel.atmosphere.localTip && (
-                    <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg p-3">
-                      <span className="text-lg shrink-0">💡</span>
+                    <div className="flex items-start gap-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-xl p-4 border border-amber-100/30 dark:border-amber-900/10 md:col-span-2 shadow-sm">
+                      <span className="text-xl shrink-0 p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">💡</span>
                       <div>
-                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-0.5">Mahalliy maslahat</p>
-                        <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{hotel.atmosphere.localTip}</p>
+                        <p className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Mahalliy maslahat</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{hotel.atmosphere.localTip}</p>
                       </div>
                     </div>
                   )}
@@ -376,31 +431,42 @@ const HotelDetail = () => {
               </Section>
             )}
 
-            <div id="rooms" className="scroll-mt-4 mb-8">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <FiBriefcase className="text-blue-600" /> Mavjud xonalar
+              <div id="rooms" className="scroll-mt-4 mb-8">
+              <h2 className="text-[13px] font-black text-slate-800 dark:text-white mb-5 uppercase tracking-wider flex items-center gap-3">
+                <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm"><FiBriefcase className="w-4 h-4" /></span> Mavjud xonalar
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {hotel.rooms?.map(r => (
-                  <div key={r._id} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-5 flex flex-col md:flex-row justify-between gap-4 hover:border-blue-400 transition-colors">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{r.name}</h3>
-                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3 font-medium">
-                        <span className="flex items-center gap-1"><FiUsers /> {r.capacity} kishi</span>
-                        {r.areaSqMeters && <span className="flex items-center gap-1"><FiMaximize /> {r.areaSqMeters} m²</span>}
+                  <div key={r._id} className="bg-white/85 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row justify-between gap-5 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-300">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2 leading-snug">{r.name}</h3>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3 font-semibold">
+                        <span className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800"><FiUsers className="w-3.5 h-3.5 text-indigo-500" /> {r.capacity} kishi</span>
+                        {r.areaSqMeters && <span className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800"><FiMaximize className="w-3.5 h-3.5 text-violet-500" /> {r.areaSqMeters} m²</span>}
+                        {r.bedType && <span className="bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800 capitalize text-slate-600 dark:text-slate-300">{r.bedType}</span>}
+                        {r.bathroomType && <span className="bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800 capitalize text-slate-600 dark:text-slate-300">{r.bathroomType === 'private' ? 'Alohida hammom' : 'Umumiy hammom'}</span>}
                       </div>
-                      <div className="text-[11px] text-green-600 font-bold flex items-center gap-1.5">
-                        <FiCheck /> Bepul bekor qilish xizmati
-                      </div>
+                      {r.amenities?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                           {r.amenities.slice(0, 4).map(a => (
+                             <span key={a} className="text-[10px] font-black px-2.5 py-1 rounded-lg"
+                               style={{ background: 'rgba(99,102,241,0.07)', color: '#6366f1', border: '1px solid rgba(99,102,241,0.15)' }}>
+                               {a}
+                             </span>
+                           ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-col md:items-end justify-between gap-3 border-t md:border-t-0 md:border-l border-gray-100 dark:border-slate-800 pt-3 md:pt-0 md:pl-6">
-                      <div className="text-left md:text-right">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">1 tun uchun</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">
-                          {new Intl.NumberFormat('uz-UZ').format(r.pricePerNight || 0)} <span className="text-xs font-normal text-gray-500 uppercase">UZS</span>
+                    {/* Narx — boshlang'ich narx */}
+                    {r.pricePerNight > 0 && (
+                      <div className="flex flex-col md:items-end justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6 shrink-0">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-wider mb-1">Boshlang'ich narx</p>
+                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                          {new Intl.NumberFormat('uz-UZ').format(r.pricePerNight)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">UZS / tun</span>
                         </p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">Muassasa bilan kelishiladi</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -440,12 +506,12 @@ const HotelDetail = () => {
                   <div key={rv._id} className="pb-6 border-b border-gray-100 dark:border-slate-800 last:border-0 last:pb-0">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3">
-                         <div className="w-9 h-9 bg-gray-100 dark:bg-slate-800 text-gray-600 rounded-full flex items-center justify-center font-bold text-sm">
+                         <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md shadow-indigo-500/10 shrink-0">
                             {rv.user?.name?.[0]?.toUpperCase() || 'M'}
                          </div>
                          <div>
-                            <p className="font-bold text-sm text-gray-900 dark:text-white">{rv.user?.name || 'Mehmon'}</p>
-                            <p className="text-[10px] text-gray-400">{new Date(rv.createdAt).toLocaleDateString('uz-UZ')}</p>
+                            <p className="font-black text-sm text-slate-800 dark:text-slate-200">{rv.user?.name || 'Mehmon'}</p>
+                            <p className="text-[10px] font-bold text-slate-400 mt-0.5">{new Date(rv.createdAt).toLocaleDateString('uz-UZ')}</p>
                          </div>
                       </div>
                       <StarRow rating={rv.rating} />
@@ -462,62 +528,90 @@ const HotelDetail = () => {
           <div className="w-full lg:w-[320px] shrink-0">
              <div className="lg:sticky lg:top-6 space-y-6">
                 
-                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-6 shadow-sm text-center">
-                   <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Narxlar boshlanadi</p>
-                   <p className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                      {new Intl.NumberFormat('uz-UZ').format(price)} <span className="text-sm font-medium text-gray-500 uppercase">UZS</span>
-                   </p>
-                   
-                   <div className="space-y-3 mb-6 text-sm text-gray-600">
-                      <div className="flex justify-between py-2 border-b border-gray-50 dark:border-slate-800">
-                         <span className="flex items-center gap-2"><FiCalendar className="text-gray-400" /> Kirish</span>
-                         <span className="font-bold text-gray-800 dark:text-slate-300">{hotel.checkIn || '14:00'}</span>
-                      </div>
-                      <div className="flex justify-between py-2">
-                         <span className="flex items-center gap-2"><FiCalendar className="text-gray-400" /> Chiqish</span>
-                         <span className="font-bold text-gray-800 dark:text-slate-300">{hotel.checkOut || '12:00'}</span>
-                      </div>
-                   </div>
-                   
-                   <div className="mt-6 pt-4 border-t border-gray-50 dark:border-slate-800 space-y-2">
-                      <p className="flex items-center gap-2 text-[10px] font-bold text-green-600 uppercase"><FiShield /> Xavfsiz to'lov</p>
-                      <p className="flex items-center gap-2 text-[10px] font-bold text-blue-600 uppercase"><FiCheckCircle /> Tasdiqlangan ob'ekt</p>
-                      {accessFeatures.length > 0 && (
-                        <p className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase">
-                          <MdAccessible className="w-3.5 h-3.5" /> {accessFeatures.length} inklyuziv qulaylik
-                        </p>
-                      )}
-                   </div>
-                </div>
+                 {/* ── Bog'lanish va ma'lumot bloki ── */}
+                  <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                     <h3 className="font-black text-slate-800 dark:text-white mb-5 text-[11px] uppercase tracking-wider flex items-center gap-2">
+                       <FiPhone className="text-indigo-600 w-4 h-4 shrink-0" /> Bog'lanish
+                     </h3>
 
-                <div id="map-section" className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm">
-                   <div className="p-4 border-b border-gray-100 dark:border-slate-800 font-bold text-sm text-gray-800 dark:text-white">
-                      <FiMapPin className="text-blue-600 inline mr-2" /> Joylashuv
-                   </div>
-                   <div className="p-1">
-                      <MapView hotel={hotel} />
-                   </div>
-                   <div className="p-4 bg-gray-50 dark:bg-slate-900 text-[11px] text-gray-500 font-medium">
+                     {/* Telefon */}
+                     {(hotel.contact?.phone || hotel.owner?.phone) && (
+                       <a href={`tel:${hotel.contact?.phone || hotel.owner?.phone}`}
+                         className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-5 transition-all active:scale-97 hover:shadow-lg shadow-indigo-600/10"
+                         style={{ background: 'var(--gradient-main)', boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)' }}
+                       >
+                         <FiPhone className="w-3.5 h-3.5 shrink-0" /> {hotel.contact?.phone || hotel.owner?.phone}
+                       </a>
+                     )}
+
+                     {/* Email */}
+                     {(hotel.contact?.email || hotel.owner?.email) && (
+                       <a href={`mailto:${hotel.contact?.email || hotel.owner?.email}`}
+                         className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-4"
+                       >
+                         <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/40 dark:border-indigo-900/20 shrink-0">
+                           <FiMail className="w-4 h-4" />
+                         </div>
+                         <span className="text-xs font-black truncate">{hotel.contact?.email || hotel.owner?.email}</span>
+                       </a>
+                     )}
+
+                     {/* Kirish / Chiqish */}
+                     <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-2 space-y-3.5 text-slate-600">
+                       <div className="flex justify-between items-center">
+                         <span className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500"><FiCalendar className="text-slate-400 w-3.5 h-3.5 shrink-0" /> Kirish vaqti</span>
+                         <span className="font-extrabold text-slate-700 dark:text-slate-300 text-xs bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">{hotel.checkIn || '14:00'}</span>
+                       </div>
+                       <div className="flex justify-between items-center">
+                         <span className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500"><FiCalendar className="text-slate-400 w-3.5 h-3.5 shrink-0" /> Chiqish vaqti</span>
+                         <span className="font-extrabold text-slate-700 dark:text-slate-300 text-xs bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">{hotel.checkOut || '12:00'}</span>
+                       </div>
+                     </div>
+
+                     {/* Inklyuzivlik skori */}
+                     {accScore > 0 && (
+                       <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                         <div
+                           className="flex items-center gap-2 text-[10px] font-black uppercase px-3 py-2.5 rounded-xl shadow-sm"
+                           style={{ background: scoreStyle.bg, color: scoreStyle.color, border: `1px solid ${scoreStyle.color}15` }}
+                         >
+                           <MdAccessible className="w-4 h-4 shrink-0" />
+                           Inklyuzivlik: {accScore}% — {scoreStyle.label}
+                         </div>
+                         {accessFeatures.length > 0 && (
+                           <p className="flex items-center gap-2 text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider ml-1">
+                             <MdAccessible className="w-4 h-4 shrink-0" /> {accessFeatures.length} ta maxsus qulaylik
+                           </p>
+                         )}
+                       </div>
+                     )}
+
+                     {/* Boshlang'ich narx */}
+                     {price > 0 && (
+                       <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-wider mb-1">Boshlang'ich narx</p>
+                         <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                           {new Intl.NumberFormat('uz-UZ').format(price)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">UZS</span>
+                         </p>
+                         <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">* Kelishuv muassasa bilan to'g'ridan-to'g'ri bo'ladi</p>
+                       </div>
+                     )}
+                  </div>
+
+                <div id="map-section" className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                   <h3 className="font-black text-slate-800 dark:text-white mb-3 text-[11px] uppercase tracking-wider flex items-center gap-2">
+                      <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> Joylashuv
+                   </h3>
+                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-5 font-medium">
                       {hotel.address}, {hotel.city}, O'zbekiston
-                   </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-5 shadow-sm">
-                   <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-sm flex items-center gap-2"><FiPhone className="text-blue-600" /> Bog'lanish</h3>
-                   <div className="space-y-4 text-xs font-bold">
-                      <a href={`tel:${hotel.owner?.phone}`} className="flex items-center gap-3 text-gray-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
-                         <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center border border-blue-100 dark:border-blue-900/30">
-                            <FiPhone />
-                         </div>
-                         <span>{hotel.owner?.phone || '+998 -- --- -- --'}</span>
-                      </a>
-                      <a href={`mailto:${hotel.owner?.email}`} className="flex items-center gap-3 text-gray-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
-                         <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center border border-blue-100 dark:border-blue-900/30">
-                            <FiMail />
-                         </div>
-                         <span>{hotel.owner?.email || 'hotel@info.uz'}</span>
-                      </a>
-                   </div>
+                   </p>
+                   <button
+                     onClick={() => navigate('/map', { state: { targetHotelId: hotel._id } })}
+                     className="w-full py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
+                     style={{ background: 'var(--gradient-main)' }}
+                   >
+                     <FiNavigation className="w-4 h-4" /> Yo'nalishni ko'rish
+                   </button>
                 </div>
 
              </div>
@@ -525,24 +619,7 @@ const HotelDetail = () => {
         </div>
 
         {/* ── Modals ── */}
-        {audioModal && (
-          <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setAudioModal(false)}>
-             <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-lg shadow-xl p-6" onClick={e => e.stopPropagation()}>
-                <div className="flex flex-col items-center text-center">
-                   <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-4">
-                      <FiVolume2 />
-                   </div>
-                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Ovozli ma'lumot</h3>
-                   <p className="text-gray-500 dark:text-slate-400 text-xs mb-6 leading-relaxed">
-                      Mehmonxona haqidagi ma'lumotlarni o'zbek tilida tinglash imkoniyati tez orada ishga tushadi.
-                   </p>
-                   <button onClick={() => setAudioModal(false)} className="w-full bg-blue-600 text-white py-2.5 rounded font-bold text-sm">
-                      Yopish
-                   </button>
-                </div>
-             </div>
-          </div>
-        )}
+        {/* Reja 5: audioModal o'chirildi — speakDescription to'g'ridan-to'g'ri ishlaydi */}
 
         {/* ── Video Modal ── */}
         {videoModal && hotel.videoTour?.url && (
@@ -600,6 +677,12 @@ const HotelDetail = () => {
             )}
           </div>
         )}
+
+        <ChatWidget 
+          hotelId={hotel._id} 
+          ownerId={hotel.owner?._id || hotel.owner} 
+          hotelName={hotel.name} 
+        />
 
       </div>
     </div>
