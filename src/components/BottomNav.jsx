@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { ChatContext } from '../context/ChatContext';
 import { APP_NAME } from '../config/app';
 import {
   FiHome, FiSearch, FiHeart, FiUser, FiMap,
-  FiBriefcase, FiBarChart2, FiSettings, FiLogIn, FiLogOut
+  FiBriefcase, FiBarChart2, FiSettings, FiLogIn, FiLogOut,
+  FiMessageCircle,
 } from 'react-icons/fi';
 
 const NAV_ITEMS = {
@@ -19,10 +21,12 @@ const NAV_ITEMS = {
     { path: '/search',    label: 'Qidirish', icon: FiSearch },
     { path: '/map',       label: 'Xarita',   icon: FiMap },
     { path: '/favorites', label: 'Sevimli',  icon: FiHeart },
+    { path: '/chat',      label: 'Xabarlar', icon: FiMessageCircle, chat: true },
     { path: '/profile',   label: 'Profil',   icon: FiUser },
   ],
   HOTEL_OWNER: [
     { path: '/owner',   label: 'Hotellarim', icon: FiBriefcase },
+    { path: '/chat',    label: 'Xabarlar',   icon: FiMessageCircle, chat: true },
     { path: '/search',  label: 'Qidirish',   icon: FiSearch },
     { path: '/map',     label: 'Xarita',     icon: FiMap },
     { path: '/profile', label: 'Profil',     icon: FiUser },
@@ -36,9 +40,10 @@ const NAV_ITEMS = {
 };
 
 /* ── Shared NavItem ── */
-const NavItem = ({ item, active, inactiveColor, hoverBg, mobile = false }) => {
+const NavItem = ({ item, active, inactiveColor, hoverBg, mobile = false, unread = 0 }) => {
   const Icon = item.icon;
   const to   = item.tab ? `${item.path}?tab=${item.tab}` : item.path;
+  const badge = item.chat && unread > 0;
 
   if (mobile) {
     return (
@@ -48,23 +53,33 @@ const NavItem = ({ item, active, inactiveColor, hoverBg, mobile = false }) => {
         aria-current={active ? 'page' : undefined}
         className="flex flex-col items-center justify-center gap-1 rounded-[1rem] transition-all active:scale-90 press-effect"
         style={{
-          minWidth: 56,
-          padding: '7px 10px 6px',
+          minWidth: 56, padding: '7px 10px 6px',
           background: active ? 'var(--gradient-main)' : 'transparent',
           boxShadow: active ? 'var(--shadow-colored)' : 'none',
           transform: active ? 'translateY(-1px)' : 'none',
           transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+          position: 'relative',
         }}
       >
-        <Icon style={{ width: 21, height: 21, color: active ? 'white' : 'var(--text-muted)', transition: 'color 0.2s ease' }} />
+        <div style={{ position: 'relative' }}>
+          <Icon style={{ width: 21, height: 21, color: active ? 'white' : 'var(--text-muted)', transition: 'color 0.2s ease' }} />
+          {badge && (
+            <span style={{
+              position: 'absolute', top: -5, right: -7,
+              background: '#ef4444', color: '#fff',
+              borderRadius: '50%', minWidth: 16, height: 16,
+              fontSize: '0.58rem', fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 3px', border: '1.5px solid var(--bg-card,#fff)',
+            }}>
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </div>
         <span style={{
-          fontSize: 9.5,
-          fontWeight: 700,
-          letterSpacing: '0.02em',
+          fontSize: 9.5, fontWeight: 700, letterSpacing: '0.02em',
           color: active ? 'white' : 'var(--text-muted)',
-          whiteSpace: 'nowrap',
-          lineHeight: 1.2,
-          transition: 'color 0.2s ease',
+          whiteSpace: 'nowrap', lineHeight: 1.2, transition: 'color 0.2s ease',
         }}>
           {item.label}
         </span>
@@ -83,17 +98,31 @@ const NavItem = ({ item, active, inactiveColor, hoverBg, mobile = false }) => {
         boxShadow: active ? 'var(--shadow-colored)' : 'none',
         color: active ? 'white' : 'var(--text-muted)',
         transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+        position: 'relative',
       }}
       onMouseEnter={e => { if (!active) e.currentTarget.style.background = hoverBg; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
     >
       <Icon style={{ width: 20, height: 20 }} />
+      {badge && (
+        <span style={{
+          position: 'absolute', top: 4, right: 4,
+          background: '#ef4444', color: '#fff',
+          borderRadius: '50%', minWidth: 16, height: 16,
+          fontSize: '0.58rem', fontWeight: 800,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 3px', border: '1.5px solid var(--bg-card,#fff)',
+        }}>
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
     </Link>
   );
 };
 
 const BottomNav = () => {
   const { user, logout, darkMode } = useContext(AuthContext);
+  const { unreadTotal } = useContext(ChatContext);
   const location = useLocation();
   const navigate = useNavigate();
   const role     = user?.role || 'GUEST';
@@ -125,7 +154,7 @@ const BottomNav = () => {
         <div className="flex items-center justify-around px-1 py-1.5 bg-white/97 dark:bg-[#0B1120]/97 backdrop-blur-2xl"
           style={{ boxShadow: '0 -4px 24px -6px rgba(0,0,0,0.1)' }}>
           {items.map((item, i) => (
-            <NavItem key={i} item={item} active={isActive(item)} mobile />
+            <NavItem key={i} item={item} active={isActive(item)} mobile unread={unreadTotal} />
           ))}
         </div>
       </nav>
@@ -154,19 +183,39 @@ const BottomNav = () => {
             const active = isActive(item);
             const to = item.tab ? `${item.path}?tab=${item.tab}` : item.path;
             
+            const showBadge = item.chat && unreadTotal > 0;
             return (
               <Link
                 key={i}
                 to={to}
                 className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 group ${
-                  active 
-                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                  active
+                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Icon className={`w-5 h-5 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`} />
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <Icon className={`w-5 h-5 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`} />
+                  {showBadge && (
+                    <span style={{
+                      position: 'absolute', top: -5, right: -7,
+                      background: '#ef4444', color: '#fff',
+                      borderRadius: '50%', minWidth: 16, height: 16,
+                      fontSize: '0.58rem', fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 3px',
+                    }}>
+                      {unreadTotal > 99 ? '99+' : unreadTotal}
+                    </span>
+                  )}
+                </div>
                 <span>{item.label}</span>
-                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />}
+                {active && !showBadge && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />}
+                {showBadge && !active && (
+                  <span className="ml-auto text-xs font-black text-red-500">
+                    {unreadTotal > 99 ? '99+' : unreadTotal}
+                  </span>
+                )}
               </Link>
             );
           })}

@@ -1,8 +1,11 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { ChatProvider } from './context/ChatContext';
+import ChatWindow from './components/Chat/ChatWindow';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
+import ThemeToggle from './components/ThemeToggle';
 import Loader from './components/Loader';
 import { APP_NAME } from './config/app';
 
@@ -16,6 +19,7 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import HotelsMap from './pages/HotelsMap';
+import ChatPage from './pages/ChatPage';
 
 const AppContent = () => {
   const { loading } = useContext(AuthContext);
@@ -27,6 +31,8 @@ const AppContent = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
+        {/* Theme toggle — barcha sahifalarda ko'rinadi */}
+        <ThemeToggle />
         <div className="flex-grow scroll-smooth main-container relative">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -39,6 +45,7 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/owner" element={<ProtectedRoute roles={['HOTEL_OWNER']}><OwnerDashboard /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
             <Route path="*" element={
               <div className="flex flex-col items-center justify-center min-h-[70vh]">
                 <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">404</h1>
@@ -57,7 +64,10 @@ const AppContent = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <ChatProvider>
+        <AppContent />
+        <ChatWindow />
+      </ChatProvider>
     </AuthProvider>
   );
 };

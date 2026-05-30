@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import ChatWidget from '../components/ChatWidget';
+import ComingSoonModal from '../components/ComingSoonModal';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';
@@ -74,7 +75,7 @@ const HotelDetail = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [reviewForm, setReviewForm]     = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting]     = useState(false);
-  const [audioPlaying, setAudioPlaying]   = useState(false);
+  const [ttsModal, setTtsModal]           = useState(false);
   const [videoModal, setVideoModal]       = useState(false);
   const [panoramaModal, setPanoramaModal] = useState(null); // aktiv panorama indeksi
 
@@ -127,29 +128,10 @@ const HotelDetail = () => {
     } finally { setSubmitting(false); }
   };
 
-  // Reja 5: Haqiqiy ovozli tavsif — SpeechSynthesis (o'zbek tili)
+  // Ovozli tinglash (TTS) hozircha ishlab chiqilmoqda — "Tez orada" modali ko'rsatiladi
   const speakDescription = () => {
-    if (audioPlaying) {
-      window.speechSynthesis.cancel();
-      setAudioPlaying(false);
-      return;
-    }
-    const text = hotel?.digitalInclusion?.screenReaderDescription || hotel?.description;
-    if (!text) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'uz-UZ';
-    utterance.rate = 0.85;
-    utterance.onend = () => setAudioPlaying(false);
-    utterance.onerror = () => setAudioPlaying(false);
-    setAudioPlaying(true);
-    window.speechSynthesis.speak(utterance);
+    setTtsModal(true);
   };
-
-  // Cleanup: sahifadan chiqilganda audio to'xtatilsin
-  useEffect(() => {
-    return () => window.speechSynthesis.cancel();
-  }, []);
 
 
   if (loading) return (
@@ -373,17 +355,13 @@ const HotelDetail = () => {
                 {srText && <p id={`sr-desc-${hotel._id}`} className="sr-only">{srText}</p>}
                 <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{desc}</p>
               </article>
-              {/* Reja 5: Haqiqiy ovozli tavsif */}
+              {/* Ovozli tinglash — hozircha "Tez orada" */}
               <button
                 onClick={speakDescription}
-                className={`mt-4 font-bold text-xs flex items-center gap-1.5 transition-colors ${
-                  audioPlaying
-                    ? 'text-red-500 hover:text-red-600'
-                    : 'text-blue-600 hover:text-blue-700'
-                }`}
+                className="mt-4 font-bold text-xs flex items-center gap-1.5 transition-colors text-blue-600 hover:text-blue-700"
               >
                 <FiVolume2 />
-                {audioPlaying ? 'To\'xtatish' : 'Ovozli tinglash (o\'zbek tili)'}
+                Ovozli tinglash (o'zbek tili)
               </button>
             </Section>
 
@@ -681,7 +659,17 @@ const HotelDetail = () => {
         <ChatWidget 
           hotelId={hotel._id} 
           ownerId={hotel.owner?._id || hotel.owner} 
-          hotelName={hotel.name} 
+          hotelName={hotel.name}
+        />
+
+        {/* Ovozli tinglash — "Tez orada" modali */}
+        <ComingSoonModal
+          open={ttsModal}
+          onClose={() => setTtsModal(false)}
+          icon={<FiVolume2 size={28} />}
+          title="Ovozli tinglash tez orada"
+          description="Matnni ovozga aylantirish (TTS) funksiyasi hozircha ishlab chiqilmoqda. Tez orada mehmonxona tavsifini o'zbek tilida tinglashingiz mumkin bo'ladi."
+          notifyKey="tts"
         />
 
       </div>
