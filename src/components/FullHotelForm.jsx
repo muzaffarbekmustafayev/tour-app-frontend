@@ -87,10 +87,11 @@ export const emptyHotelTemplate = {
 const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
   const { darkMode } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('umumiy');
-  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
-  const fileInputRefs = useRef({});
+  const [dragActive, setDragActive] = useState(false);
+  const galleryInputRef = useRef(null);
 
   const handleFormChange = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
@@ -117,21 +118,54 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
     }
   };
 
-  const handleImageUpload = async (idx, file) => {
-    if (!file) return;
-    setUploadingIdx(idx);
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      const res = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      const imgs = [...form.images];
-      imgs[idx] = res.data.url;
-      setForm(prev => ({ ...prev, images: imgs }));
-    } catch (err) {
-      alert("Rasmni yuklashda xatolik yuz berdi");
-    } finally {
-      setUploadingIdx(null);
+  // Tanlangan fayllarni ketma-ket serverga yuklab, mavjud rasmlarga qo'shadi
+  const handleFilesSelected = async (fileList) => {
+    const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    const tooBig = files.find(f => f.size > 5 * 1024 * 1024);
+    if (tooBig) {
+      alert(`"${tooBig.name}" hajmi 5MB dan katta. Kichikroq rasm tanlang.`);
+      return;
     }
+
+    setUploading(true);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        uploaded.push(res.data.url);
+      }
+      setForm(prev => ({
+        ...prev,
+        images: [...(prev.images || []).filter(Boolean), ...uploaded],
+      }));
+    } catch (err) {
+      alert('Rasm yuklashda xatolik: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Bo'sh bo'lmagan ro'yxat indeksi bo'yicha rasmni o'chiradi
+  const removeImage = (targetIdx) => {
+    setForm(prev => ({
+      ...prev,
+      images: (prev.images || []).filter(Boolean).filter((_, i) => i !== targetIdx),
+    }));
+  };
+
+  // Tanlangan rasmni ro'yxat boshiga olib chiqib, muqova (asosiy) rasmga aylantiradi
+  const setCoverImage = (targetIdx) => {
+    setForm(prev => {
+      const imgs = (prev.images || []).filter(Boolean);
+      if (targetIdx <= 0 || targetIdx >= imgs.length) return prev;
+      const next = [...imgs];
+      const [picked] = next.splice(targetIdx, 1);
+      return { ...prev, images: [picked, ...next] };
+    });
   };
 
   const handleGetGPS = async () => {
@@ -550,19 +584,79 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
             {/* ── Rasmlar ── */}
             <div className={CardClass}>
-              
-              {/* Rasm yuklash bo'limi qisqartirilgan */}
-              <div className="mt-4">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  Rasm URL manzillari (har satriga bitta)
-                </label>
-                <textarea
-                  className={InputClass + " h-24 font-mono text-xs"}
-                  placeholder="https://example.com/image1.jpg"
-                  value={(form.images || []).join('\n')}
-                  onChange={e => setForm(f => ({ ...f, images: e.target.value.split('\n').filter(Boolean) }))}
+              <h2 className="text-sm font-bold mb-1 text-slate-900 dark:text-white flex items-center gap-2">
+                <FiImage className="text-indigo-500" /> Mehmonxona Rasmlari
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mb-5">
+                Kompyuteringizdan rasm fayllarini yuklang. Birinchi rasm asosiy (muqova) rasm bo'ladi.
+              </p>
+
+              {/* Yuklash maydoni (drag & drop + bosish) */}
+              <div
+                onClick={() => !uploading && galleryInputRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+                onDrop={e => { e.preventDefault(); setDragActive(false); handleFilesSelected(e.dataTransfer.files); }}
+                className={`relative cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all ${dragActive ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30' : 'border-slate-300 dark:border-slate-700 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800/40'} ${uploading ? 'opacity-70 pointer-events-none' : ''}`}
+              >
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={e => { handleFilesSelected(e.target.files); e.target.value = ''; }}
                 />
+                <div className="flex flex-col items-center gap-3 pointer-events-none">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                    {uploading
+                      ? <FiRotateCw className="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-spin" />
+                      : <FiImage className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                      {uploading ? 'Rasmlar yuklanmoqda...' : 'Rasm tanlash uchun bosing yoki bu yerga tashlang'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, WEBP — har biri maksimal 5MB. Bir nechta tanlash mumkin.</p>
+                  </div>
+                </div>
               </div>
+
+              {/* Yuklangan rasmlar to'plami */}
+              {(form.images || []).filter(Boolean).length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+                  {(form.images || []).filter(Boolean).map((img, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-fade-in">
+                      <img src={img} alt={`Rasm ${idx + 1}`} className="w-full h-full object-cover" />
+                      {idx === 0 && (
+                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black shadow">MUQOVA</span>
+                      )}
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                        {idx !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setCoverImage(idx)}
+                            title="Muqova qilish"
+                            className="w-7 h-7 rounded-lg bg-slate-900/80 hover:bg-indigo-600 text-white flex items-center justify-center shadow-md"
+                          >
+                            <FiCheck className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          title="O'chirish"
+                          className="w-7 h-7 rounded-lg bg-rose-500/90 hover:bg-rose-600 text-white flex items-center justify-center shadow-md"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                !uploading && <p className="text-center text-xs text-slate-400 mt-6">Hali rasm yuklanmagan.</p>
+              )}
             </div>
 
             {/* Submit */}
