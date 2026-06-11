@@ -1,7 +1,17 @@
-import React from 'react';
-import { FiNavigation, FiX, FiLoader, FiMapPin, FiClock, FiExternalLink, FiAlertTriangle } from 'react-icons/fi';
-import { MdDirectionsCar, MdDirectionsWalk } from 'react-icons/md';
+import React, { useState } from 'react';
+import { FiNavigation, FiX, FiLoader, FiMapPin, FiClock, FiExternalLink, FiAlertTriangle, FiChevronDown, FiCornerUpLeft, FiCornerUpRight, FiArrowUp, FiFlag } from 'react-icons/fi';
+import { MdDirectionsCar } from 'react-icons/md';
 import { fmtDist, fmtTime } from './mapUtils';
+
+// Manevr turiga mos ikonka
+const stepIcon = (step) => {
+  const mod = step.modifier || '';
+  if (step.type === 'arrive') return <FiFlag className="w-4 h-4 text-green-600" />;
+  if (step.type === 'depart') return <FiMapPin className="w-4 h-4 text-blue-600" />;
+  if (mod.includes('left')) return <FiCornerUpLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />;
+  if (mod.includes('right')) return <FiCornerUpRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />;
+  return <FiArrowUp className="w-4 h-4 text-slate-600 dark:text-slate-300" />;
+};
 
 const MapRouteOverlay = ({
   activeHotel,
@@ -12,9 +22,11 @@ const MapRouteOverlay = ({
   isRouting,
   geoLoading,
   routeInfo,
+  routeSteps = [],
   routeError,
   geoMsg,
 }) => {
+  const [showSteps, setShowSteps] = useState(false);
   if (!activeHotel || loading) return null;
 
   const googleUrl = (hotel, prof) =>
@@ -115,6 +127,49 @@ const MapRouteOverlay = ({
               </a>
             </div>
           ) : null}
+
+          {/* Turn-by-turn yo'riqnoma (Google Maps uslubida) */}
+          {!isRouting && !routeError && routeSteps.length > 0 && (
+            <div className="rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+              {/* Keyingi manevr — yirik ko'rsatilgan */}
+              <div className="flex items-center gap-3 px-3.5 py-3 bg-blue-50 dark:bg-blue-900/20">
+                <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-sm">
+                  {stepIcon(routeSteps[0])}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{routeSteps[0].text}</p>
+                  {routeSteps[0].distance > 0 && (
+                    <p className="text-[11px] font-semibold text-slate-500">{fmtDist(routeSteps[0].distance)}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Barcha qadamlar — yig'iladigan */}
+              <button
+                onClick={() => setShowSteps(s => !s)}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                <span>Barcha bosqichlar ({routeSteps.length})</span>
+                <FiChevronDown className={`w-4 h-4 transition-transform ${showSteps ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showSteps && (
+                <ol className="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                  {routeSteps.map((s, i) => (
+                    <li key={i} className="flex items-start gap-3 px-3.5 py-2.5">
+                      <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
+                        {stepIcon(s)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200 leading-snug">{s.text}</p>
+                        {s.distance > 0 && <p className="text-[11px] text-slate-400">{fmtDist(s.distance)}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

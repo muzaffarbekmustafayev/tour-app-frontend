@@ -59,9 +59,9 @@ const accessibilityList = [
   { key: 'showerSeat', label: 'Dush o\'rindig\'i' },
 ];
 const nearbyPlacesList = [
-  'Navoiy bog\'i', 'Alisher Navoiy haykali', 'Markaziy xiyobon', 'Poytaxt savdo markazi',
-  'Hazrati Mir Said Bahrom maqbarasi', 'Qosim Shayx xonaqohi', 'Sarmishsoy qoyatoshlari',
-  'Nurata Chashma majmuasi', 'Aydarko\'l', 'G\'ozg\'on koshonasi', 'Navoiy markaziy stadioni'
+  'Chashma majmuasi', 'Nur qal\'asi xarobalari', 'Sarmishsoy petrogliflari', 'Nurota tog\'lari', 'Aydarko\'l',
+  'Polkan baxshi xotira majmuasi', 'Xatirchi tarixiy markazi', 'Zarafshon daryosi sohili',
+  'Toshmasjid majmuasi (Vangozi)', 'Xoja Boyazid Bistomiy maqbarasi', 'Qadimiy So\'g\'d manzilgohi xarobalari'
 ];
 const securityList = [
   'CCTV (Kameratizm)', '24/7 Qo\'riqlash', 'Seyf', 'Yong\'in o\'chirish tizimi',

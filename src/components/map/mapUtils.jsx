@@ -16,11 +16,40 @@ export const FILTERS = [
   { key: 'hostel', label: 'Hostellar' },
 ];
 
+// OSRM manevr turini o'zbekcha yo'riqnomaga aylantirish
+const MANEUVER_UZ = {
+  'turn-left': "Chapga buriling",
+  'turn-right': "O'ngga buriling",
+  'turn-slight left': "Bir oz chapga buriling",
+  'turn-slight right': "Bir oz o'ngga buriling",
+  'turn-sharp left': "Keskin chapga buriling",
+  'turn-sharp right': "Keskin o'ngga buriling",
+  'turn-straight': "To'g'riga davom eting",
+  'turn-uturn': "Orqaga qayting (U burilish)",
+  'depart': "Yo'lni boshlang",
+  'arrive': "Manzilga yetib keldingiz",
+  'roundabout': "Aylanma yo'lga kiring",
+  'rotary': "Aylanma yo'lga kiring",
+  'merge': "Yo'lga qo'shiling",
+  'fork-left': "Ayriliqda chapni tanlang",
+  'fork-right': "Ayriliqda o'ngni tanlang",
+  'end of road-left': "Yo'l oxirida chapga buriling",
+  'end of road-right': "Yo'l oxirida o'ngga buriling",
+};
+
+function maneuverText(step) {
+  const m = step.maneuver || {};
+  const key = `${m.type}-${m.modifier || ''}`.trim().replace(/-$/, '');
+  const base = MANEUVER_UZ[key] || MANEUVER_UZ[m.type] || "To'g'riga davom eting";
+  const road = step.name ? ` — ${step.name}` : '';
+  return base + road;
+}
+
 export async function fetchRoute(from, to, profile = 'driving') {
   const url =
     `https://router.project-osrm.org/route/v1/${profile}/` +
     `${from[1]},${from[0]};${to[1]},${to[0]}` +
-    `?overview=full&geometries=geojson`;
+    `?overview=full&geometries=geojson&steps=true`;
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 10000);
   try {
@@ -30,10 +59,18 @@ export async function fetchRoute(from, to, profile = 'driving') {
     const data = await res.json();
     if (data.code !== 'Ok' || !data.routes?.length) throw new Error('Marshrut topilmadi');
     const r = data.routes[0];
+    const steps = (r.legs?.[0]?.steps || []).map(s => ({
+      text: maneuverText(s),
+      type: s.maneuver?.type || 'continue',
+      modifier: s.maneuver?.modifier || '',
+      distance: s.distance,
+      location: s.maneuver?.location ? [s.maneuver.location[1], s.maneuver.location[0]] : null,
+    }));
     return {
       coords:   r.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
       distance: r.distance,
       duration: r.duration,
+      steps,
     };
   } catch (e) { clearTimeout(timer); throw e; }
 }

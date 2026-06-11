@@ -20,6 +20,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import HotelsMap from './pages/HotelsMap';
 import ChatPage from './pages/ChatPage';
+import AIAssistant from './components/AIAssistant';
 
 const AppContent = () => {
   const { loading } = useContext(AuthContext);
@@ -55,6 +56,7 @@ const AppContent = () => {
             } />
           </Routes>
         </div>
+        <AIAssistant />
         <BottomNav />
       </div>
     </Router>

@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiNavigation, FiLayers } from 'react-icons/fi';
+import { FiLayers, FiBox, FiMap } from 'react-icons/fi';
 import api from '../services/api';
 import Loader from '../components/Loader';
-import { calcAccessibilityScore, getScoreStyle } from '../utils/accessibilityScore';
 import { AuthContext } from '../context/AuthContext';
 
 import {
@@ -14,29 +11,12 @@ import {
   CATEGORY_LABELS,
   FILTERS,
   fetchRoute,
-  fmtPrice,
-  getMinPrice,
-  userIcon,
-  createHotelIcon,
-  FlyTo,
-  Stars,
 } from '../components/map/mapUtils';
 
+import MapLibreView from '../components/map/MapLibreView';
 import MapTopBar from '../components/map/MapTopBar';
 import MapHotelPanel from '../components/map/MapHotelPanel';
 import MapRouteOverlay from '../components/map/MapRouteOverlay';
-
-const MapResizer = () => {
-  const map = useMap();
-  useEffect(() => {
-    map.invalidateSize();
-    const timer = setTimeout(() => {
-      map.invalidateSize({ animate: true });
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [map]);
-  return null;
-};
 
 const HotelsMap = () => {
   const navigate = useNavigate();
@@ -51,12 +31,14 @@ const HotelsMap = () => {
   const [geoMsg, setGeoMsg] = useState(null);
   const [routeCoords, setRouteCoords] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
+  const [routeSteps, setRouteSteps] = useState([]);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState(null);
   const [profile, setProfile] = useState('driving');
   const [activeHotel, setActiveHotel] = useState(null);
   const [flyTarget, setFlyTarget] = useState(null);
   const [showPanel, setShowPanel] = useState(false); // mobile bottom sheet open state
+  const [view3D, setView3D] = useState(false); // boshida 2D; marshrut ochilganda 3D
   const markerRefs = useRef({});
 
   useEffect(() => {
@@ -91,10 +73,12 @@ const HotelsMap = () => {
     setRouteError(null);
     setRouteCoords([]);
     setRouteInfo(null);
+    setRouteSteps([]);
     try {
       const r = await fetchRoute(from, to, prof);
       setRouteCoords(r.coords);
       setRouteInfo({ distance: r.distance, duration: r.duration });
+      setRouteSteps(r.steps || []);
       setFlyTarget(r.coords);
     } catch {
       setRouteError("Yo'nalishni hisoblashda xatolik yuz berdi.");
@@ -106,6 +90,7 @@ const HotelsMap = () => {
   // ── Start guidance ──────────────────────────────────────────────────────────
   const startGuidance = (hotel, prof = profile) => {
     setActiveHotel(hotel);
+    setView3D(true); // marshrut ochilganda 3D ko'rinishga o'tish
     closePanel(); // <-- Avtomatik ravishda panelni yopish (xaritani to'liq ko'rish uchun)
 
     if (userPos) {
@@ -172,9 +157,11 @@ const HotelsMap = () => {
     setUserPos(null);
     setRouteCoords([]);
     setRouteInfo(null);
+    setRouteSteps([]);
     setRouteError(null);
     setGeoMsg(null);
     setActiveHotel(null);
+    setView3D(false); // marshrut yopilganda 2D ko'rinishga qaytish
     setFlyTarget(null);
   };
 
@@ -182,14 +169,10 @@ const HotelsMap = () => {
     setSelected(hotel);
     setShowPanel(true);
     setFlyTarget([hotel.location.lat, hotel.location.lng]);
-    setTimeout(() => markerRefs.current[hotel._id]?.openPopup(), 350);
   };
 
   const closePanel = () => {
     setShowPanel(false);
-    if (selected && markerRefs.current[selected._id]) {
-      markerRefs.current[selected._id].closePopup();
-    }
     setTimeout(() => setSelected(null), 300);
   };
 
@@ -220,134 +203,47 @@ const HotelsMap = () => {
         {loading ? (
           <Loader message="Xarita yuklanmoqda..." />
         ) : (
-          <MapContainer
-            center={NAVOIY_CENTER}
-            zoom={13}
-            style={{ width: '100%', height: '100%' }}
-            zoomControl={false}
-          >
-            <MapResizer />
-            <TileLayer
-              attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url={darkMode ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
+          <>
+            <MapLibreView
+              hotels={filtered}
+              selectedId={selected?._id}
+              onSelect={(hotel) => {
+                if (selected?._id === hotel._id && showPanel) closePanel();
+                else openPanel(hotel);
+              }}
+              userPos={userPos}
+              routeCoords={routeCoords}
+              flyTarget={flyTarget}
+              view3D={view3D}
+              darkMode={darkMode}
             />
 
-            {flyTarget && <FlyTo coords={flyTarget} zoom={15} />}
-
-            {/* User position */}
-            {userPos && <Marker position={userPos} icon={userIcon} />}
-
-            {/* Route polylines */}
-            {routeCoords.length > 1 && (
-              <>
-                {/* Crisp Outline */}
-                <Polyline
-                  positions={routeCoords}
-                  pathOptions={{ color: '#312e81', weight: 8, opacity: 0.8, lineCap: 'round', lineJoin: 'round' }}
-                />
-                {/* Clean Inner Line */}
-                <Polyline
-                  positions={routeCoords}
-                  pathOptions={{ color: '#4f46e5', weight: 4, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
-                />
-              </>
-            )}
-
-            {/* Hotel markers */}
-            {filtered.map((hotel) => (
-              <Marker
-                key={hotel._id}
-                position={[hotel.location.lat, hotel.location.lng]}
-                icon={createHotelIcon(selected?._id === hotel._id)}
-                ref={(el) => {
-                  if (el) markerRefs.current[hotel._id] = el;
-                }}
-                eventHandlers={{
-                  click: () => {
-                    if (selected?._id === hotel._id && showPanel) closePanel();
-                    else openPanel(hotel);
-                  },
-                }}
-              >
-                <Popup closeButton={false}>
-                  <div style={{ minWidth: 160, padding: '4px' }}>
-                    <p
-                      style={{ fontWeight: 800, fontSize: 14, color: 'var(--text-main)', marginBottom: 6, cursor: 'pointer', lineHeight: 1.2 }}
-                      onClick={() => navigate(`/hotel/${hotel._id}`)}
-                    >
-                      {hotel.name}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <Stars count={hotel.stars} />
-                    </div>
-                    {fmtPrice(getMinPrice(hotel)) && (
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#059669', marginTop: 4 }}>
-                        {fmtPrice(getMinPrice(hotel))} UZS <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>(boshlang'ich narx)</span>
-                      </p>
-                    )}
-                    {calcAccessibilityScore(hotel) > 0 && (
-                      <div style={{ marginTop: 6 }}>
-                        <span
-                          style={{
-                            background: getScoreStyle(calcAccessibilityScore(hotel)).bg,
-                            color: getScoreStyle(calcAccessibilityScore(hotel)).color,
-                            padding: '2px 6px',
-                            borderRadius: '12px',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          ♿ Inklyuzivlik: {calcAccessibilityScore(hotel)}%
-                        </span>
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          startGuidance(hotel);
-                        }}
-                        className="btn-primary"
-                        style={{
-                          flex: 1,
-                          border: 'none',
-                          borderRadius: 6,
-                          padding: '8px 0',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 6,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <FiNavigation style={{ width: 12, height: 12 }} /> Marshrut
-                      </button>
-                      <button
-                        onClick={() => navigate(`/hotel/${hotel._id}`)}
-                        className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
-                        style={{
-                          flex: 1,
-                          border: 'none',
-                          borderRadius: 6,
-                          padding: '8px 0',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Batafsil ko'rish
-                      </button>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+            {/* 2D / 3D segmentli boshqaruv (Google Maps uslubida) */}
+            <div className="absolute top-4 right-4 z-[450] flex items-center gap-1 p-1 rounded-2xl shadow-lg shadow-black/10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/40 dark:border-white/10 ring-1 ring-black/5">
+              {[
+                { v: false, label: '2D', icon: FiMap },
+                { v: true, label: '3D', icon: FiBox },
+              ].map(({ v, label, icon: Icon }) => {
+                const active = view3D === v;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setView3D(v)}
+                    aria-pressed={active}
+                    aria-label={`${label} ko'rinish`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                      active
+                        ? 'bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-500/30'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/70'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Route overlay controls */}
@@ -360,6 +256,7 @@ const HotelsMap = () => {
           isRouting={isRouting}
           geoLoading={geoLoading}
           routeInfo={routeInfo}
+          routeSteps={routeSteps}
           routeError={routeError}
           geoMsg={geoMsg}
         />
@@ -368,18 +265,18 @@ const HotelsMap = () => {
         {!loading && (
           <div className="absolute bottom-6 left-4 z-[400] flex flex-col gap-2 pointer-events-auto">
             <div
-              className="hidden sm:flex flex-col gap-3 p-4 rounded-2xl animate-fade-in shadow-lg shadow-slate-200/40 dark:shadow-black/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60"
+              className="hidden sm:flex flex-col gap-3 p-4 rounded-2xl animate-fade-in shadow-lg shadow-black/10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/40 dark:border-white/10 ring-1 ring-black/5"
             >
               <p
-                className="text-[11px] font-semibold uppercase tracking-widest flex items-center gap-1.5 text-slate-500 dark:text-slate-400"
+                className="text-[10px] font-bold uppercase tracking-[0.15em] flex items-center gap-1.5 text-slate-400 dark:text-slate-500"
               >
-                <FiLayers className="w-3.5 h-3.5 text-blue-500" /> Turkumlar
+                <FiLayers className="w-3.5 h-3.5 text-indigo-500" /> Turkumlar
               </p>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-1.5">
                 {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
-                  <div key={cat} className="flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1 -mx-1 rounded-md transition-colors cursor-pointer">
-                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: CATEGORY_COLORS[cat] }} />
-                    <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{label}</span>
+                  <div key={cat} className="flex items-center gap-2.5 hover:bg-slate-100/60 dark:hover:bg-slate-800/50 px-1.5 py-1 -mx-1.5 rounded-lg transition-colors">
+                    <span className="w-2.5 h-2.5 rounded-full ring-2 ring-white/70 dark:ring-slate-900/70" style={{ background: CATEGORY_COLORS[cat], boxShadow: `0 0 8px ${CATEGORY_COLORS[cat]}66` }} />
+                    <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">{label}</span>
                   </div>
                 ))}
               </div>

@@ -409,6 +409,20 @@ const HotelDetail = () => {
               </Section>
             )}
 
+            {/* ── Yaqin tarixiy joylar ── */}
+            {Array.isArray(hotel.nearbyPlaces) && hotel.nearbyPlaces.length > 0 && (
+              <Section title="Yaqin tarixiy va diqqatga sazovor joylar" icon={<FiMapPin />}>
+                <div className="flex flex-wrap gap-2.5">
+                  {hotel.nearbyPlaces.map((place, i) => (
+                    <div key={i} className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30">
+                      <span className="text-base">🏛️</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{place}</span>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
               <div id="rooms" className="scroll-mt-4 mb-8">
               <h2 className="text-[13px] font-black text-slate-800 dark:text-white mb-5 uppercase tracking-wider flex items-center gap-3">
                 <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm"><FiBriefcase className="w-4 h-4" /></span> Mavjud xonalar

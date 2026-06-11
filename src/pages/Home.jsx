@@ -176,27 +176,36 @@ const Home = () => {
       ══════════════════════════════════════════ */}
       <main className="px-4 max-w-7xl mx-auto">
 
-        {/* ── Stats strip ── */}
-        {!loading && hotels.length > 0 && (
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-1">
-            {[
-              { icon: <FiHome className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" />, value: hotels.length + '+', label: 'Mehmonxona', color: '#6366f1' },
-              { icon: <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />, value: [...new Set(hotels.map(h => h.city).filter(Boolean))].length + '+', label: 'Hudud', color: '#f43f5e' },
-              { icon: <FiStar className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />, value: hotels.length ? (hotels.reduce((s, h) => s + (h.rating || 0), 0) / hotels.length).toFixed(1) : '—', label: 'Reyting', color: '#f59e0b' },
-            ].map(s => (
-              <div key={s.label} className="glass-panel flex flex-col items-center gap-1 sm:gap-1.5 py-3.5 sm:py-4 px-1 sm:px-2 text-center"
-                style={{
-                  borderRadius: '1.25rem',
-                  borderTop: `3px solid ${s.color}`,
-                  boxShadow: `0 4px 20px -6px ${s.color}30`,
-                }}>
-                {s.icon}
-                <p className="text-base sm:text-xl font-black leading-tight" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* ── Hududlar (tumanlar) — bosilganda shu tuman joylari chiqadi ── */}
+        {!loading && hotels.length > 0 && (() => {
+          const districts = [...new Set(hotels.map(h => h.city).filter(Boolean))];
+          const colors = ['#6366f1', '#f43f5e', '#f59e0b'];
+          return (
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-1">
+              {districts.map((district, i) => {
+                const count = hotels.filter(h => h.city === district).length;
+                const color = colors[i % colors.length];
+                return (
+                  <button
+                    key={district}
+                    onClick={() => navigate(`/search?city=${encodeURIComponent(district)}`)}
+                    className="glass-panel press-effect flex flex-col items-center gap-1 sm:gap-1.5 py-4 sm:py-5 px-1 sm:px-2 text-center transition-all hover:shadow-md active:scale-[0.97]"
+                    style={{
+                      borderRadius: '1.25rem',
+                      borderTop: `3px solid ${color}`,
+                      boxShadow: `0 4px 20px -6px ${color}30`,
+                    }}
+                    aria-label={`${district} tumanidagi joylar`}
+                  >
+                    <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
+                    <p className="text-sm sm:text-lg font-black leading-tight" style={{ color }}>{district}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{count} ta maskan</p>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* ── Navoiy highlights banner ── */}
 
@@ -271,6 +280,69 @@ const Home = () => {
         <div className="mb-12">
           <AIRecommendations />
         </div>
+
+        {/* ── Tarixiy joylar bo'yicha dam olish maskanlari ── */}
+        {!loading && hotels.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">🏛️</span>
+              <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy joylar va yaqin maskanlar</h2>
+            </div>
+            <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
+              Har bir tarixiy yoki sayohatbop joyga eng yaqin dam olish maskanlari
+            </p>
+
+            <div className="space-y-6">
+              {[...new Set(hotels.map(h => h.city).filter(Boolean))].map(district => {
+                const group = hotels.filter(h => h.city === district);
+                const places = [...new Set(group.flatMap(h => h.nearbyPlaces || []))];
+                return (
+                  <div key={district} className="glass-panel p-4 sm:p-5" style={{ borderRadius: '1.5rem' }}>
+                    {/* District + historical places */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <FiMapPin className="w-4 h-4 text-rose-500" />
+                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district} tumani</h3>
+                    </div>
+                    {places.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {places.map((p, i) => (
+                          <span key={i} className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                            style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.25)' }}>
+                            🏛️ {p}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {/* Nearby resting places */}
+                    <p className="text-[10px] font-black uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                      Yaqin dam olish maskanlari
+                    </p>
+                    <div className="snap-x-scroll -mx-1 px-1 pb-1 flex gap-3">
+                      {group.map(h => (
+                        <button key={h._id} onClick={() => navigate(`/hotel/${h._id}`)}
+                          className="press-effect shrink-0 w-44 text-left rounded-2xl overflow-hidden border transition-all hover:shadow-md active:scale-[0.98]"
+                          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+                          {h.images?.[0] && (
+                            <img src={h.images[0]} alt={h.name} className="w-full h-24 object-cover" loading="lazy" />
+                          )}
+                          <div className="p-2.5">
+                            <p className="font-bold text-sm line-clamp-1" style={{ color: 'var(--text-main)' }}>{h.name}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-[11px] font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{h.category}</span>
+                              <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
+                                <FiStar className="w-3 h-3 fill-current" />{h.rating?.toFixed?.(1) ?? h.rating}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ── Hotels grid ── */}
         <div className="mb-12">
