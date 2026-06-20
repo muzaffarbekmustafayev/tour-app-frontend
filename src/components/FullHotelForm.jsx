@@ -88,6 +88,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
   const { darkMode } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('umumiy');
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -108,7 +109,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
   const addRoomType = () => {
     setForm(prev => ({
-      ...prev, rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 500000, totalRooms: 1, roomsAvailable: 1 }]
+      ...prev, rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 0, totalRooms: 1, roomsAvailable: 1 }]
     }));
   };
 
@@ -125,9 +126,10 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
     const tooBig = files.find(f => f.size > 5 * 1024 * 1024);
     if (tooBig) {
-      alert(`"${tooBig.name}" hajmi 5MB dan katta. Kichikroq rasm tanlang.`);
+      setUploadError(`"${tooBig.name}" hajmi 5MB dan katta. Kichikroq rasm tanlang.`);
       return;
     }
+    setUploadError('');
 
     setUploading(true);
     try {
@@ -143,7 +145,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
         images: [...(prev.images || []).filter(Boolean), ...uploaded],
       }));
     } catch (err) {
-      alert('Rasm yuklashda xatolik: ' + (err.response?.data?.message || err.message));
+      setUploadError('Rasm yuklashda xatolik: ' + (err.response?.data?.message || err.message));
     } finally {
       setUploading(false);
     }
@@ -246,6 +248,14 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
         ))}
       </div>
 
+      {/* Rasm yuklash xatosi (alert o'rniga inline banner) */}
+      {uploadError && (
+        <div className="mt-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400">
+          <FiX className="w-5 h-5 shrink-0 mt-0.5 cursor-pointer" onClick={() => setUploadError('')} />
+          <p className="text-sm font-semibold">{uploadError}</p>
+        </div>
+      )}
+
       <div className="mt-6">
         {/* TAB 1: UMUMIY */}
         {activeTab === 'umumiy' && (
@@ -310,10 +320,6 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <div>
                   <label className={LabelClass}>Xonalar soni (Jami) *</label>
                   <input type="number" required value={form.roomsAvailable} onChange={e => handleFormChange('roomsAvailable', e.target.value)} className={InputClass} placeholder="10" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className={LabelClass}>Boshlang'ich Narx (Bir kecha uchun UZS) *</label>
-                  <input type="number" required value={form.pricePerNight || form.basePricePerNight} onChange={e => { handleFormChange('pricePerNight', e.target.value); handleFormChange('basePricePerNight', e.target.value); }} className={`${InputClass} text-indigo-600 dark:text-indigo-400 font-black text-lg`} placeholder="Masalan: 500000" />
                 </div>
               </div>
             </div>
@@ -517,12 +523,8 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                       </div>
                       <div>
                         <label className={LabelClass}>Soni (Mavjud)</label>
-                        <input type="number" min={1} value={room.totalRooms} required onChange={e => handleFormChange(idx, 'totalRooms', e.target.value)} className={InputClass} placeholder="5" />
+                        <input type="number" min={1} value={room.totalRooms} required onChange={e => handleRoomFieldChange(idx, 'totalRooms', e.target.value)} className={InputClass} placeholder="5" />
                       </div>
-                    </div>
-                    <div>
-                      <label className={LabelClass}>Xona narxi (Bir kecha uchun UZS)</label>
-                      <input type="number" min={0} value={room.pricePerNight} required onChange={e => handleRoomFieldChange(idx, 'pricePerNight', e.target.value)} className={`${InputClass} text-emerald-600 dark:text-emerald-400 font-bold`} placeholder="500000" />
                     </div>
                     <div>
                       <label className={LabelClass}>Xona turi vizuali</label>

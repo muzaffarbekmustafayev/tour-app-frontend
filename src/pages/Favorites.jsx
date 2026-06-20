@@ -22,11 +22,6 @@ const SkeletonCard = () => (
 const FavCard = ({ hotel, onRemove }) => {
   const name = (hotel.name || 'Nomi yo\'q');
 
-  const price = hotel.basePricePerNight
-    || hotel.pricePerNight
-    || hotel.rooms?.[0]?.pricePerNight
-    || 0;
-
   const img = hotel.images?.[0]
     ? (hotel.images[0].startsWith('http')
         ? hotel.images[0]
@@ -118,22 +113,14 @@ const FavCard = ({ hotel, onRemove }) => {
           </div>
         )}
 
-        {/* Price + CTA */}
+        {/* CTA */}
         <div className="mt-auto pt-3 flex items-center justify-between"
           style={{ borderTop: '1px solid var(--border)' }}>
-          <div>
-            <span className="block text-[10px] uppercase font-black tracking-widest opacity-50 mb-0.5"
-              style={{ color: 'var(--text-main)' }}>Bir kecha</span>
-            <span className="text-xl font-black" style={{ color: 'var(--primary)' }}>
-              {new Intl.NumberFormat('uz-UZ').format(price)}
-              <span className="text-xs font-bold opacity-60 ml-1">UZS</span>
-            </span>
-          </div>
           <Link
             to={`/hotel/${hotel._id}`}
-            className="btn-primary w-11 h-11 rounded-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
+            className="btn-primary flex-1 h-11 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white transition-all active:scale-95 shadow-lg"
           >
-            <FiZap className="w-5 h-5" />
+            <FiZap className="w-4 h-4" /> Batafsil ko'rish
           </Link>
         </div>
       </div>

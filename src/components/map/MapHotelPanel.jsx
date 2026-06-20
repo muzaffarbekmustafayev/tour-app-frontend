@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar } from 'react-icons/fi';
-import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtPrice, fmtDist, fmtTime, getMinPrice } from './mapUtils';
+import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtDist, fmtTime } from './mapUtils';
 import { calcAccessibilityScore, getScoreStyle } from '../../utils/accessibilityScore';
 
 const MapHotelPanel = ({
@@ -20,8 +20,6 @@ const MapHotelPanel = ({
 
   const googleUrl = (hotel, prof) =>
     `https://www.google.com/maps/dir/?api=1&destination=${hotel.location.lat},${hotel.location.lng}&travelmode=${prof === 'walking' ? 'walking' : 'driving'}`;
-
-  const price = getMinPrice(selected);
 
   return (
     <>
@@ -112,26 +110,6 @@ const MapHotelPanel = ({
 
           {/* ── Details Area ── */}
           <div className="p-4 flex flex-col gap-4">
-            
-            {/* Price Block */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <div className="flex flex-col">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Boshlang'ich narx</span>
-                <div className="flex items-baseline gap-1">
-                  {getMinPrice(selected) ? (
-                    <>
-                      <span className="text-[22px] font-bold text-slate-900 dark:text-white">{fmtPrice(getMinPrice(selected))}</span>
-                      <span className="text-[13px] font-semibold text-slate-500">UZS</span>
-                    </>
-                  ) : (
-                    <span className="text-lg font-medium text-slate-500">Narxlar belgilanmagan</span>
-                  )}
-                </div>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <FiMapPin className="w-5 h-5" />
-              </div>
-            </div>
 
             {/* Accessibility Score Badge */}
             {calcAccessibilityScore(selected) > 0 && (

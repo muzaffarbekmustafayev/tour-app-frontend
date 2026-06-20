@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { 
-  FiUsers, FiCalendar, FiHome, FiDollarSign, FiAward, 
-  FiTrendingUp, FiPlus, FiEdit2, FiUnlock, FiLock, 
+  FiUsers, FiCalendar, FiHome, FiDollarSign, FiAward,
+  FiTrendingUp, FiPlus, FiEdit2, FiUnlock, FiLock,
   FiTrash2, FiArrowLeft, FiX, FiInfo, FiAlertTriangle, FiStar, FiList, FiPhone,
-  FiCheck, FiXCircle, FiMapPin
+  FiCheck, FiXCircle, FiMapPin, FiCompass
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
 import FullHotelForm, { emptyHotelTemplate } from '../components/FullHotelForm';
+import AttractionForm, { emptyAttractionTemplate } from '../components/AttractionForm';
+import ConfirmDialog from '../components/ConfirmDialog';
+import {
+  fetchAttractions, createAttraction, updateAttraction, deleteAttraction as apiDeleteAttraction,
+} from '../services/attractions';
 
 
 const AdminDashboard = () => {
@@ -32,6 +37,14 @@ const AdminDashboard = () => {
   const [editHotelForm, setEditHotelForm] = useState({});
   const [editHotelLoading, setEditHotelLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  // Tarixiy joylar (Attraction)
+  const [attractions, setAttractions] = useState([]);
+  const [addAttraction, setAddAttraction] = useState(false);
+  const [attractionForm, setAttractionForm] = useState(emptyAttractionTemplate);
+  const [editAttraction, setEditAttraction] = useState(null);
+  const [attractionLoading, setAttractionLoading] = useState(false);
+  const [attractionError, setAttractionError] = useState('');
+  const [confirmState, setConfirmState] = useState(null); // { title, message, onConfirm }
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,7 +69,60 @@ const AdminDashboard = () => {
       }
     };
     fetchAll();
+    fetchAttractions({ limit: 50 })
+      .then((res) => setAttractions(Array.isArray(res) ? res : (res.data || [])))
+      .catch(() => {});
   }, []);
+
+  const handleAddAttraction = async () => {
+    setAttractionLoading(true); setAttractionError('');
+    try {
+      const created = await createAttraction(attractionForm);
+      setAttractions((prev) => [created, ...prev]);
+      setAddAttraction(false);
+      setAttractionForm(emptyAttractionTemplate);
+      showToast('Tarixiy joy qo\'shildi', 'success');
+    } catch (err) {
+      setAttractionError(err.response?.data?.message || err.message || 'Xatolik yuz berdi');
+    } finally { setAttractionLoading(false); }
+  };
+
+  const handleSaveAttraction = async () => {
+    setAttractionLoading(true); setAttractionError('');
+    try {
+      const updated = await updateAttraction(editAttraction._id, attractionForm);
+      setAttractions((prev) => prev.map((a) => a._id === editAttraction._id ? updated : a));
+      setEditAttraction(null);
+      showToast('Tarixiy joy yangilandi', 'success');
+    } catch (err) {
+      setAttractionError(err.response?.data?.message || err.message || 'Xatolik yuz berdi');
+    } finally { setAttractionLoading(false); }
+  };
+
+  const handleDeleteAttraction = async (attrId) => {
+    setActionLoading(attrId + '_del');
+    try {
+      await apiDeleteAttraction(attrId);
+      setAttractions((prev) => prev.filter((a) => a._id !== attrId));
+    } catch (err) {
+      showToast('Xatolik yuz berdi', 'error');
+    } finally { setActionLoading(null); }
+  };
+
+  const openEditAttraction = (a) => {
+    setEditAttraction(a);
+    setAttractionError('');
+    setAttractionForm({
+      ...emptyAttractionTemplate,
+      ...a,
+      location: a.location || { lat: a.geo?.coordinates?.[1] || '', lng: a.geo?.coordinates?.[0] || '' },
+      video360: a.video360 || emptyAttractionTemplate.video360,
+      atmosphere: a.atmosphere || emptyAttractionTemplate.atmosphere,
+      accessibility: a.accessibility || {},
+      thingsToSeeAround: a.thingsToSeeAround || [],
+      images: a.images || [],
+    });
+  };
 
   const openEditUser = (u) => {
     setEditUser(u);
@@ -97,8 +163,6 @@ const AdminDashboard = () => {
     try {
       const payload = {
         ...addHotelForm,
-        pricePerNight: Number(addHotelForm.basePricePerNight || addHotelForm.pricePerNight),
-        basePricePerNight: Number(addHotelForm.basePricePerNight || addHotelForm.pricePerNight),
         roomsAvailable: Number(addHotelForm.roomsAvailable),
         location: { lat: Number(addHotelForm.location.lat), lng: Number(addHotelForm.location.lng) },
       };
@@ -126,7 +190,6 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Foydalanuvchini o'chirishni tasdiqlaysizmi?")) return;
     setActionLoading(userId + '_del');
     try {
       await api.delete(`/admin/users/${userId}`);
@@ -139,7 +202,6 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteHotel = async (hotelId) => {
-    if (!window.confirm("Mehmonxonani o'chirishni tasdiqlaysizmi?")) return;
     setActionLoading(hotelId + '_del');
     try {
       await api.delete(`/hotels/${hotelId}`);
@@ -168,8 +230,6 @@ const AdminDashboard = () => {
     try {
       const payload = {
         ...editHotelForm,
-        pricePerNight: Number(editHotelForm.basePricePerNight || editHotelForm.pricePerNight),
-        basePricePerNight: Number(editHotelForm.basePricePerNight || editHotelForm.pricePerNight),
         roomsAvailable: Number(editHotelForm.roomsAvailable),
         location: { lat: Number(editHotelForm.location.lat), lng: Number(editHotelForm.location.lng) },
       };
@@ -206,9 +266,10 @@ const AdminDashboard = () => {
     { key: 'overview', label: <span className="flex items-center gap-1.5"><FiTrendingUp className="w-4 h-4"/> Tahlil</span> },
     { key: 'users', label: <span className="flex items-center gap-1.5"><FiUsers className="w-4 h-4"/> Foydalanuvchilar</span> },
     { key: 'hotels', label: <span className="flex items-center gap-1.5"><FiHome className="w-4 h-4"/> Mehmonxonalar</span> },
+    { key: 'attractions', label: <span className="flex items-center gap-1.5"><FiCompass className="w-4 h-4"/> Tarixiy joylar</span> },
   ];
   if (loading) return (
-    <div className="pb-28 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
       <h1 className="text-3xl font-black mb-8 text-slate-900 dark:text-white">Admin Panel</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1,2,3,4].map(i => <div key={i} className="shimmer h-[120px] rounded-2xl" />)}
@@ -428,7 +489,7 @@ const AdminDashboard = () => {
                   <button onClick={() => handleBlockUser(u._id)} disabled={actionLoading === u._id} className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${u.blocked ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}`}>
                      {u.blocked ? <FiUnlock className="w-4 h-4" /> : <FiLock className="w-4 h-4" />}
                   </button>
-                  <button onClick={() => handleDeleteUser(u._id)} disabled={actionLoading === u._id + '_del'} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-rose-600 border border-slate-200 dark:border-slate-700 transition-all">
+                  <button onClick={() => setConfirmState({ title: 'Foydalanuvchini o\'chirish', message: "Bu foydalanuvchi butunlay o'chiriladi. Davom etasizmi?", onConfirm: () => handleDeleteUser(u._id) })} disabled={actionLoading === u._id + '_del'} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-rose-600 border border-slate-200 dark:border-slate-700 transition-all">
                     <FiTrash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -482,14 +543,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 mb-6">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Narxi (Kecha uchun)</p>
-                <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                  {new Intl.NumberFormat('uz-UZ').format(Number(h.pricePerNight || h.basePricePerNight || 0))} 
-                  <span className="text-xs ml-1 opacity-70">UZS</span>
-                </p>
-              </div>
-              
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <button onClick={() => navigate(`/hotel/${h._id}`)} className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
@@ -498,7 +551,7 @@ const AdminDashboard = () => {
                   <button onClick={() => openEditHotel(h)} className="w-12 py-3 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all">
                     <FiEdit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDeleteHotel(h._id)} disabled={actionLoading === h._id + '_del'} className="w-12 py-3 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-100 dark:border-rose-800/50 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all">
+                  <button onClick={() => setConfirmState({ title: 'Mehmonxonani o\'chirish', message: "Bu mehmonxona butunlay o'chiriladi. Davom etasizmi?", onConfirm: () => handleDeleteHotel(h._id) })} disabled={actionLoading === h._id + '_del'} className="w-12 py-3 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-100 dark:border-rose-800/50 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all">
                     <FiTrash2 className="w-4 h-4"/>
                   </button>
                 </div>
@@ -516,6 +569,92 @@ const AdminDashboard = () => {
             </div>
           )}
         </div>
+        </div>
+      )}
+
+      {/* ATTRACTIONS — list */}
+      {activeTab === 'attractions' && !addAttraction && !editAttraction && (
+        <div className="animate-fade-in space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Tarixiy joylar</h2>
+              <p className="text-xs font-semibold text-slate-500">Diqqatga sazovor joylar — faqat admin boshqaradi (egasi yo'q)</p>
+            </div>
+            <button onClick={() => { setAddAttraction(true); setAttractionError(''); setAttractionForm(emptyAttractionTemplate); }}
+              className="w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+              <FiPlus className="w-5 h-5" /> Yangi Tarixiy Joy
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {attractions.map((a) => (
+              <div key={a._id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                    🏛️ {a.district}
+                  </span>
+                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <FiStar className="text-amber-500 fill-current w-3.5 h-3.5" />
+                    <span className="font-bold text-slate-900 dark:text-white text-xs">{a.rating?.toFixed(1) || '—'}</span>
+                  </div>
+                </div>
+                <div className="flex-1 mb-5">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">{a.name}</h3>
+                  <p className="text-xs text-slate-500 line-clamp-2">{a.descriptionShort || a.description}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {a.video360?.url && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20">360° video</span>}
+                    {a.entryFee && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">{a.entryFee}</span>}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => navigate(`/attraction/${a._id}`)} className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all">Ko'rish</button>
+                  <button onClick={() => openEditAttraction(a)} className="w-12 py-3 flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl border border-amber-100 dark:border-amber-800/50 hover:bg-amber-100 transition-all"><FiEdit2 className="w-4 h-4" /></button>
+                  <button onClick={() => setConfirmState({ title: 'Tarixiy joyni o\'chirish', message: "Bu tarixiy joy butunlay o'chiriladi. Davom etasizmi?", onConfirm: () => handleDeleteAttraction(a._id) })} disabled={actionLoading === a._id + '_del'} className="w-12 py-3 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-xl border border-rose-100 dark:border-rose-800/50 hover:bg-rose-100 transition-all"><FiTrash2 className="w-4 h-4" /></button>
+                </div>
+              </div>
+            ))}
+            {attractions.length === 0 && (
+              <div className="col-span-full py-20 text-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                <FiCompass className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm font-bold text-slate-500">Hali tarixiy joy qo'shilmagan.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ATTRACTIONS — add/edit inline */}
+      {activeTab === 'attractions' && (addAttraction || editAttraction) && (
+        <div className="animate-fade-in space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div>
+              <button onClick={() => { setAddAttraction(false); setEditAttraction(null); }} className="flex items-center gap-2 text-slate-500 hover:text-amber-600 font-bold text-sm mb-4 transition-colors">
+                <FiArrowLeft className="w-4 h-4" /> Ortga ro'yxatga qaytish
+              </button>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center"><FiCompass className="w-5 h-5" /></span>
+                {editAttraction ? 'Tarixiy joyni tahrirlash' : 'Yangi tarixiy joy'}
+              </h2>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button onClick={() => { setAddAttraction(false); setEditAttraction(null); }} className="flex-1 sm:flex-none px-6 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all">Bekor qilish</button>
+              <button onClick={editAttraction ? handleSaveAttraction : handleAddAttraction}
+                disabled={attractionLoading || !attractionForm.name}
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                <FiCheck className="w-4 h-4" /> {attractionLoading ? 'Saqlanmoqda...' : 'Saqlash'}
+              </button>
+            </div>
+          </div>
+
+          {attractionError && (
+            <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl px-6 py-4 text-sm font-bold border border-rose-100 dark:border-rose-800/50 flex items-center gap-3">
+              <FiAlertTriangle className="w-5 h-5" /> {attractionError}
+            </div>
+          )}
+
+          <div className="pb-10">
+            <AttractionForm form={attractionForm} setForm={setAttractionForm} />
+          </div>
         </div>
       )}
 
@@ -718,6 +857,15 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* O'chirishni tasdiqlash (universal) */}
+      <ConfirmDialog
+        open={!!confirmState}
+        title={confirmState?.title || 'Tasdiqlang'}
+        message={confirmState?.message || ''}
+        onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
+        onClose={() => setConfirmState(null)}
+      />
     </div>
   );
 };

@@ -55,7 +55,7 @@ const Profile = () => {
         
         {/* Navigation / Header */}
         <div className="flex items-center flex-shrink-0 w-full mb-6 relative">
-           <div className="absolute left-0"><BackButton theme="classic" /></div>
+           <div className="absolute left-0"><BackButton /></div>
            <h1 className="w-full text-center text-lg md:text-xl font-bold text-slate-900 dark:text-white">Profil sozlamalari</h1>
         </div>
 

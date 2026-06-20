@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
-  FiArrowLeft, FiEdit3, FiMapPin, FiNavigation,
-  FiMap, FiDollarSign, FiUsers, FiImage,
-  FiClock, FiFile, FiBell, FiCheck, FiCommand,
-  FiLock, FiPlus, FiHome, FiStar, FiEdit2, FiEye, FiTrash2,
-  FiRotateCw, FiAlertTriangle, FiX, FiMessageCircle, FiSend, FiUser
+  FiPlus, FiHome, FiStar, FiEdit2, FiEye, FiTrash2,
+  FiMessageCircle, FiChevronRight, FiMapPin,
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
 import FullHotelForm from '../components/FullHotelForm';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { ChatContext } from '../context/ChatContext';
 
 
 const amenitiesList = ['Free WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Bar', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception'];
@@ -71,113 +70,16 @@ const OwnerDashboard = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('hotels');
-  const [conversations, setConversations] = useState([]);
-  const [activeConv, setActiveConv] = useState(null);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [inboxLoading, setInboxLoading] = useState(false);
-  const chatEndRef = useRef(null);
+  const [confirmDelete, setConfirmDelete] = useState(null); // { id }
 
-  // Poll conversations & selected chat
+  // Chat — markaziy ChatContext (socket.io bilan ishlaydigan yagona tizim)
+  const { conversations, openConversation, unreadTotal, fetchConversations } = useContext(ChatContext);
+
   useEffect(() => {
-    let interval;
+    if (activeTab === 'messages') fetchConversations();
+  }, [activeTab, fetchConversations]);
 
-    const pollInboxData = async () => {
-      try {
-        const res = await api.get('/chat/owner/inbox');
-        setConversations(res.data);
-
-        if (activeConv) {
-          // Find if there is updated version of activeConv to keep active state in sync
-          const updatedConv = res.data.find(c => c.id === activeConv.id);
-          if (updatedConv && updatedConv.unreadCount > 0) {
-            // If there are new unread messages, fetching history will mark them as read
-            const chatRes = await api.get(`/chat/history/${activeConv.hotel._id}/${activeConv.customer._id}`);
-            setChatMessages(chatRes.data);
-          } else {
-            const chatRes = await api.get(`/chat/history/${activeConv.hotel._id}/${activeConv.customer._id}`);
-            setChatMessages(chatRes.data);
-          }
-        }
-      } catch (err) {
-        console.error('Error polling inbox:', err);
-      }
-    };
-
-    if (activeTab === 'messages') {
-      pollInboxData();
-      interval = setInterval(pollInboxData, 3000);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [activeTab, activeConv]);
-
-  // Scroll active chat to bottom
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages]);
-
-  const selectConversation = async (conv) => {
-    setActiveConv(conv);
-    setInboxLoading(true);
-    try {
-      const chatRes = await api.get(`/chat/history/${conv.hotel._id}/${conv.customer._id}`);
-      setChatMessages(chatRes.data);
-      
-      // Update unread count immediately in local state
-      setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c));
-    } catch (err) {
-      console.error('Failed to load chat history:', err);
-    } finally {
-      setInboxLoading(false);
-    }
-  };
-
-  const handleSendReply = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !activeConv) return;
-
-    const messageText = chatInput.trim();
-    setChatInput('');
-
-    // Optimistic UI update
-    const tempId = Date.now().toString();
-    const optimisticMessage = {
-      _id: tempId,
-      sender: { _id: 'owner' },
-      receiver: { _id: activeConv.customer._id },
-      hotel: activeConv.hotel._id,
-      content: messageText,
-      isRead: false,
-      createdAt: new Date().toISOString()
-    };
-
-    setChatMessages(prev => [...prev, optimisticMessage]);
-
-    try {
-      const res = await api.post('/chat/send', {
-        hotelId: activeConv.hotel._id,
-        receiverId: activeConv.customer._id,
-        content: messageText
-      });
-      
-      // Update with exact data from backend
-      setChatMessages(prev => prev.map(m => m._id === tempId ? res.data : m));
-      
-      // Refresh inbox list to update last message preview immediately
-      const resInbox = await api.get('/chat/owner/inbox');
-      setConversations(resInbox.data);
-    } catch (err) {
-      console.error('Failed to send reply:', err);
-      setChatMessages(prev => prev.filter(m => m._id !== tempId));
-    }
-  };
-
-  const totalUnreadMessages = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+  const totalUnreadMessages = unreadTotal;
 
   const handleImageUpload = async (idx, file) => {
     if (!file) return;
@@ -454,26 +356,25 @@ const OwnerDashboard = () => {
       setShowForm(false);
       fetchData(); // Refresh list
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Failed to save hotel. Please check all fields.');
+      setFormError(err.response?.data?.message || "Mehmonxonani saqlab bo'lmadi. Barcha maydonlarni tekshiring.");
     } finally {
       setFormLoading(false);
     }
   };
 
   const handleDeleteHotel = async (hotelId) => {
-    if (!window.confirm('Are you sure you want to delete this hotel? This cannot be undone.')) return;
     setActionLoading(hotelId);
     try {
       await api.delete(`/hotels/${hotelId}`);
       setHotels(prev => prev.filter(h => h._id !== hotelId));
     } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    finally { setActionLoading(null); setConfirmDelete(null); }
   };
 
   // ---------- FORM VIEW ----------
   if (showForm) {
     return (
-      <div className="pb-28 md:pb-8 pt-6 px-4 max-w-5xl mx-auto min-h-screen lg:pl-32">
+      <div className="pb-28 md:pb-8 pt-6 px-4 max-w-5xl mx-auto min-h-screen">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm gap-4 sticky top-4 z-[50]">
           <div className="flex items-center gap-4">
             <BackButton onClick={() => { if (hotels.length > 0) setShowForm(false); else navigate(-1); }} />
@@ -507,7 +408,7 @@ const OwnerDashboard = () => {
 
   // ---------- MAIN VIEW ----------
   if (loading) return (
-    <div className="pb-24 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-24 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
       <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-8">Hamkor Paneli</h1>
       <div className="space-y-4">
         {[1, 2].map(i => <div key={i} className="animate-pulse bg-white dark:bg-slate-900 h-40 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm" />)}
@@ -575,10 +476,16 @@ const OwnerDashboard = () => {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-            {[
-              { label: 'Mening Hotellarim', value: hotels.length, color: 'bg-indigo-600', icon: <FiHome className="w-5 h-5" /> },
-              { label: 'O\'rtacha Reyting', value: '4.8', color: 'bg-amber-500', icon: <FiStar className="w-5 h-5" /> },
-            ].map((stat, i) => (
+            {(() => {
+              const rated = hotels.filter(h => Number(h.rating) > 0);
+              const avgRating = rated.length
+                ? (rated.reduce((s, h) => s + Number(h.rating), 0) / rated.length).toFixed(1)
+                : '—';
+              return [
+                { label: 'Mening mehmonxonalarim', value: hotels.length, color: 'bg-indigo-600', icon: <FiHome className="w-5 h-5" /> },
+                { label: "O'rtacha reyting", value: avgRating, color: 'bg-amber-500', icon: <FiStar className="w-5 h-5" /> },
+              ];
+            })().map((stat, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 ${stat.color} text-white rounded-xl flex items-center justify-center shadow-sm`}>
@@ -609,7 +516,7 @@ const OwnerDashboard = () => {
                         <FiMapPin className="text-rose-500 w-3.5 h-3.5" /> {hotel.city}
                       </span>
                       <span className="text-[11px] font-bold text-slate-400">
-                        • {hotel.rooms?.length || 0} xona turi • {new Intl.NumberFormat('uz-UZ').format(Number(hotel.pricePerNight || 0) || 0)} UZS/kecha
+                        • {hotel.rooms?.length || 0} xona turi
                       </span>
                     </div>
                   </div>
@@ -641,7 +548,7 @@ const OwnerDashboard = () => {
                     Tahrirlash
                   </button>
                   <button
-                    onClick={() => handleDeleteHotel(hotel._id)}
+                    onClick={() => setConfirmDelete(hotel._id)}
                     disabled={actionLoading === hotel._id}
                     className="px-4 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-white bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-600 dark:hover:bg-rose-600 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50"
                   >
@@ -669,208 +576,77 @@ const OwnerDashboard = () => {
         </>
       )}
 
-      {/* ── TAB 2: INBOX (CHAT CLIENT) ── */}
+      {/* ── TAB 2: KELGAN XABARLAR (ChatContext — socket bilan ishlaydi) ── */}
       {activeTab === 'messages' && (
-        <div className="flex flex-col md:flex-row h-[600px] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-xl overflow-hidden">
-          
-          {/* Left Panel: Conversations List */}
-          <div className="w-full md:w-[350px] shrink-0 border-r border-slate-200/60 dark:border-slate-800/80 flex flex-col h-1/2 md:h-full bg-slate-50/30 dark:bg-slate-900/20">
-            <div className="p-5 border-b border-slate-200/60 dark:border-slate-800/80 shrink-0">
-              <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <FiMessageCircle className="text-indigo-600 dark:text-indigo-400" />
-                Muloqotlar
-              </h3>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {conversations.map((conv) => {
-                const isActive = activeConv && activeConv.id === conv.id;
-                return (
-                  <button
-                    key={conv.id}
-                    onClick={() => selectConversation(conv)}
-                    className={`w-full text-left p-4 rounded-2xl transition-all border flex items-start gap-3 group relative ${
-                      isActive
-                        ? 'bg-indigo-600 text-white border-transparent shadow-lg shadow-indigo-600/10'
-                        : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-700/60'
-                    }`}
-                  >
-                    {/* User Avatar Placeholder */}
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 uppercase border ${
-                      isActive 
-                        ? 'bg-white/20 border-white/10 text-white' 
-                        : 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-100/30 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                    }`}>
-                      {conv.customer.name ? conv.customer.name.substring(0, 2) : 'MI'}
-                    </div>
-
-                    {/* Meta info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center gap-1 mb-0.5">
-                        <h4 className="font-bold text-xs truncate">
-                          {conv.customer.name}
-                        </h4>
-                        <span className={`text-[9px] font-medium shrink-0 opacity-70`}>
-                          {new Date(conv.lastMessage.createdAt).toLocaleDateString([], {
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <p className={`text-[10px] font-bold mb-1 truncate ${isActive ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
-                        {conv.hotel.name}
-                      </p>
-                      <p className={`text-xs truncate ${isActive ? 'text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {conv.lastMessage.content}
-                      </p>
-                    </div>
-
-                    {/* Unread Badge */}
-                    {conv.unreadCount > 0 && !isActive && (
-                      <span className="absolute right-4 bottom-4 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-pulse shrink-0">
-                        {conv.unreadCount}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-
-              {conversations.length === 0 && (
-                <div className="text-center p-8 text-slate-400 dark:text-slate-600">
-                  <FiMessageCircle className="w-10 h-10 mx-auto opacity-40 mb-3 stroke-[1.5]" />
-                  <p className="text-xs font-semibold">Kelgan xabarlar mavjud emas</p>
-                  <p className="text-[10px] opacity-75 mt-1 max-w-[200px] mx-auto leading-relaxed">
-                    Mijozlar sizning mehmonxonalaringiz sahifasida chat widget orqali yozishganda bu yerda paydo bo'ladi.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Panel: Active Chat Room */}
-          <div className="flex-1 flex flex-col h-1/2 md:h-full bg-slate-50/40 dark:bg-slate-950/20">
-            {activeConv ? (
-              <>
-                {/* Chat Header */}
-                <div className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between shrink-0 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs uppercase">
-                        {activeConv.customer.name ? activeConv.customer.name.substring(0, 2) : 'MI'}
-                      </div>
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white dark:border-slate-900 rounded-full"></span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-800 dark:text-white leading-tight">
-                        {activeConv.customer.name}
-                      </h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">
-                        {activeConv.hotel.name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Messages Thread */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {inboxLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
-                    </div>
-                  ) : (
-                    chatMessages.map((msg) => {
-                      // Check if owner sent the message
-                      const isOwn = msg.sender._id === 'owner' || msg.sender === 'owner' || (msg.sender && (msg.sender._id || msg.sender) === activeConv.hotel.owner?._id || (msg.sender && (msg.sender._id || msg.sender) === activeConv.hotel.owner));
-                      
-                      return (
-                        <div
-                          key={msg._id}
-                          className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}
-                        >
-                          <div
-                            className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm shadow-sm relative group ${
-                              isOwn
-                                ? 'bg-indigo-600 text-white rounded-tr-none'
-                                : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-800/80 rounded-tl-none'
-                            }`}
-                          >
-                            <p className="break-words leading-relaxed font-medium">{msg.content}</p>
-                            
-                            {/* Meta row: Time + read checks */}
-                            <div
-                              className={`flex items-center justify-end gap-1 mt-1 text-[9px] select-none opacity-70 ${
-                                isOwn ? 'text-indigo-200' : 'text-slate-400'
-                              }`}
-                            >
-                              <span>
-                                {new Date(msg.createdAt).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </span>
-                              {isOwn && (
-                                <span className="inline-flex">
-                                  {msg.isRead ? (
-                                    <span className="flex text-emerald-300 font-bold" title="Mijoz o'qidi">
-                                      <FiCheck className="w-3 h-3" />
-                                      <FiCheck className="w-3 h-3 -ml-1.5" />
-                                    </span>
-                                  ) : (
-                                    <span className="text-indigo-300" title="Yuborildi">
-                                      <FiCheck className="w-3 h-3" />
-                                    </span>
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  <div ref={chatEndRef} />
-                </div>
-
-                {/* Reply Form */}
-                <form
-                  onSubmit={handleSendReply}
-                  className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center gap-3 shrink-0"
-                >
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Mijozga javob yozing..."
-                    className="flex-1 px-4 py-3 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 border-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-medium"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!chatInput.trim()}
-                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:scale-100 hover:scale-105 active:scale-95 shadow-md shadow-indigo-500/10"
-                    style={{ background: 'var(--gradient-main, linear-gradient(135deg, #4f46e5, #6366f1))' }}
-                  >
-                    <FiSend className="text-base" />
-                  </button>
-                </form>
-              </>
-            ) : (
-              // Empty State for Room
-              <div className="flex flex-col items-center justify-center h-full text-center p-12 text-slate-400 dark:text-slate-600">
-                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center text-slate-300 dark:text-slate-700 mb-4 animate-pulse">
-                  <FiMessageCircle className="text-3xl stroke-[1.5]" />
-                </div>
-                <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
-                  Suhbatni tanlang
-                </h4>
-                <p className="text-xs opacity-75 mt-1 max-w-[280px] leading-relaxed">
-                  Chap tarafdagi ro'yxatdan mijozni tanlang, u bilan kelgan xabarlarni ko'rish va bevosita javob qaytarish imkoni ochiladi.
-                </p>
-              </div>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <FiMessageCircle className="text-indigo-600 dark:text-indigo-400" /> Muloqotlar
+            </h3>
+            {unreadTotal > 0 && (
+              <span className="bg-rose-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">
+                {unreadTotal} yangi
+              </span>
             )}
           </div>
 
+          {conversations.length > 0 ? (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {conversations.map((conv) => {
+                const other = conv.participants?.find(p => p.role === 'CUSTOMER') || conv.participants?.[0];
+                const unread = typeof conv.unreadCount === 'number' ? conv.unreadCount : 0;
+                return (
+                  <button
+                    key={conv._id}
+                    onClick={() => openConversation(conv, false)}
+                    className="w-full text-left p-4 sm:p-5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+                  >
+                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 uppercase bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">
+                      {other?.name ? other.name.substring(0, 2) : 'MI'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">{other?.name || 'Mijoz'}</h4>
+                        {conv.lastMessageAt && (
+                          <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                            {new Date(conv.lastMessageAt).toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                      {conv.hotel?.name && (
+                        <p className="text-[11px] font-bold text-indigo-500 dark:text-indigo-400 truncate mb-0.5">{conv.hotel.name}</p>
+                      )}
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{conv.lastMessage || 'Suhbat boshlandi'}</p>
+                    </div>
+                    {unread > 0 && (
+                      <span className="bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0">{unread}</span>
+                    )}
+                    <FiChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 group-hover:text-indigo-500 transition-colors" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center p-12 text-slate-400 dark:text-slate-600">
+              <FiMessageCircle className="w-12 h-12 mx-auto opacity-40 mb-3 stroke-[1.5]" />
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Kelgan xabarlar mavjud emas</p>
+              <p className="text-xs opacity-75 mt-1 max-w-xs mx-auto leading-relaxed">
+                Mijozlar mehmonxona sahifangizdagi chat tugmasi orqali yozishganda bu yerda paydo bo'ladi.
+              </p>
+            </div>
+          )}
         </div>
       )}
+
+      {/* O'chirishni tasdiqlash */}
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Mehmonxonani o'chirish"
+        message="Bu amalni ortga qaytarib bo'lmaydi. Mehmonxona butunlay o'chiriladi."
+        loading={actionLoading === confirmDelete}
+        onConfirm={() => handleDeleteHotel(confirmDelete)}
+        onClose={() => setConfirmDelete(null)}
+      />
     </div>
   );
 };

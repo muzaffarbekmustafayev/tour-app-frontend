@@ -1,5 +1,5 @@
 import React from 'react';
-import { fmtPrice, getMinPrice, Stars } from './mapUtils';
+import { Stars } from './mapUtils';
 
 const MapHotelCarousel = ({ filtered, selected, openPanel }) => {
   return (
@@ -22,7 +22,6 @@ const MapHotelCarousel = ({ filtered, selected, openPanel }) => {
         style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
       >
         {filtered.map((hotel) => {
-          const price = fmtPrice(getMinPrice(hotel));
           return (
             <button
               key={hotel._id}
@@ -58,12 +57,7 @@ const MapHotelCarousel = ({ filtered, selected, openPanel }) => {
                   {hotel.name}
                 </p>
                 <Stars count={hotel.stars} size="sm" />
-                <div className="flex items-center justify-between mt-0.5">
-                  {price && (
-                    <span style={{ fontSize: 10, fontWeight: 800, color: '#059669' }}>
-                      {price} <span style={{ color: 'var(--text-muted)' }}>UZS</span>
-                    </span>
-                  )}
+                <div className="flex items-center justify-end mt-0.5">
                   {hotel.rating > 0 && (
                     <span style={{ fontSize: 10, fontWeight: 700, color: '#f59e0b' }}>
                       ★ {hotel.rating.toFixed(1)}

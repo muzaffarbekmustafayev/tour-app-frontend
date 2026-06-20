@@ -6,23 +6,24 @@ import { APP_NAME } from '../config/app';
 import {
   FiHome, FiSearch, FiHeart, FiUser, FiMap,
   FiBriefcase, FiBarChart2, FiSettings, FiLogIn, FiLogOut,
-  FiMessageCircle,
+  FiMessageCircle, FiCompass,
 } from 'react-icons/fi';
 
 const NAV_ITEMS = {
   GUEST: [
-    { path: '/',       label: 'Asosiy',   icon: FiHome },
-    { path: '/search', label: 'Qidirish', icon: FiSearch },
-    { path: '/map',    label: 'Xarita',   icon: FiMap },
-    { path: '/login',  label: 'Kirish',   icon: FiLogIn },
+    { path: '/',            label: 'Asosiy',   icon: FiHome },
+    { path: '/attractions', label: 'Joylar',   icon: FiCompass },
+    { path: '/search',      label: 'Qidirish', icon: FiSearch },
+    { path: '/map',         label: 'Xarita',   icon: FiMap },
+    { path: '/login',       label: 'Kirish',   icon: FiLogIn },
   ],
   CUSTOMER: [
-    { path: '/',          label: 'Asosiy',   icon: FiHome },
-    { path: '/search',    label: 'Qidirish', icon: FiSearch },
-    { path: '/map',       label: 'Xarita',   icon: FiMap },
-    { path: '/favorites', label: 'Sevimli',  icon: FiHeart },
-    { path: '/chat',      label: 'Xabarlar', icon: FiMessageCircle, chat: true },
-    { path: '/profile',   label: 'Profil',   icon: FiUser },
+    { path: '/',            label: 'Asosiy',   icon: FiHome },
+    { path: '/attractions', label: 'Joylar',   icon: FiCompass },
+    { path: '/search',      label: 'Qidirish', icon: FiSearch },
+    { path: '/favorites',   label: 'Sevimli',  icon: FiHeart },
+    { path: '/chat',        label: 'Xabarlar', icon: FiMessageCircle, chat: true },
+    { path: '/profile',     label: 'Profil',   icon: FiUser },
   ],
   HOTEL_OWNER: [
     { path: '/owner',   label: 'Hotellarim', icon: FiBriefcase },

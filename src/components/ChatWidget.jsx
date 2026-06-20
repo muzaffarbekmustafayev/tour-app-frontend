@@ -1,29 +1,26 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiMessageCircle, FiLock } from 'react-icons/fi';
+import { FiMessageCircle } from 'react-icons/fi';
 import { AuthContext } from '../context/AuthContext';
 import { ChatContext } from '../context/ChatContext';
 
 const ChatWidget = ({ hotelId, ownerId, hotelName }) => {
   const { user } = useContext(AuthContext);
   const { openConversation, unreadTotal } = useContext(ChatContext);
-  const navigate = useNavigate();
 
-  const isOwnerOfHotel = user && ownerId && (user._id === ownerId || user.id === ownerId);
+  // Faqat tizimga kirgan foydalanuvchiga ko'rinadi (mehmon/guest uchun yashirin)
+  if (!user) return null;
+
+  // O'sha hotelning egasiga (o'zi bilan o'zi suhbat) ko'rsatilmaydi
+  const isOwnerOfHotel = ownerId && (user._id === ownerId || user.id === ownerId);
   if (isOwnerOfHotel) return null;
 
-  const handleClick = () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    openConversation(hotelId, true);
-  };
+  const handleClick = () => openConversation(hotelId, true);
 
   return (
     <button
       onClick={handleClick}
-      title={user ? `${hotelName} bilan suhbat` : 'Kirish kerak'}
+      title={`${hotelName} egasi bilan suhbat`}
+      aria-label={`${hotelName} egasi bilan suhbatlashish`}
       style={{
         position: 'fixed', bottom: 90, right: 20, zIndex: 400,
         width: 56, height: 56, borderRadius: '50%',
@@ -42,8 +39,8 @@ const ChatWidget = ({ hotelId, ownerId, hotelName }) => {
         e.currentTarget.style.boxShadow = '0 4px 20px rgba(99,102,241,0.4)';
       }}
     >
-      {user ? <FiMessageCircle size={22} color="#fff" /> : <FiLock size={20} color="#fff" />}
-      {user && unreadTotal > 0 && (
+      <FiMessageCircle size={22} color="#fff" />
+      {unreadTotal > 0 && (
         <span style={{
           position: 'absolute', top: -2, right: -2,
           background: '#ef4444', color: '#fff',

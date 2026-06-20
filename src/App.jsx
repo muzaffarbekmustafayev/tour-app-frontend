@@ -12,6 +12,8 @@ import { APP_NAME } from './config/app';
 import Home from './pages/Home';
 import SearchPage from './pages/SearchPage';
 import HotelDetail from './pages/HotelDetail';
+import Attractions from './pages/Attractions';
+import AttractionDetail from './pages/AttractionDetail';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
@@ -40,6 +42,8 @@ const AppContent = () => {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/map" element={<HotelsMap />} />
             <Route path="/hotel/:id" element={<HotelDetail />} />
+            <Route path="/attractions" element={<Attractions />} />
+            <Route path="/attraction/:id" element={<AttractionDetail />} />
             <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />

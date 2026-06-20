@@ -5,8 +5,7 @@ import api from '../services/api';
 import BackButton from '../components/BackButton';
 import {
   FiSearch, FiFilter, FiX, FiAward, FiThumbsUp, FiSmile, FiCheck,
-  FiChevronDown, FiChevronUp, FiSliders, FiMapPin, FiDollarSign,
-  FiStar, FiAlertCircle
+  FiChevronDown, FiChevronUp, FiSliders, FiStar, FiAlertCircle
 } from 'react-icons/fi';
 import {
   MdAccessible, MdHearing, MdVisibility,
@@ -161,8 +160,6 @@ const SearchPage = () => {
   const [filters, setFilters] = useState({
     search:    searchParams.get('q')         || '',
     city:      searchParams.get('city')      || '',
-    minPrice:  searchParams.get('minPrice')  || '',
-    maxPrice:  searchParams.get('maxPrice')  || '',
     minRating: searchParams.get('minRating') || '',
     access:    initAccess(),
   });
@@ -173,8 +170,6 @@ const SearchPage = () => {
       const p = new URLSearchParams();
       if (filters.search)    p.set('search',    filters.search);
       if (filters.city)      p.set('city',      filters.city);
-      if (filters.minPrice)  p.set('minPrice',  filters.minPrice);
-      if (filters.maxPrice)  p.set('maxPrice',  filters.maxPrice);
       if (filters.minRating) p.set('minRating', filters.minRating);
       // Accessibility filtrlari — backend ACC_MAP bilan mos keladi
       Object.entries(filters.access).forEach(([key, active]) => {
@@ -202,11 +197,11 @@ const SearchPage = () => {
 
   const set          = (key, val) => setFilters(p => ({ ...p, [key]: val }));
   const toggleAccess = key => setFilters(p => ({ ...p, access: { ...p.access, [key]: !p.access[key] } }));
-  const clearFilters = () => setFilters({ search: '', city: '', minPrice: '', maxPrice: '', minRating: '', access: initAccess() });
+  const clearFilters = () => setFilters({ search: '', city: '', minRating: '', access: initAccess() });
   const toggleGroup  = id => setOpenGroups(p => ({ ...p, [id]: !p[id] }));
 
   const activeCount = Object.values(filters.access).filter(Boolean).length
-    + [filters.minPrice, filters.maxPrice, filters.minRating, filters.city].filter(Boolean).length;
+    + [filters.minRating, filters.city].filter(Boolean).length;
 
   const title = filters.search
     ? `"${filters.search}" natijalari`
@@ -214,8 +209,11 @@ const SearchPage = () => {
       ? `${filters.city} mehmonxonalari`
       : 'Barcha mehmonxonalar';
 
-  /* ── Filter panel (shared between mobile drawer & desktop sidebar) ── */
-  const FilterPanel = () => (
+  /* ── Filter panel (shared between mobile drawer & desktop sidebar) ──
+     MUHIM: bu komponent emas, balki JSX qiymati. `<FilterPanel/>` sifatida
+     render qilinsa, har bosishda remount bo'lib input fokusi yo'qoladi.
+     Shu sababli `{filterPanel}` ko'rinishida inline render qilinadi. */
+  const filterPanel = (
     <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -276,29 +274,6 @@ const SearchPage = () => {
         </div>
       </FilterSection> */}
 
-      {/* Price */}
-      <FilterSection label="Narx (so'm / kecha)" icon={<FiDollarSign className="w-3.5 h-3.5" />}>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { id: 'minPrice', label: 'Min', placeholder: '0' },
-            { id: 'maxPrice', label: 'Max', placeholder: '5 000 000' },
-          ].map(f => (
-            <div key={f.id}>
-              <label className="text-[9px] font-black uppercase tracking-wider pl-1 mb-1 block"
-                style={{ color: 'var(--text-muted)' }}>{f.label}</label>
-              <input
-                type="number"
-                placeholder={f.placeholder}
-                value={filters[f.id]}
-                onChange={e => set(f.id, e.target.value)}
-                className="w-full px-3 py-2.5 text-sm font-semibold rounded-xl outline-none"
-                style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-main)' }}
-              />
-            </div>
-          ))}
-        </div>
-      </FilterSection>
-
       {/* Rating */}
       <FilterSection label="Minimal reyting" icon={<FiStar className="w-3.5 h-3.5" />}>
         <div className="flex flex-col gap-2">
@@ -309,7 +284,7 @@ const SearchPage = () => {
           ].map(r => (
             <label key={r.v} className="flex items-center gap-3 cursor-pointer">
               <div
-                className="w-4.5 h-4.5 rounded-full shrink-0 transition-all"
+                className="rounded-full shrink-0 transition-all"
                 style={{
                   width: 18, height: 18,
                   border: filters.minRating === r.v ? '5px solid var(--primary)' : '2px solid var(--border)',
@@ -414,7 +389,7 @@ const SearchPage = () => {
 
         {/* ── Desktop sidebar ── */}
         <aside className="hidden md:block w-64 lg:w-72 shrink-0 sticky top-4 self-start max-h-[calc(100vh-6rem)] overflow-y-auto hide-scrollbar">
-          <FilterPanel />
+          {filterPanel}
         </aside>
 
         {/* ── Results ── */}
@@ -469,7 +444,7 @@ const SearchPage = () => {
             {/* Drag handle */}
             <div className="w-10 h-1 rounded-full mx-auto mb-5"
               style={{ background: 'var(--border)' }} />
-            <FilterPanel />
+            {filterPanel}
           </div>
         </>
       )}

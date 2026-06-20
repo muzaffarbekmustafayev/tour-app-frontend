@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 // Removed MapView import
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { ChatContext } from '../context/ChatContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
-import ChatWidget from '../components/ChatWidget';
 import ComingSoonModal from '../components/ComingSoonModal';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
@@ -20,7 +20,7 @@ import {
   FiUsers, FiStar, FiCheck, FiPhone, FiMail,
   FiVolume2, FiX, FiCalendar, FiAward,
   FiRotateCw, FiMaximize, FiExternalLink, FiFeather,
-  FiSun, FiMusic, FiNavigation
+  FiSun, FiMusic, FiNavigation, FiMessageCircle
 } from 'react-icons/fi';
 import {
   MdAccessible, MdHearing, MdVisibility,
@@ -67,6 +67,7 @@ const HotelDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { openConversation } = useContext(ChatContext);
   const [hotel, setHotel]               = useState(null);
   const [reviews, setReviews]           = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -76,6 +77,7 @@ const HotelDetail = () => {
   const [reviewForm, setReviewForm]     = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting]     = useState(false);
   const [ttsModal, setTtsModal]           = useState(false);
+  const [speaking, setSpeaking]           = useState(false); // Ovozli o'qish holati
   const [videoModal, setVideoModal]       = useState(false);
   const [panoramaModal, setPanoramaModal] = useState(null); // aktiv panorama indeksi
 
@@ -128,10 +130,84 @@ const HotelDetail = () => {
     } finally { setSubmitting(false); }
   };
 
-  // Ovozli tinglash (TTS) hozircha ishlab chiqilmoqda — "Tez orada" modali ko'rsatiladi
-  const speakDescription = () => {
-    setTtsModal(true);
+  // ── Ovozli tinglash (TTS) — O'ZBEK tilida ──
+  // Asosiy: Google'ning bepul TTS xizmati (tl=uz) — haqiqiy o'zbekcha talaffuz (internet kerak).
+  // Zaxira: brauzer Web Speech API (turkiy/rus ovozi — INGLIZ emas).
+  const audioRef    = useRef(null);
+  const ttsQueueRef = useRef([]);
+
+  // Google TTS bir so'rovda ~200 belgini qabul qiladi — matnni bo'laklarga ajratamiz
+  const chunkText = (text, max = 180) => {
+    const parts = []; let cur = '';
+    for (const w of text.replace(/\s+/g, ' ').trim().split(' ')) {
+      if ((cur + ' ' + w).trim().length > max) { if (cur) parts.push(cur.trim()); cur = w; }
+      else { cur += ' ' + w; }
+    }
+    if (cur.trim()) parts.push(cur.trim());
+    return parts;
   };
+
+  const stopSpeak = () => {
+    ttsQueueRef.current = [];
+    if (audioRef.current) { try { audioRef.current.pause(); } catch { /* ignore */ } audioRef.current = null; }
+    window.speechSynthesis?.cancel?.();
+    setSpeaking(false);
+  };
+
+  // Zaxira — brauzer ovozi (ingliz tilidan qochib turkiy/rus ni afzal ko'radi)
+  const browserFallback = (text) => {
+    const synth = window.speechSynthesis;
+    if (!synth || typeof window.SpeechSynthesisUtterance === 'undefined') { setTtsModal(true); setSpeaking(false); return; }
+    const voices = synth.getVoices() || [];
+    let voice = null;
+    for (const code of ['uz', 'tr', 'az', 'kk', 'ky', 'ru']) {
+      voice = voices.find(v => v.lang?.toLowerCase().startsWith(code));
+      if (voice) break;
+    }
+    const u = new window.SpeechSynthesisUtterance(text);
+    if (voice) u.voice = voice;
+    u.lang = voice?.lang || 'uz-UZ';
+    u.rate = 0.95;
+    u.onend = () => setSpeaking(false);
+    u.onerror = () => setSpeaking(false);
+    synth.cancel();
+    synth.speak(u);
+  };
+
+  const playQueue = () => {
+    const next = ttsQueueRef.current.shift();
+    if (next == null) { setSpeaking(false); audioRef.current = null; return; }
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=uz&q=${encodeURIComponent(next)}`;
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => playQueue();
+    const onFail = () => {
+      // Onlayn ishlamadi — qolgan matnni brauzer ovozida o'qiymiz
+      const rest = [next, ...ttsQueueRef.current].join(' ');
+      ttsQueueRef.current = [];
+      audioRef.current = null;
+      browserFallback(rest);
+    };
+    audio.onerror = onFail;
+    audio.play().catch(onFail);
+  };
+
+  const speakDescription = () => {
+    if (speaking) { stopSpeak(); return; }
+    const text = [hotel?.name, hotel?.description].filter(Boolean).join('. ');
+    if (!text.trim()) return;
+    setSpeaking(true);
+    ttsQueueRef.current = chunkText(text);
+    playQueue();
+  };
+
+  // Sahifadan chiqishda to'xtatish (ovoz fonda qolib ketmasin)
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel?.();
+      if (audioRef.current) { try { audioRef.current.pause(); } catch { /* ignore */ } }
+    };
+  }, []);
 
 
   if (loading) return (
@@ -157,7 +233,6 @@ const HotelDetail = () => {
   ];
   const name = hotel.name;
   const desc = hotel.description;
-  const price = hotel.basePricePerNight || hotel.pricePerNight || hotel.rooms?.[0]?.pricePerNight || 0;
 
   const imgSrc = (src) => src?.startsWith('http')
     ? src
@@ -355,13 +430,19 @@ const HotelDetail = () => {
                 {srText && <p id={`sr-desc-${hotel._id}`} className="sr-only">{srText}</p>}
                 <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{desc}</p>
               </article>
-              {/* Ovozli tinglash — hozircha "Tez orada" */}
+              {/* Ovozli tinglash — brauzer ovozi (inklyuziv, offline) */}
               <button
                 onClick={speakDescription}
-                className="mt-4 font-bold text-xs flex items-center gap-1.5 transition-colors text-blue-600 hover:text-blue-700"
+                aria-pressed={speaking}
+                aria-label={speaking ? "Ovozli o'qishni to'xtatish" : 'Tavsifni ovozli tinglash'}
+                className={`mt-4 font-bold text-xs flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all active:scale-95 ${
+                  speaking
+                    ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400'
+                    : 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                }`}
               >
-                <FiVolume2 />
-                Ovozli tinglash (o'zbek tili)
+                {speaking ? <FiX className="w-4 h-4" /> : <FiVolume2 className="w-4 h-4" />}
+                {speaking ? "To'xtatish" : 'Ovozli tinglash'}
               </button>
             </Section>
 
@@ -449,16 +530,6 @@ const HotelDetail = () => {
                         </div>
                       )}
                     </div>
-                    {/* Narx — boshlang'ich narx */}
-                    {r.pricePerNight > 0 && (
-                      <div className="flex flex-col md:items-end justify-center border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6 shrink-0">
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-wider mb-1">Boshlang'ich narx</p>
-                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                          {new Intl.NumberFormat('uz-UZ').format(r.pricePerNight)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">UZS / tun</span>
-                        </p>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">Muassasa bilan kelishiladi</p>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -526,6 +597,27 @@ const HotelDetail = () => {
                        <FiPhone className="text-indigo-600 w-4 h-4 shrink-0" /> Bog'lanish
                      </h3>
 
+                     {/* Egasi bilan suhbat — o'sha hotel egasidan boshqa hammaga ko'rinadi.
+                         Mehmon (login qilmagan) bossa — login sahifasiga yo'naltiriladi. */}
+                     {(() => {
+                       const ownerId = hotel.owner?._id || hotel.owner;
+                       const isOwner = user && ownerId && (user._id === ownerId || user.id === ownerId);
+                       if (isOwner) return null; // o'zi bilan o'zi suhbatlashmaydi
+                       const handleChat = () => {
+                         if (!user) { navigate(`/login?redirect=/hotel/${hotel._id}`); return; }
+                         openConversation(hotel._id, true);
+                       };
+                       return (
+                         <button
+                           onClick={handleChat}
+                           className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-4 transition-all active:scale-97 hover:shadow-lg"
+                           style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)' }}
+                         >
+                           <FiMessageCircle className="w-4 h-4 shrink-0" /> Egasi bilan suhbat
+                         </button>
+                       );
+                     })()}
+
                      {/* Telefon */}
                      {(hotel.contact?.phone || hotel.owner?.phone) && (
                        <a href={`tel:${hotel.contact?.phone || hotel.owner?.phone}`}
@@ -578,16 +670,6 @@ const HotelDetail = () => {
                        </div>
                      )}
 
-                     {/* Boshlang'ich narx */}
-                     {price > 0 && (
-                       <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
-                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-wider mb-1">Boshlang'ich narx</p>
-                         <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                           {new Intl.NumberFormat('uz-UZ').format(price)} <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">UZS</span>
-                         </p>
-                         <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1.5">* Kelishuv muassasa bilan to'g'ridan-to'g'ri bo'ladi</p>
-                       </div>
-                     )}
                   </div>
 
                 <div id="map-section" className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
@@ -656,7 +738,6 @@ const HotelDetail = () => {
                 </div>
               )}
             </div>
-            {/* Panorama thumbnails */}
             {hotel.panoramas.length > 1 && (
               <div className="flex gap-2 justify-center pb-6 px-4 overflow-x-auto" onClick={e => e.stopPropagation()}>
                 {hotel.panoramas.map((p, i) => (
@@ -670,19 +751,12 @@ const HotelDetail = () => {
           </div>
         )}
 
-        <ChatWidget 
-          hotelId={hotel._id} 
-          ownerId={hotel.owner?._id || hotel.owner} 
-          hotelName={hotel.name}
-        />
-
-        {/* Ovozli tinglash — "Tez orada" modali */}
         <ComingSoonModal
           open={ttsModal}
           onClose={() => setTtsModal(false)}
           icon={<FiVolume2 size={28} />}
-          title="Ovozli tinglash tez orada"
-          description="Matnni ovozga aylantirish (TTS) funksiyasi hozircha ishlab chiqilmoqda. Tez orada mehmonxona tavsifini o'zbek tilida tinglashingiz mumkin bo'ladi."
+          title="Ovozli tinglash"
+          description="Brauzeringiz ovozli o'qishni qo'llab-quvvatlamadi. Iltimos, Chrome yoki Edge brauzeridan foydalaning."
           notifyKey="tts"
         />
 
@@ -693,7 +767,7 @@ const HotelDetail = () => {
 
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return '';
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11)
     ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`

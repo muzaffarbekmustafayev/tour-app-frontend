@@ -56,8 +56,6 @@ const HotelCard = ({ hotel }) => {
   ].filter(Boolean);
 
   const accessCount = accessBadges.length;
-  const price = hotel.pricePerNight || hotel.basePricePerNight || hotel.rooms?.[0]?.pricePerNight || 0;
-  const formattedPrice = price > 0 ? new Intl.NumberFormat('uz-UZ').format(price) : null;
 
   const accScore = calcAccessibilityScore(hotel);
   const scoreStyle = getScoreStyle(accScore);
@@ -124,7 +122,7 @@ const HotelCard = ({ hotel }) => {
           </button>
         )}
 
-        {/* Bottom row: rating + tap-to-view */}
+        {/* Bottom row: rating */}
         <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between">
           {hotel.rating > 0 && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl"
@@ -136,13 +134,6 @@ const HotelCard = ({ hotel }) => {
               {hotel.reviewsCount > 0 && (
                 <span className="text-[10px] font-medium text-white/70">({hotel.reviewsCount})</span>
               )}
-            </div>
-          )}
-          {formattedPrice && (
-            <div className="flex items-baseline gap-0.5 px-2.5 py-1 rounded-xl"
-              style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <span className="text-sm font-black text-white">{formattedPrice}</span>
-              <span className="text-[9px] text-white/70">UZS</span>
             </div>
           )}
         </div>

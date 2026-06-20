@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
+import AttractionCard from '../components/AttractionCard';
 import AIRecommendations from '../components/AIRecommendations';
 import AccessibilityBanner from '../components/AccessibilityBanner';
 import api from '../services/api';
+import { fetchAttractions } from '../services/attractions';
 import heroBg from '../assets/image.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
@@ -45,6 +47,7 @@ const Skeleton = () => (
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
+  const [attractions, setAttractions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTop, setShowTop] = useState(false);
@@ -70,6 +73,12 @@ const Home = () => {
   }, []);
 
   useEffect(() => { fetchHotels(); }, [fetchHotels]);
+
+  useEffect(() => {
+    fetchAttractions({ limit: 6 })
+      .then((res) => setAttractions(Array.isArray(res) ? res : (res.data || [])))
+      .catch(() => setAttractions([]));
+  }, []);
 
   return (
     <div className="pb-24 md:pb-8 lg:pb-12 overflow-x-hidden">
@@ -272,6 +281,28 @@ const Home = () => {
           </div>
           <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-indigo-400" />
         </button>
+
+        {/* ── Diqqatga sazovor (tarixiy) joylar ── */}
+        {attractions.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🏛️</span>
+                <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Diqqatga sazovor joylar</h2>
+              </div>
+              <button onClick={() => navigate('/attractions')}
+                className="flex items-center gap-1 text-sm font-bold transition-all hover:gap-2" style={{ color: '#d97706' }}>
+                Barchasi <FiChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
+              360° video bilan kashf eting — har joyga yaqin tunash maskanlari tavsiya qilinadi
+            </p>
+            <div className="hotel-grid">
+              {attractions.slice(0, 3).map((a) => <AttractionCard key={a._id} attraction={a} />)}
+            </div>
+          </div>
+        )}
 
         {/* ── Accessibility Banner ── */}
         <AccessibilityBanner />

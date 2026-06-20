@@ -17,6 +17,31 @@ const WELCOME = {
   suggestions: ['Eng yaxshi joy', '7 kunlik plan yoz', 'Tarixiy joylar', 'Aravacha uchun qulay'],
 };
 
+const AttractionMini = ({ a, onClick }) => (
+  <button
+    onClick={onClick}
+    className="w-full flex gap-3 p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 hover:border-amber-400 transition-all text-left active:scale-[0.98]"
+  >
+    {a.image && <img src={a.image} alt={a.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />}
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">🏛️ {a.name}</p>
+        {a.rating > 0 && (
+          <span className="flex items-center gap-0.5 text-xs font-bold text-amber-500 shrink-0">
+            <FiStar className="w-3 h-3 fill-current" />{a.rating?.toFixed?.(1) ?? a.rating}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+        <FiMapPin className="w-3 h-3" />{a.district}{a.entryFee ? ` · ${a.entryFee}` : ''}
+      </p>
+      {a.descriptionShort && (
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{a.descriptionShort}</p>
+      )}
+    </div>
+  </button>
+);
+
 const HotelMini = ({ h, onClick }) => (
   <button
     onClick={onClick}
@@ -136,6 +161,13 @@ const AIAssistant = () => {
                       <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line">
                         {m.reply}
                       </div>
+                      {m.attractions?.length > 0 && (
+                        <div className="space-y-2">
+                          {m.attractions.map((a) => (
+                            <AttractionMini key={a._id} a={a} onClick={() => { navigate(`/attraction/${a._id}`); setOpen(false); }} />
+                          ))}
+                        </div>
+                      )}
                       {m.hotels?.length > 0 && (
                         <div className="space-y-2">
                           {m.hotels.map((h) => (

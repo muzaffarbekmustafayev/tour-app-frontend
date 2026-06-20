@@ -20,6 +20,7 @@ body,
   
   --bg-main: #fcfcfd;
   --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-hover: #f1f5f9;
   --text-main: #0f172a;
   --text-muted: #64748b;
   --border: rgba(226, 232, 240, 0.8);
@@ -49,6 +50,7 @@ body,
   
   --bg-main: #0B1120;
   --bg-card: #121A2F;
+  --bg-hover: #0d1526;
   --text-main: #ffffff;
   --text-muted: #94a3b8;
   --border: rgba(30, 41, 59, 0.8);
@@ -686,6 +688,7 @@ button, a, [role="button"], [role="link"] {
   height: 52px !important;
   opacity: 1 !important;
 }
+
 
 .thumb-swiper {
   padding: 4px 0 !important;
