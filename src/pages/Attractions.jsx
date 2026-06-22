@@ -4,6 +4,7 @@ import AttractionCard from '../components/AttractionCard';
 import BackButton from '../components/BackButton';
 import { fetchAttractions, DISTRICTS } from '../services/attractions';
 import { FiMapPin, FiFrown, FiAlertTriangle } from 'react-icons/fi';
+import { LuLandmark } from 'react-icons/lu';
 
 const Skeleton = () => (
   <div className="glass-panel overflow-hidden animate-pulse" style={{ borderRadius: '1.5rem' }}>
@@ -48,7 +49,7 @@ const Attractions = () => {
       <div className="mb-5"><BackButton /></div>
 
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-2xl">🏛️</span>
+        <LuLandmark className="w-7 h-7 text-amber-600 dark:text-amber-500 shrink-0" />
         <h1 className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy joylar</h1>
       </div>
       <p className="text-sm font-medium mb-6" style={{ color: 'var(--text-muted)' }}>

@@ -1,49 +1,7 @@
-import React, { useRef, useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useRef, useState } from 'react';
 import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye, FiX } from 'react-icons/fi';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
-
-// Fix default marker icon url issue in Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-const MapEventsHandler = ({ onMapClick }) => {
-  useMapEvents({
-    click(e) {
-      onMapClick(e.latlng);
-    },
-  });
-  return null;
-};
-
-const RecenterMap = ({ lat, lng }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-      map.setView([lat, lng], map.getZoom() || 13);
-    }
-  }, [lat, lng, map]);
-  return null;
-};
-
-const MapResizer = () => {
-  const map = useMap();
-  useEffect(() => {
-    map.invalidateSize();
-    const timer = setTimeout(() => {
-      map.invalidateSize({ animate: true });
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [map]);
-  return null;
-};
+import MapPickerModal from './MapPickerModal';
 
 const amenitiesList = ['Free WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Bar', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception'];
 const accessibilityList = [
@@ -68,9 +26,12 @@ const securityList = [
   'Signalizatsiya', 'Kodli qulf', 'Elektron kalit', 'Video domofon'
 ];
 
+// Navoiy viloyatining 3 tumani — maskan aynan shulardan biriga tegishli bo'lishi shart
+export const HOTEL_DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+
 export const emptyHotelTemplate = {
   name: '', description: '', shortDescription: '',
-  city: 'Navoiy', country: 'Uzbekistan', address: '',
+  district: '', city: 'Navoiy', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [],
@@ -85,7 +46,6 @@ export const emptyHotelTemplate = {
 };
 
 const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
-  const { darkMode } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('umumiy');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -183,16 +143,6 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
     );
   };
 
-  const handleMapClick = (latlng) => {
-    setForm(prev => ({
-      ...prev,
-      location: {
-        lat: latlng.lat.toFixed(6),
-        lng: latlng.lng.toFixed(6)
-      }
-    }));
-  };
-
   const toggleArray = (field, item) => {
     setForm(prev => ({
       ...prev, [field]: (prev[field] || []).includes(item) ? prev[field].filter(i => i !== item) : [...(prev[field] || []), item]
@@ -264,6 +214,23 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
               <div>
                 <label className={LabelClass}>Mehmonxona Nomi *</label>
                 <input type="text" required value={form.name} onChange={e => handleFormChange('name', e.target.value)} className={InputClass} placeholder="Masalan: Registon Plaza" />
+              </div>
+              <div>
+                <label className={LabelClass}>Tuman * <span className="text-rose-500 normal-case font-bold tracking-normal">(Navoiy viloyatining 3 tumanidan biri)</span></label>
+                <select
+                  required
+                  value={form.district || ''}
+                  onChange={e => handleFormChange('district', e.target.value)}
+                  className={`${InputClass} ${!form.district ? 'border-amber-400 dark:border-amber-500/60' : ''}`}
+                >
+                  <option value="">— Tuman tanlang —</option>
+                  {HOTEL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                {!form.district && (
+                  <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-1.5 ml-1">
+                    ⚠️ Maskan qo'shish uchun tuman tanlanishi shart.
+                  </p>
+                )}
               </div>
               <div>
                 <label className={LabelClass}>Tavsif (Description) *</label>
@@ -414,79 +381,14 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
           </div>
         )}
 
-        {/* INTERACTIVE LEAFLET MAP MODAL */}
-        {showMapModal && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-scale-in">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <FiMap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Xaritadan joylashuvni belgilang</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors text-slate-500"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Map Body */}
-              <div className="flex-1 min-h-[380px] relative bg-slate-100 dark:bg-slate-950">
-                  <MapContainer
-                    center={form.location?.lat && form.location?.lng && !isNaN(Number(form.location.lat)) && !isNaN(Number(form.location.lng)) ? [Number(form.location.lat), Number(form.location.lng)] : [40.0842, 65.3791]}
-                    zoom={13}
-                    style={{ width: '100%', height: '380px' }}
-                    zoomControl={true}
-                  >
-                    <MapResizer />
-                    <TileLayer
-                      attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                      url={darkMode ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
-                    />
-                  <MapEventsHandler onMapClick={handleMapClick} />
-                  {form.location?.lat && form.location?.lng && !isNaN(Number(form.location.lat)) && !isNaN(Number(form.location.lng)) && (
-                    <>
-                      <Marker 
-                        position={[Number(form.location.lat), Number(form.location.lng)]} 
-                        draggable={true}
-                        eventHandlers={{
-                          dragend: (e) => {
-                            const pos = e.target.getLatLng();
-                            setForm(p => ({ ...p, location: { lat: pos.lat.toFixed(6), lng: pos.lng.toFixed(6) } }));
-                          }
-                        }}
-                      />
-                      <RecenterMap lat={Number(form.location.lat)} lng={Number(form.location.lng)} />
-                    </>
-                  )}
-                </MapContainer>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50 dark:bg-slate-900/40 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 text-xs font-mono font-black text-indigo-600 dark:text-indigo-400">
-                    LAT: {form.location?.lat || 'Tanlanmagan'}
-                  </div>
-                  <div className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 text-xs font-mono font-black text-indigo-600 dark:text-indigo-400">
-                    LNG: {form.location?.lng || 'Tanlanmagan'}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMapModal(false)}
-                  className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
-                >
-                  Tanlovni Tasdiqlash
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
+        {/* Xaritadan tanlash modali (umumiy komponent) */}
+        <MapPickerModal
+          open={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          value={form.location}
+          onChange={(loc) => setForm(p => ({ ...p, location: loc }))}
+          title="Mehmonxona joylashuvi"
+        />
         {/* TAB 3: XONALAR */}
         {activeTab === 'xonalar' && (
           <div className={CardClass}>

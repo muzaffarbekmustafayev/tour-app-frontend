@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LuLandmark } from 'react-icons/lu';
 import api from '../services/api';
 
 const SkeletonCard = () => (
@@ -57,7 +58,12 @@ const AIRecommendations = () => {
                 <img src={hotel.images[0]} alt={hotel.name} className="w-full h-20 object-cover rounded-xl mb-2 opacity-90" />
               )}
               <h3 className="font-bold text-sm mb-1 line-clamp-1">{hotel.name}</h3>
-              <p className="text-xs text-white/70">{hotel.city}{hotel.nearbyPlaces?.[0] ? ` · 🏛️ ${hotel.nearbyPlaces[0]}` : ''}</p>
+              <p className="text-xs text-white/70 flex items-center gap-1 truncate">
+                <span className="truncate">{hotel.city}</span>
+                {hotel.nearbyPlaces?.[0] && (
+                  <span className="flex items-center gap-1 truncate">· <LuLandmark className="w-3 h-3 shrink-0" /> {hotel.nearbyPlaces[0]}</span>
+                )}
+              </p>
             </button>
           ))}
         </div>

@@ -1,7 +1,14 @@
 import React, { useRef, useEffect, useCallback } from 'react';
+import { renderToString } from 'react-dom/server';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { CATEGORY_COLORS } from './mapUtils';
+import { FaBuilding, FaUmbrellaBeach, FaBed, FaLandmark } from 'react-icons/fa';
+import { CATEGORY_COLORS, ATTRACTION_COLOR } from './mapUtils';
+
+// Marker ikonkasini SVG matn ko'rinishida (emoji o'rniga jiddiy ikon)
+const HOTEL_ICON = { resort: FaUmbrellaBeach, hostel: FaBed, hotel: FaBuilding };
+const iconSvg = (IconCmp, px) =>
+  renderToString(<IconCmp style={{ color: '#fff', width: px, height: px }} />);
 
 /**
  * MapLibreView — MapLibre GL asosidagi 3D xarita.
@@ -30,8 +37,11 @@ const NAVOIY = [65.3791, 40.0842]; // [lng, lat]
 
 const MapLibreView = ({
   hotels = [],
+  attractions = [],
   selectedId,
+  selectedAttractionId,
   onSelect,
+  onSelectAttraction,
   userPos,
   routeCoords = [],
   flyTarget,
@@ -41,6 +51,7 @@ const MapLibreView = ({
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
+  const attractionMarkersRef = useRef({});
   const userMarkerRef = useRef(null);
   const loadedRef = useRef(false);
 
@@ -63,6 +74,7 @@ const MapLibreView = ({
       loadedRef.current = true;
       addRouteLayer(map);
       syncMarkers();
+      syncAttractions();
       syncRoute();
       syncUser();
     });
@@ -103,7 +115,7 @@ const MapLibreView = ({
     const color = CATEGORY_COLORS[hotel.category] || '#4f46e5';
     const head = selected ? '#f43f5e' : color;
     const size = selected ? 40 : 30;
-    const glyph = hotel.category === 'resort' ? '🌿' : hotel.category === 'hostel' ? '🎒' : '🏨';
+    const glyph = iconSvg(HOTEL_ICON[hotel.category] || FaBuilding, selected ? 16 : 13);
     const el = document.createElement('div');
     el.style.cssText = `width:${size}px;height:${size * 1.32}px;cursor:pointer;`;
     el.innerHTML = `
@@ -111,7 +123,7 @@ const MapLibreView = ({
         ${selected ? `<div style="position:absolute;left:50%;top:${size * 0.5}px;width:${size * 1.6}px;height:${size * 1.6}px;transform:translate(-50%,-50%);border-radius:50%;background:${head}33;animation:pulse-ring 1.8s infinite cubic-bezier(0.215,0.61,0.355,1);"></div>` : ''}
         <div style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;filter:drop-shadow(0 5px 7px rgba(0,0,0,0.32));">
           <div style="width:${size}px;height:${size}px;background:linear-gradient(145deg,${head},${head}cc);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid #fff;box-shadow:inset 0 1px 2px rgba(255,255,255,0.4);"></div>
-          <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${selected ? 15 : 12}px;line-height:1;">${glyph}</span>
+          <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;line-height:1;">${glyph}</span>
         </div>
       </div>`;
     return el;
@@ -146,6 +158,51 @@ const MapLibreView = ({
   }, [hotels, selectedId, onSelect, buildMarkerEl]);
 
   useEffect(() => { syncMarkers(); }, [syncMarkers]);
+
+  // ── Tarixiy joy markerlari (amber, landmark ikoni) ──────────────────
+  const buildAttractionEl = useCallback((attraction, selected) => {
+    const head = ATTRACTION_COLOR;
+    const size = selected ? 40 : 30;
+    const glyph = iconSvg(FaLandmark, selected ? 16 : 13);
+    const el = document.createElement('div');
+    el.style.cssText = `width:${size}px;height:${size * 1.32}px;cursor:pointer;`;
+    el.innerHTML = `
+      <div style="position:relative;width:${size}px;height:${size * 1.32}px;">
+        ${selected ? `<div style="position:absolute;left:50%;top:${size * 0.5}px;width:${size * 1.7}px;height:${size * 1.7}px;transform:translate(-50%,-50%);border-radius:50%;background:${head}40;animation:pulse-ring 1.8s infinite cubic-bezier(0.215,0.61,0.355,1);"></div>` : ''}
+        <div style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;filter:drop-shadow(0 5px 7px rgba(0,0,0,0.32));">
+          <div style="width:${size}px;height:${size}px;background:linear-gradient(145deg,${head},${head}cc);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:${selected ? '3px' : '2.5px'} solid #fff;box-shadow:inset 0 1px 2px rgba(255,255,255,0.4);"></div>
+          <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;line-height:1;">${glyph}</span>
+        </div>
+      </div>`;
+    return el;
+  }, []);
+
+  const syncAttractions = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
+    const seen = new Set();
+    attractions.forEach((a) => {
+      const lat = a.location?.lat ?? a.geo?.coordinates?.[1];
+      const lng = a.location?.lng ?? a.geo?.coordinates?.[0];
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      seen.add(a._id);
+      const selected = selectedAttractionId === a._id;
+      const el = buildAttractionEl(a, selected);
+      el.addEventListener('click', (e) => { e.stopPropagation(); onSelectAttraction?.(a); });
+      if (attractionMarkersRef.current[a._id]) {
+        attractionMarkersRef.current[a._id].remove();
+      }
+      const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+      attractionMarkersRef.current[a._id] = marker;
+    });
+    Object.keys(attractionMarkersRef.current).forEach((id) => {
+      if (!seen.has(id)) { attractionMarkersRef.current[id].remove(); delete attractionMarkersRef.current[id]; }
+    });
+  }, [attractions, selectedAttractionId, onSelectAttraction, buildAttractionEl]);
+
+  useEffect(() => { syncAttractions(); }, [syncAttractions]);
 
   // ── Marshrutni sinxronlash ──────────────────────────────────────────
   const syncRoute = useCallback(() => {

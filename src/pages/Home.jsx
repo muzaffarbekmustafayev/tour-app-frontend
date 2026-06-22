@@ -6,6 +6,7 @@ import AIRecommendations from '../components/AIRecommendations';
 import AccessibilityBanner from '../components/AccessibilityBanner';
 import api from '../services/api';
 import { fetchAttractions } from '../services/attractions';
+import { LuLandmark } from 'react-icons/lu';
 import heroBg from '../assets/image.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
@@ -287,7 +288,7 @@ const Home = () => {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🏛️</span>
+                <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
                 <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Diqqatga sazovor joylar</h2>
               </div>
               <button onClick={() => navigate('/attractions')}
@@ -316,7 +317,7 @@ const Home = () => {
         {!loading && hotels.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🏛️</span>
+              <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
               <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy joylar va yaqin maskanlar</h2>
             </div>
             <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
@@ -337,9 +338,9 @@ const Home = () => {
                     {places.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-4">
                         {places.map((p, i) => (
-                          <span key={i} className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                          <span key={i} className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
                             style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.25)' }}>
-                            🏛️ {p}
+                            <LuLandmark className="w-3 h-3" /> {p}
                           </span>
                         ))}
                       </div>

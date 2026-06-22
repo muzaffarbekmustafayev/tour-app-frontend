@@ -10,6 +10,7 @@ import {
   FiAward, FiSun, FiNavigation, FiHome, FiCheck,
 } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
+import { LuLandmark } from 'react-icons/lu';
 
 const Section = ({ title, icon, children, className = '' }) => (
   <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm ${className}`}>
@@ -122,8 +123,8 @@ const AttractionDetail = () => {
         <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
-                🏛️ Tarixiy joy
+              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
+                <LuLandmark className="w-3 h-3" /> Tarixiy joy
               </span>
               <span className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
                 <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district} tumani
@@ -306,20 +307,41 @@ const AttractionDetail = () => {
                 <h3 className="font-black text-slate-800 dark:text-white mb-1 text-[11px] uppercase tracking-wider flex items-center gap-2">
                   <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin tunash joylari
                 </h3>
-                <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari. Tanlab, egasi bilan suhbatlashing.</p>
+                <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari. Eng yaqini avtomatik tanlangan — egasi bilan suhbatlashing.</p>
 
                 {nearby.length > 0 ? (
                   <div className="space-y-4">
-                    {nearby.map((h) => (
-                      <div key={h._id}>
-                        <HotelCard hotel={h} />
-                        {Number.isFinite(h.distanceKm) && (
-                          <p className="text-[11px] font-bold text-indigo-500 mt-1.5 ml-1 flex items-center gap-1">
-                            <FiNavigation className="w-3 h-3" /> Taxminan {h.distanceKm} km uzoqlikda
-                          </p>
+                    {/* Eng yaqin tunash joyi — avtomatik tanlangan */}
+                    <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5">
+                      <div className="flex items-center justify-between gap-2 mb-2 px-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-600 text-white flex items-center gap-1">
+                          <FiStar className="w-2.5 h-2.5 fill-current" /> Eng yaqin
+                        </span>
+                        {Number.isFinite(nearby[0].distanceKm) && (
+                          <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                            <FiNavigation className="w-3 h-3" /> {nearby[0].distanceKm} km
+                          </span>
                         )}
                       </div>
-                    ))}
+                      <HotelCard hotel={nearby[0]} />
+                    </div>
+
+                    {/* Qolgan yaqin joylar */}
+                    {nearby.length > 1 && (
+                      <>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1 ml-1">Boshqa yaqin joylar</p>
+                        {nearby.slice(1).map((h) => (
+                          <div key={h._id}>
+                            <HotelCard hotel={h} />
+                            {Number.isFinite(h.distanceKm) && (
+                              <p className="text-[11px] font-bold text-indigo-500 mt-1.5 ml-1 flex items-center gap-1">
+                                <FiNavigation className="w-3 h-3" /> Taxminan {h.distanceKm} km uzoqlikda
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400 italic py-4 text-center">Yaqin atrofda tunash maskani topilmadi.</p>

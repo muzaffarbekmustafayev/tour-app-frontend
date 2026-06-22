@@ -4,6 +4,7 @@ import api from '../services/api';
 import {
   FiPlus, FiHome, FiStar, FiEdit2, FiEye, FiTrash2,
   FiMessageCircle, FiChevronRight, FiMapPin,
+  FiCheckCircle, FiClock, FiInfo,
 } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
 import FullHotelForm from '../components/FullHotelForm';
@@ -41,7 +42,7 @@ const securityList = [
 
 const emptyHotel = {
   name: '', description: '', shortDescription: '',
-  city: 'Navoiy', country: 'Uzbekistan', address: '',
+  district: '', city: 'Navoiy', country: 'Uzbekistan', address: '',
   category: 'hotel', basePricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [], images: [''],
@@ -300,6 +301,11 @@ const OwnerDashboard = () => {
     setFormError('');
 
     // Validation
+    if (!form.district) {
+      setFormError('Tuman tanlanishi shart! "Umumiy Ma\'lumot" bo\'limidan Nurota, Xatirchi yoki Qiziltepa tumanini tanlang.');
+      setFormLoading(false);
+      return;
+    }
     const images = form.images.filter(img => img.trim() !== '');
     if (images.length === 0) {
       setFormError('Kamida bitta rasm havolasini kiritish shart!');
@@ -500,7 +506,16 @@ const OwnerDashboard = () => {
             ))}
           </div>
 
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Mening Mehmonxonalarim</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Mening Mehmonxonalarim</h2>
+
+          {/* Admin tasdig'i haqida ogohlantirish */}
+          <div className="flex items-start gap-3 p-4 mb-6 rounded-2xl bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/40">
+            <FiInfo className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 leading-relaxed">
+              Yangi qo'shilgan yoki tahrirlangan mehmonxona <span className="font-black">admin tasdig'idan</span> o'tgach saytda ko'rinadi.
+              Holatni har bir kartochkada kuzatishingiz mumkin.
+            </p>
+          </div>
 
           {/* Hotels List Cards */}
           <div className="space-y-4">
@@ -513,7 +528,7 @@ const OwnerDashboard = () => {
                     </h3>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
-                        <FiMapPin className="text-rose-500 w-3.5 h-3.5" /> {hotel.city}
+                        <FiMapPin className="text-rose-500 w-3.5 h-3.5" /> {hotel.district || hotel.city}
                       </span>
                       <span className="text-[11px] font-bold text-slate-400">
                         • {hotel.rooms?.length || 0} xona turi
@@ -521,12 +536,14 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
-                    <span className={`px-3 py-1.5 text-[10px] font-black rounded-full uppercase tracking-wide border ${
-                      hotel.isActive !== false
+                    <span className={`px-3 py-1.5 text-[10px] font-black rounded-full uppercase tracking-wide border flex items-center gap-1.5 ${
+                      hotel.approved
                         ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
-                        : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                        : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800'
                     }`}>
-                      {hotel.isActive !== false ? 'Faol' : 'Nofaol'}
+                      {hotel.approved
+                        ? <><FiCheckCircle className="w-3 h-3" /> Tasdiqlangan</>
+                        : <><FiClock className="w-3 h-3" /> Admin tasdig'ini kutmoqda</>}
                     </span>
                   </div>
                 </div>

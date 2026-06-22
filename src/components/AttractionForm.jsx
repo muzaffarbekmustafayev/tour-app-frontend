@@ -1,32 +1,10 @@
-import React, { useState, useRef, useContext, useEffect } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useRef } from 'react';
 import api from '../services/api';
+import MapPickerModal from './MapPickerModal';
 import {
   FiEdit3, FiMapPin, FiImage, FiPlus, FiTrash2, FiX, FiVideo,
-  FiNavigation, FiCheck, FiCommand, FiUpload,
+  FiNavigation, FiCheck, FiCommand, FiUpload, FiClock, FiFeather,
 } from 'react-icons/fi';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-const MapClick = ({ onClick }) => { useMapEvents({ click: (e) => onClick(e.latlng) }); return null; };
-const Recenter = ({ lat, lng }) => {
-  const map = useMap();
-  useEffect(() => { if (lat && lng && !isNaN(lat) && !isNaN(lng)) map.setView([lat, lng], map.getZoom() || 13); }, [lat, lng, map]);
-  return null;
-};
-const Resizer = () => {
-  const map = useMap();
-  useEffect(() => { map.invalidateSize(); const t = setTimeout(() => map.invalidateSize(), 350); return () => clearTimeout(t); }, [map]);
-  return null;
-};
 
 export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
 
@@ -52,6 +30,7 @@ export const emptyAttractionTemplate = {
   address: '',
   accessibility: {},
   atmosphere: { mood: '', soundscape: '', bestTimeOfDay: '', localTip: '' },
+  peakInfo: { peak: '', quiet: '', note: '' },
   bestSeason: '', entryFee: '',
 };
 
@@ -66,7 +45,6 @@ const Card = ({ children }) => (
 );
 
 const AttractionForm = ({ form, setForm }) => {
-  const { darkMode } = useContext(AuthContext);
   const [uploading, setUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
   const [showMap, setShowMap] = useState(false);
@@ -122,10 +100,6 @@ const AttractionForm = ({ form, setForm }) => {
   const rmThing = (idx) => setForm((p) => ({ ...p, thingsToSeeAround: p.thingsToSeeAround.filter((_, i) => i !== idx) }));
 
   const toggleAcc = (key) => setForm((p) => ({ ...p, accessibility: { ...p.accessibility, [key]: !p.accessibility?.[key] } }));
-
-  const mapClick = (latlng) => set('location', { lat: latlng.lat.toFixed(6), lng: latlng.lng.toFixed(6) });
-
-  const hasCoords = form.location?.lat && form.location?.lng && !isNaN(Number(form.location.lat)) && !isNaN(Number(form.location.lng));
 
   return (
     <div className="animate-fade-in">
@@ -237,12 +211,22 @@ const AttractionForm = ({ form, setForm }) => {
       </Card>
 
       <Card>
-        <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2">🌿 Joy atmosferasi</h2>
+        <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2"><FiFeather className="text-emerald-500" /> Joy atmosferasi</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><Label>Kayfiyat</Label><Input value={form.atmosphere?.mood} onChange={(e) => setNested('atmosphere', 'mood', e.target.value)} placeholder="Tinch va ziyoratbop" /></div>
           <div><Label>Eng yaxshi vaqt</Label><Input value={form.atmosphere?.bestTimeOfDay} onChange={(e) => setNested('atmosphere', 'bestTimeOfDay', e.target.value)} placeholder="Erta tong" /></div>
           <div className="md:col-span-2"><Label>Ovoz manzarasi</Label><Input value={form.atmosphere?.soundscape} onChange={(e) => setNested('atmosphere', 'soundscape', e.target.value)} placeholder="Buloq suvining shildirashi..." /></div>
           <div className="md:col-span-2"><Label>Mahalliy maslahat</Label><Input value={form.atmosphere?.localTip} onChange={(e) => setNested('atmosphere', 'localTip', e.target.value)} placeholder="Foydali maslahat" /></div>
+        </div>
+      </Card>
+
+      <Card>
+        <h2 className="text-sm font-bold mb-1 text-slate-900 dark:text-white flex items-center gap-2"><FiClock className="text-rose-500" /> Pik va tinch vaqtlar</h2>
+        <p className="text-[11px] text-slate-400 mb-5">Ixtiyoriy. Bo'sh qoldirsangiz, AI yordamchi "eng yaxshi vaqt" va mavsumdan avtomatik aniqlaydi.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><Label>Pik (gavjum) vaqt</Label><Input value={form.peakInfo?.peak || ''} onChange={(e) => setNested('peakInfo', 'peak', e.target.value)} placeholder="Hafta oxiri 11:00–16:00, bayramlar" /></div>
+          <div><Label>Tinch vaqt</Label><Input value={form.peakInfo?.quiet || ''} onChange={(e) => setNested('peakInfo', 'quiet', e.target.value)} placeholder="Erta tong va ish kunlari" /></div>
+          <div className="md:col-span-2"><Label>Qo'shimcha izoh</Label><Input value={form.peakInfo?.note || ''} onChange={(e) => setNested('peakInfo', 'note', e.target.value)} placeholder="Masalan: Juma kuni ziyoratchilar ko'p bo'ladi" /></div>
         </div>
       </Card>
 
@@ -279,30 +263,13 @@ const AttractionForm = ({ form, setForm }) => {
         )}
       </Card>
 
-      {showMap && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Xaritadan joylashuvni belgilang</h3>
-              <button onClick={() => setShowMap(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500"><FiX className="w-5 h-5" /></button>
-            </div>
-            <div className="flex-1 min-h-[380px] relative">
-              <MapContainer
-                center={hasCoords ? [Number(form.location.lat), Number(form.location.lng)] : [40.0842, 65.3791]}
-                zoom={hasCoords ? 13 : 8} style={{ height: '100%', width: '100%', minHeight: 380 }}>
-                <TileLayer url={darkMode ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'} />
-                <MapClick onClick={mapClick} />
-                <Resizer />
-                {hasCoords && (<><Marker position={[Number(form.location.lat), Number(form.location.lng)]} /><Recenter lat={Number(form.location.lat)} lng={Number(form.location.lng)} /></>)}
-              </MapContainer>
-            </div>
-            <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-900/40">
-              <span className="text-xs font-mono text-slate-500">LAT: {form.location?.lat || '—'} | LNG: {form.location?.lng || '—'}</span>
-              <button onClick={() => setShowMap(false)} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold flex items-center gap-2"><FiCheck className="w-4 h-4" /> Tasdiqlash</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MapPickerModal
+        open={showMap}
+        onClose={() => setShowMap(false)}
+        value={form.location}
+        onChange={(loc) => set('location', loc)}
+        title="Tarixiy joy joylashuvi"
+      />
     </div>
   );
 };

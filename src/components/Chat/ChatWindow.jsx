@@ -183,10 +183,10 @@ const ChatWindow = () => {
 
       <div className="chat-window-anim" style={{
         position: 'fixed', bottom: 90, right: 'max(16px, env(safe-area-inset-right))',
-        width: 'min(370px, calc(100vw - 28px))',
-        maxHeight: minimized ? 64 : 'min(540px, calc(100dvh - 140px))',
-        borderRadius: '1.5rem',
-        boxShadow: '0 24px 70px -12px rgba(99,102,241,0.38), 0 8px 24px -8px rgba(0,0,0,0.18)',
+        width: 'min(384px, calc(100vw - 28px))',
+        maxHeight: minimized ? 66 : 'min(560px, calc(100dvh - 140px))',
+        borderRadius: '1.75rem',
+        boxShadow: '0 28px 80px -14px rgba(99,102,241,0.45), 0 10px 30px -10px rgba(0,0,0,0.2)',
         background: 'var(--bg-card, #fff)',
         border: '1px solid var(--border, #e5e7eb)',
         display: 'flex', flexDirection: 'column',
@@ -307,19 +307,19 @@ const ChatWindow = () => {
                   return (
                     <div key={item.key} style={{ display:'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems:'flex-end', gap:6, marginBottom:1, animation: 'fadeUp 0.18s ease', opacity: isPending ? 0.75 : isFailed ? 0.85 : 1 }}>
                       {!isMine && <Avatar user={msg.sender} size={24} />}
-                      <div style={{ maxWidth: '75%' }}>
+                      <div style={{ maxWidth: '78%' }}>
                         {!isMine && msg.sender?.name && (
                           <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#6366F1', marginBottom: 2, paddingLeft: 4 }}>
                             {msg.sender.name}
                           </div>
                         )}
                         <div style={{
-                          padding: '8px 12px',
-                          borderRadius: isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                          padding: '9px 13px',
+                          borderRadius: isMine ? '18px 18px 6px 18px' : '6px 18px 18px 18px',
                           background: isMine ? (isFailed ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #6366F1, #8B5CF6)') : 'var(--bg-card, #fff)',
                           color: isMine ? '#fff' : 'var(--text-main)',
-                          fontSize: '0.84rem', lineHeight: 1.5, wordBreak: 'break-word',
-                          boxShadow: isMine ? '0 2px 10px rgba(99,102,241,0.28)' : '0 1px 4px rgba(0,0,0,0.07)',
+                          fontSize: '0.85rem', lineHeight: 1.55, wordBreak: 'break-word',
+                          boxShadow: isMine ? '0 4px 14px rgba(99,102,241,0.32)' : '0 2px 8px rgba(0,0,0,0.08)',
                           border: isFailed ? '1px solid #fca5a5' : 'none',
                         }}>
                           <div>{msg.content}</div>
@@ -349,7 +349,7 @@ const ChatWindow = () => {
               {isTyping && (
                 <div style={{ display:'flex', alignItems:'flex-end', gap:6, marginTop:4, animation:'fadeUp 0.18s ease' }}>
                   <Avatar user={other} size={24} />
-                  <div style={{ background:'var(--bg-card,#fff)', borderRadius:'4px 16px 16px 16px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
+                  <div style={{ background:'var(--bg-card,#fff)', borderRadius:'6px 18px 18px 18px', boxShadow:'0 2px 8px rgba(0,0,0,0.08)' }}>
                     <TypingDots />
                   </div>
                 </div>
@@ -393,12 +393,12 @@ const ChatWindow = () => {
                 placeholder="Xabar yozing..."
                 rows={1}
                 maxLength={2000}
-                style={{ flex:1, resize:'none', border:'1.5px solid var(--border, #e5e7eb)', borderRadius:'0.875rem', padding:'9px 12px', fontSize:'0.875rem', fontFamily:'inherit', background:'var(--bg-hover, #f9fafb)', color:'var(--text-main)', outline:'none', lineHeight:1.45, maxHeight:88, overflowY:'auto', transition:'border-color 0.15s' }}
+                style={{ flex:1, resize:'none', border:'1.5px solid var(--border, #e5e7eb)', borderRadius:'1rem', padding:'10px 14px', fontSize:'0.875rem', fontFamily:'inherit', background:'var(--bg-hover, #f9fafb)', color:'var(--text-main)', outline:'none', lineHeight:1.45, maxHeight:88, overflowY:'auto', transition:'border-color 0.15s' }}
                 onFocus={e => e.target.style.borderColor = '#6366F1'}
                 onBlur={e => e.target.style.borderColor = 'var(--border, #e5e7eb)'}
               />
               <button type="submit" disabled={!input.trim()} className="chat-send-btn"
-                style={{ background: input.trim() ? 'linear-gradient(135deg, #6366F1, #8B5CF6)' : 'var(--border, #e5e7eb)', color: input.trim() ? '#fff' : 'var(--text-muted)', border:'none', borderRadius:'0.875rem', width:40, height:40, cursor: input.trim() ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background 0.18s, transform 0.1s, filter 0.15s' }}>
+                style={{ background: input.trim() ? 'linear-gradient(135deg, #6366F1, #8B5CF6)' : 'var(--border, #e5e7eb)', color: input.trim() ? '#fff' : 'var(--text-muted)', border:'none', borderRadius:'1rem', width:42, height:42, cursor: input.trim() ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background 0.18s, transform 0.1s, filter 0.15s' }}>
                 <FiSend size={15} />
               </button>
             </form>

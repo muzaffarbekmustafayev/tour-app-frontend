@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
+import { LuLandmark } from 'react-icons/lu';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800';
 
@@ -30,7 +31,7 @@ const AttractionCard = ({ attraction: a }) => {
         <div className="absolute top-2.5 left-2.5 z-30 flex flex-col gap-1.5">
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
             style={{ background: 'rgba(217,119,6,0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            🏛️ Tarixiy joy
+            <LuLandmark className="w-3 h-3" /> Tarixiy joy
           </div>
           {hasVideo && (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white"

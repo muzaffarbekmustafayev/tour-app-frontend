@@ -10,12 +10,15 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
   FILTERS,
+  DISTRICT_FILTERS,
   fetchRoute,
 } from '../components/map/mapUtils';
+import { fetchNearbyStays } from '../services/attractions';
 
 import MapLibreView from '../components/map/MapLibreView';
 import MapTopBar from '../components/map/MapTopBar';
 import MapHotelPanel from '../components/map/MapHotelPanel';
+import MapAttractionPanel from '../components/map/MapAttractionPanel';
 import MapRouteOverlay from '../components/map/MapRouteOverlay';
 
 const HotelsMap = () => {
@@ -23,9 +26,14 @@ const HotelsMap = () => {
   const location = useLocation();
   const { darkMode } = useContext(AuthContext);
   const [hotels, setHotels] = useState([]);
+  const [attractions, setAttractions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null); // panel
+  const [selected, setSelected] = useState(null); // hotel panel
+  const [selectedAttraction, setSelectedAttraction] = useState(null); // tarixiy joy paneli
+  const [attractionNearby, setAttractionNearby] = useState([]); // tanlangan joyning yaqin maskanlari
+  const [attractionLoading, setAttractionLoading] = useState(false);
   const [filterCat, setFilterCat] = useState('all');
+  const [districtFilter, setDistrictFilter] = useState('all');
   const [userPos, setUserPos] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoMsg, setGeoMsg] = useState(null);
@@ -42,13 +50,26 @@ const HotelsMap = () => {
   const markerRefs = useRef({});
 
   useEffect(() => {
-    api
-      .get('/hotels?limit=100')
-      .then((res) => {
+    const coordOk = (o) => {
+      const lat = o.location?.lat ?? o.geo?.coordinates?.[1];
+      const lng = o.location?.lng ?? o.geo?.coordinates?.[0];
+      return Number.isFinite(lat) && Number.isFinite(lng);
+    };
+    Promise.all([
+      api.get('/hotels?limit=100').then((res) => {
         const list = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
-        setHotels(list.filter((h) => h.location?.lat && h.location?.lng));
-      })
-      .catch(() => setHotels([]))
+        return list.filter(coordOk);
+      }).catch(() => []),
+      api.get('/attractions?limit=100').then((res) => {
+        const list = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        // Tarixiy joyning location'i geo'dan ham kelishi mumkin — normallashtiramiz
+        return list.filter(coordOk).map((a) => ({
+          ...a,
+          location: a.location?.lat ? a.location : { lat: a.geo?.coordinates?.[1], lng: a.geo?.coordinates?.[0] },
+        }));
+      }).catch(() => []),
+    ])
+      .then(([h, a]) => { setHotels(h); setAttractions(a); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,7 +84,56 @@ const HotelsMap = () => {
     }
   }, [hotels, location.state]);
 
-  const filtered = filterCat === 'all' ? hotels : hotels.filter((h) => h.category === filterCat);
+  // ── Filtr: tur (kategoriya/tarixiy joy) + tuman ──────────────────────────────
+  const inDistrict = (o) => districtFilter === 'all' || o.district === districtFilter;
+
+  const visibleHotels = (filterCat === 'attraction' ? [] : hotels).filter(
+    (h) => (filterCat === 'all' || filterCat === 'attraction' || h.category === filterCat) && inDistrict(h)
+  );
+  const visibleAttractions = (filterCat === 'all' || filterCat === 'attraction')
+    ? attractions.filter(inDistrict)
+    : [];
+
+  // Marker soni (yuqori paneldagi hisob)
+  const totalVisible = visibleHotels.length + visibleAttractions.length;
+
+  // ── Tarixiy joy tanlanganda — yaqin tunash joylarini yuklab, eng yaqinini auto-tanlash ──
+  const openAttraction = async (a) => {
+    // Hotel panelini yopamiz
+    setShowPanel(false);
+    setSelected(null);
+    setSelectedAttraction(a);
+    setAttractionNearby([]);
+    const lat = a.location?.lat ?? a.geo?.coordinates?.[1];
+    const lng = a.location?.lng ?? a.geo?.coordinates?.[0];
+    if (Number.isFinite(lat) && Number.isFinite(lng)) setFlyTarget([lat, lng]);
+    setAttractionLoading(true);
+    try {
+      const res = await fetchNearbyStays(a._id);
+      setAttractionNearby(Array.isArray(res) ? res : (res.data || []));
+    } catch {
+      setAttractionNearby([]);
+    } finally {
+      setAttractionLoading(false);
+    }
+  };
+
+  const closeAttraction = () => {
+    setSelectedAttraction(null);
+    setAttractionNearby([]);
+  };
+
+  // Tarixiy joy panelidan "tunash joyi" kartochkasini bosish → hotel panelini ochish
+  const openHotelFromAttraction = (hotel) => {
+    closeAttraction();
+    openPanel(hotel);
+  };
+
+  // Tarixiy joy panelidan "Yo'l" → foydalanuvchidan eng yaqin maskangacha marshrut
+  const routeFromAttraction = (hotel) => {
+    closeAttraction();
+    startGuidance(hotel);
+  };
 
   // ── Route calculation ───────────────────────────────────────────────────────
   const calcRoute = useCallback(async (from, hotel, prof) => {
@@ -186,10 +256,13 @@ const HotelsMap = () => {
       {/* TOP BAR OUTSIDE MAP */}
       <div className="shrink-0 z-[600] border-b border-slate-200 dark:border-slate-800 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <MapTopBar
-          filteredCount={filtered.length}
+          filteredCount={totalVisible}
           filterCat={filterCat}
           setFilterCat={setFilterCat}
           FILTERS={FILTERS}
+          districtFilter={districtFilter}
+          setDistrictFilter={setDistrictFilter}
+          DISTRICT_FILTERS={DISTRICT_FILTERS}
           geoLoading={geoLoading}
           setGeoLoading={setGeoLoading}
           setUserPos={setUserPos}
@@ -205,11 +278,18 @@ const HotelsMap = () => {
         ) : (
           <>
             <MapLibreView
-              hotels={filtered}
+              hotels={visibleHotels}
+              attractions={visibleAttractions}
               selectedId={selected?._id}
+              selectedAttractionId={selectedAttraction?._id}
               onSelect={(hotel) => {
+                if (selectedAttraction) closeAttraction();
                 if (selected?._id === hotel._id && showPanel) closePanel();
                 else openPanel(hotel);
+              }}
+              onSelectAttraction={(a) => {
+                if (selectedAttraction?._id === a._id) closeAttraction();
+                else openAttraction(a);
               }}
               userPos={userPos}
               routeCoords={routeCoords}
@@ -285,7 +365,7 @@ const HotelsMap = () => {
         )}
       </div>
 
-      {/* Bottom Sheet Panel */}
+      {/* Bottom Sheet Panel — Mehmonxona */}
       <MapHotelPanel
         selected={selected}
         showPanel={showPanel}
@@ -298,6 +378,17 @@ const HotelsMap = () => {
         clearGuidance={clearGuidance}
         profile={profile}
         navigate={navigate}
+      />
+
+      {/* Bottom Sheet Panel — Tarixiy joy + eng yaqin tunash joyi */}
+      <MapAttractionPanel
+        attraction={selectedAttraction}
+        nearby={attractionNearby}
+        loading={attractionLoading}
+        onClose={closeAttraction}
+        onViewAttraction={(a) => navigate(`/attraction/${a._id}`)}
+        onViewHotel={openHotelFromAttraction}
+        onRouteHotel={routeFromAttraction}
       />
     </div>
   );

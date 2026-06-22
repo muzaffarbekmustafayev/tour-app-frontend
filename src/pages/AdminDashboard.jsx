@@ -7,6 +7,7 @@ import {
   FiTrash2, FiArrowLeft, FiX, FiInfo, FiAlertTriangle, FiStar, FiList, FiPhone,
   FiCheck, FiXCircle, FiMapPin, FiCompass
 } from 'react-icons/fi';
+import { LuLandmark } from 'react-icons/lu';
 import BackButton from '../components/BackButton';
 import FullHotelForm, { emptyHotelTemplate } from '../components/FullHotelForm';
 import AttractionForm, { emptyAttractionTemplate } from '../components/AttractionForm';
@@ -118,6 +119,7 @@ const AdminDashboard = () => {
       location: a.location || { lat: a.geo?.coordinates?.[1] || '', lng: a.geo?.coordinates?.[0] || '' },
       video360: a.video360 || emptyAttractionTemplate.video360,
       atmosphere: a.atmosphere || emptyAttractionTemplate.atmosphere,
+      peakInfo: a.peakInfo || emptyAttractionTemplate.peakInfo,
       accessibility: a.accessibility || {},
       thingsToSeeAround: a.thingsToSeeAround || [],
       images: a.images || [],
@@ -160,6 +162,11 @@ const AdminDashboard = () => {
   const handleAddHotel = async () => {
     setAddHotelLoading(true);
     setAddHotelError('');
+    if (!addHotelForm.district) {
+      setAddHotelError('Tuman tanlanishi shart: Nurota, Xatirchi yoki Qiziltepa.');
+      setAddHotelLoading(false);
+      return;
+    }
     try {
       const payload = {
         ...addHotelForm,
@@ -536,7 +543,7 @@ const AdminDashboard = () => {
               <div className="flex-1 min-w-0 mb-6">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight truncate">{h.name}</h3>
                 <div className="space-y-1.5">
-                  <p className="text-xs font-bold text-slate-500 flex items-center gap-2"><FiMapPin className="text-slate-400 w-3.5 h-3.5"/> {h.city}</p>
+                  <p className="text-xs font-bold text-slate-500 flex items-center gap-2"><FiMapPin className="text-slate-400 w-3.5 h-3.5"/> {h.district || h.city}</p>
                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
                     <FiUsers className="w-3.5 h-3.5 text-slate-400" /> {h.owner?.name || 'Egasi yo\'q'}
                   </p>
@@ -590,8 +597,8 @@ const AdminDashboard = () => {
             {attractions.map((a) => (
               <div key={a._id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
-                    🏛️ {a.district}
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                    <LuLandmark className="w-3 h-3" /> {a.district}
                   </span>
                   <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700">
                     <FiStar className="text-amber-500 fill-current w-3.5 h-3.5" />
@@ -733,7 +740,7 @@ const AdminDashboard = () => {
                </button>
                <button
                  onClick={handleAddHotel}
-                 disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.address || !addHotelForm.owner}
+                 disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.address || !addHotelForm.owner || !addHotelForm.district}
                  className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-[0_8px_20px_-6px_rgba(79,70,229,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
                >
                  <FiCheck className="w-4 h-4" />

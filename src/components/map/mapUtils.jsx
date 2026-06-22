@@ -7,13 +7,28 @@ import { FaBuilding } from 'react-icons/fa';
 
 export const NAVOIY_CENTER = [40.0842, 65.3791];
 
-export const CATEGORY_COLORS = { hotel: '#6366f1', resort: '#10b981', hostel: '#f59e0b' };
-export const CATEGORY_LABELS = { hotel: 'Mehmonxona', resort: 'Dam olish maskani', hostel: 'Hostel' };
+export const CATEGORY_COLORS = { hotel: '#6366f1', resort: '#10b981', hostel: '#f59e0b', attraction: '#d97706' };
+export const CATEGORY_LABELS = { attraction: 'Tarixiy joy', hotel: 'Mehmonxona', resort: 'Dam olish maskani', hostel: 'Hostel' };
+
+// Tarixiy/diqqatga sazovor joy markeri rangi (amber)
+export const ATTRACTION_COLOR = '#d97706';
+
+// Tur (kategoriya) filtri — tarixiy joylar ham qo'shildi
 export const FILTERS = [
-  { key: 'all',    label: 'Barchasi' },
-  { key: 'hotel',  label: 'Mehmonxonalar' },
-  { key: 'resort', label: 'Dam olish maskanlari' },
-  { key: 'hostel', label: 'Hostellar' },
+  { key: 'all',        label: 'Barchasi' },
+  { key: 'attraction', label: 'Tarixiy joylar' },
+  { key: 'hotel',      label: 'Mehmonxonalar' },
+  { key: 'resort',     label: 'Dam olish maskanlari' },
+  { key: 'hostel',     label: 'Hostellar' },
+];
+
+// Navoiy viloyatining 3 tumani — xarita filtri
+export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+export const DISTRICT_FILTERS = [
+  { key: 'all',      label: 'Barcha tumanlar' },
+  { key: 'Nurota',   label: 'Nurota' },
+  { key: 'Xatirchi', label: 'Xatirchi' },
+  { key: 'Qiziltepa', label: 'Qiziltepa' },
 ];
 
 // OSRM manevr turini o'zbekcha yo'riqnomaga aylantirish

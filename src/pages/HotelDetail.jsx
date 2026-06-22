@@ -7,6 +7,7 @@ import { ChatContext } from '../context/ChatContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import ComingSoonModal from '../components/ComingSoonModal';
+import { LuLandmark } from 'react-icons/lu';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';
@@ -496,7 +497,7 @@ const HotelDetail = () => {
                 <div className="flex flex-wrap gap-2.5">
                   {hotel.nearbyPlaces.map((place, i) => (
                     <div key={i} className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30">
-                      <span className="text-base">🏛️</span>
+                      <LuLandmark className="w-4 h-4 text-amber-600 dark:text-amber-500 shrink-0" />
                       <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{place}</span>
                     </div>
                   ))}
