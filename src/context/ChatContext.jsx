@@ -48,8 +48,11 @@ export const ChatProvider = ({ children }) => {
 
     const token = localStorage.getItem('token');
     const socket = io(SOCKET_URL, {
+      // Backend socket.io shu path'da: reverse-proxy faqat `/api` ni uzatadi
+      path: '/api/socket.io/',
       auth: { token },
-      transports: ['websocket', 'polling'],
+      // Polling birinchi — nginx websocket "upgrade" sozlanmagan bo'lsa ham ishlaydi
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 10,

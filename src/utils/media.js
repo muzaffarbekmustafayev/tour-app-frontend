@@ -8,11 +8,16 @@
  */
 import { API_URL, FALLBACK_IMAGE } from '../config/app';
 
-// `https://api.domen.uz/api` → `https://api.domen.uz`
-const API_ORIGIN = (API_URL || '').replace(/\/api\/?$/, '');
+// API bazasi `/api` bilan: `https://domen.uz/api`. Rasmlar shu yo'l orqali
+// (`/api/uploads/...`) so'raladi — reverse-proxy (nginx) odatda faqat `/api` ni
+// backendga uzatadi, `/uploads` esa frontend domenida 404 beradi.
+const API_BASE   = (API_URL || '').replace(/\/+$/, '');     // https://domen.uz/api
+const API_ORIGIN = API_BASE.replace(/\/api$/, '');           // https://domen.uz
 
 /**
  * Saqlangan media URL'ini to'liq ko'rsatiladigan URL'ga aylantiradi.
+ * Natija: `<API_BASE>/uploads/<fayl>` (ya'ni `/api/uploads/...`).
+ * Eski absolyut `http://localhost:5000/uploads/...` yozuvlar ham tuzatiladi.
  * @param {string} url
  * @returns {string}
  */
@@ -21,13 +26,18 @@ export function resolveMediaUrl(url) {
   const v = url.trim();
   if (!v || v.startsWith('data:') || v.startsWith('blob:')) return v;
 
-  // Har qanday URL ichidagi `/uploads/...` — joriy API origin orqali ko'rsatamiz
+  // Har qanday URL ichidagi `/uploads/...` — `/api/uploads/...` ga keltiramiz
   const i = v.indexOf('/uploads/');
-  if (i !== -1) return `${API_ORIGIN}${v.slice(i)}`;
+  if (i !== -1) return `${API_BASE}${v.slice(i)}`;
 
   // Nisbiy yo'llar
-  if (/^uploads\//i.test(v)) return `${API_ORIGIN}/${v}`;
+  if (/^uploads\//i.test(v)) return `${API_BASE}/${v}`;
   if (v.startsWith('/')) return `${API_ORIGIN}${v}`;
+
+  // Yalang fayl nomi (eski yozuvlar): "1782454049536.jpg" → /api/uploads/...
+  if (!v.includes('/') && /\.(jpe?g|png|webp|gif|avif|mp4|webm|mov)$/i.test(v)) {
+    return `${API_BASE}/uploads/${v}`;
+  }
 
   // Tashqi absolyut URL (unsplash, youtube va h.k.) — o'zgarmaydi
   return v;
