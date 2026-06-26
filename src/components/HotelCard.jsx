@@ -7,6 +7,7 @@ import {
 } from 'react-icons/md';
 import { TbWheelchair, TbEar, TbBraille, TbHandStop } from 'react-icons/tb';
 import { calcAccessibilityScore, getScoreStyle } from '../utils/accessibilityScore';
+import { imgSrc } from '../utils/media';
 
 const HotelCard = ({ hotel }) => {
   const { user, favorites, toggleFavorite } = useContext(AuthContext);
@@ -75,7 +76,7 @@ const HotelCard = ({ hotel }) => {
         {/* Skeleton */}
         <div className="absolute inset-0 shimmer" aria-hidden="true" />
         <img
-          src={hotel.image || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800'}
+          src={imgSrc(hotel.image || hotel.images?.[0])}
           alt={`${name} mehmonxonasi`}
           className="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-[1.03]"
           loading="lazy"

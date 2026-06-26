@@ -6,6 +6,7 @@ import AIRecommendations from '../components/AIRecommendations';
 import AccessibilityBanner from '../components/AccessibilityBanner';
 import api from '../services/api';
 import { fetchAttractions } from '../services/attractions';
+import { imgSrc } from '../utils/media';
 import { LuLandmark } from 'react-icons/lu';
 import heroBg from '../assets/image.png';
 import {
@@ -355,7 +356,7 @@ const Home = () => {
                           className="press-effect shrink-0 w-44 text-left rounded-2xl overflow-hidden border transition-all hover:shadow-md active:scale-[0.98]"
                           style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                           {h.images?.[0] && (
-                            <img src={h.images[0]} alt={h.name} className="w-full h-24 object-cover" loading="lazy" />
+                            <img src={imgSrc(h.images[0])} alt={h.name} className="w-full h-24 object-cover" loading="lazy" />
                           )}
                           <div className="p-2.5">
                             <p className="font-bold text-sm line-clamp-1" style={{ color: 'var(--text-main)' }}>{h.name}</p>

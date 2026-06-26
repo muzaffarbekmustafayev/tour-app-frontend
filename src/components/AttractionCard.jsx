@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
+import { imgSrc } from '../utils/media';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800';
 
@@ -19,7 +20,7 @@ const AttractionCard = ({ attraction: a }) => {
       <div className="relative overflow-hidden" style={{ aspectRatio: '4/3', minHeight: 0 }}>
         <div className="absolute inset-0 shimmer" aria-hidden="true" />
         <img
-          src={a.images?.[0] || FALLBACK}
+          src={imgSrc(a.images?.[0], FALLBACK)}
           alt={`${name}`}
           className="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-[1.03]"
           loading="lazy"

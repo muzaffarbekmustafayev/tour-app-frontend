@@ -5,6 +5,7 @@ import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import HotelCard from '../components/HotelCard';
 import { fetchAttraction, fetchNearbyStays, addAttractionReview } from '../services/attractions';
+import { imgSrc, resolveMediaUrl } from '../utils/media';
 import {
   FiMapPin, FiStar, FiFrown, FiPlayCircle, FiX, FiClock, FiFeather,
   FiAward, FiSun, FiNavigation, FiHome, FiCheck,
@@ -152,7 +153,7 @@ const AttractionDetail = () => {
 
         {/* Hero image + 360 button */}
         <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm mb-8">
-          <img src={images[0]} alt={a.name} className="w-full h-[300px] sm:h-[420px] object-cover" />
+          <img src={imgSrc(images[0])} alt={a.name} className="w-full h-[300px] sm:h-[420px] object-cover" />
           {a.video360?.url && (
             <button onClick={() => setVideoOpen(true)}
               className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-all group">
@@ -359,7 +360,7 @@ const AttractionDetail = () => {
                 <FiX className="text-xl" />
               </button>
               {a.video360.type === 'file' ? (
-                <video src={a.video360.url} controls autoPlay className="w-full h-full">
+                <video src={resolveMediaUrl(a.video360.url)} controls autoPlay className="w-full h-full">
                   {a.video360.captioned && <track kind="captions" />}
                 </video>
               ) : (

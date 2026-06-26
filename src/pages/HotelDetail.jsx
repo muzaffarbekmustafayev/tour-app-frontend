@@ -7,6 +7,7 @@ import { ChatContext } from '../context/ChatContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import ComingSoonModal from '../components/ComingSoonModal';
+import { resolveMediaUrl } from '../utils/media';
 import { LuLandmark } from 'react-icons/lu';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
@@ -235,9 +236,7 @@ const HotelDetail = () => {
   const name = hotel.name;
   const desc = hotel.description;
 
-  const imgSrc = (src) => src?.startsWith('http')
-    ? src
-    : `${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:5000'}/${src}`;
+  const imgSrc = (src) => resolveMediaUrl(src);
 
   // Build accessibility feature list with react-icons
   const accessFeatures = [

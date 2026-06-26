@@ -1,9 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye, FiX } from 'react-icons/fi';
+import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye, FiX, FiLink } from 'react-icons/fi';
 import api from '../services/api';
 import MapPickerModal from './MapPickerModal';
+import { imgSrc } from '../utils/media';
+import { parseLocationInput } from '../utils/geo';
 
-const amenitiesList = ['Free WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Bar', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception'];
+// Oilaviy/madaniy muhitga mos qulayliklar (spa, bar kabilar olib tashlandi)
+const amenitiesList = ['Free WiFi', 'Restaurant', 'Parking', 'Air Conditioning', 'Airport Shuttle', 'Gym', 'Pool', 'Meeting Rooms', 'Laundry', 'Room Service', '24h Reception', 'Family Rooms', 'Halal Food'];
 const accessibilityList = [
   { key: 'wheelchairAccessible', label: 'Arava (Kolyaska) bilan kirish' },
   { key: 'elevator', label: 'Lift mavjud' },
@@ -52,7 +55,21 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [locLink, setLocLink] = useState('');
+  const [locLinkError, setLocLinkError] = useState('');
   const galleryInputRef = useRef(null);
+
+  // Google/Yandex/OSM xarita havolasi yoki "lat, lng" matnidan koordinata olish
+  const applyLocLink = () => {
+    const parsed = parseLocationInput(locLink);
+    if (!parsed) {
+      setLocLinkError('Koordinata topilmadi. "40.08, 65.38" yoki xarita havolasini joylang.');
+      return;
+    }
+    setLocLinkError('');
+    setLocLink('');
+    setForm(p => ({ ...p, location: { lat: String(parsed.lat), lng: String(parsed.lng) } }));
+  };
 
   const handleFormChange = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
@@ -93,13 +110,11 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
     setUploading(true);
     try {
-      const uploaded = [];
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('image', file);
-        const res = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        uploaded.push(res.data.url);
-      }
+      // Barcha tanlangan rasmlar bitta so'rovda — bir vaqtda bir nechta rasm
+      const formData = new FormData();
+      files.forEach(f => formData.append('images', f));
+      const res = await api.post('/upload/multiple', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const uploaded = res.data.urls || [];
       setForm(prev => ({
         ...prev,
         images: [...(prev.images || []).filter(Boolean), ...uploaded],
@@ -343,11 +358,37 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                   )}
                 </div>
 
+                {/* Eng oson usul: xarita havolasi yoki koordinata joylash */}
+                <div className="relative z-10 mb-4">
+                  <label className={LabelClass + " !mb-2"}>Eng oson — xarita havolasi yoki koordinata</label>
+                  <div className="flex items-stretch gap-2">
+                    <div className="relative flex-1">
+                      <FiLink className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        value={locLink}
+                        onChange={e => { setLocLink(e.target.value); setLocLinkError(''); }}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyLocLink(); } }}
+                        placeholder="Masalan: 40.0842, 65.3791 yoki Google Maps havolasi"
+                        className={`${InputClass} !pl-9`}
+                      />
+                    </div>
+                    <button type="button" onClick={applyLocLink}
+                      className="px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors active:scale-95 shrink-0">
+                      Qo'yish
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1.5 ml-1">
+                    Google Maps yoki Yandex Maps'da joyni belgilab, havolani shu yerga joylang — koordinata avtomatik aniqlanadi.
+                  </p>
+                  {locLinkError && <p className="text-[11px] font-bold text-rose-500 mt-1 ml-1">{locLinkError}</p>}
+                </div>
+
                 {/* Control Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 relative z-10 mb-6">
-                  <button 
-                    type="button" 
-                    onClick={() => setShowMapModal(true)} 
+                  <button
+                    type="button"
+                    onClick={() => setShowMapModal(true)}
                     className="w-full sm:flex-1 py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-[0_4px_12px_rgba(79,70,229,0.25)] flex items-center justify-center gap-2 active:scale-95"
                   >
                     <FiMap className="w-4 h-4" />
@@ -531,7 +572,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
                   {(form.images || []).filter(Boolean).map((img, idx) => (
                     <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-fade-in">
-                      <img src={img} alt={`Rasm ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img src={imgSrc(img)} alt={`Rasm ${idx + 1}`} className="w-full h-full object-cover" />
                       {idx === 0 && (
                         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black shadow">MUQOVA</span>
                       )}

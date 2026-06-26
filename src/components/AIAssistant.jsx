@@ -5,6 +5,7 @@ import { FiX, FiSend, FiStar, FiMapPin, FiNavigation, FiSun } from 'react-icons/
 import { HiSparkles } from 'react-icons/hi2';
 import { LuLandmark } from 'react-icons/lu';
 import { GoDotFill } from 'react-icons/go';
+import { resolveMediaUrl } from '../utils/media';
 
 /**
  * AIAssistant — mavjud ma'lumotlar asosida javob beruvchi suzuvchi AI chat.
@@ -15,9 +16,13 @@ import { GoDotFill } from 'react-icons/go';
 
 const WELCOME = {
   role: 'bot',
-  reply: "Salom! 👋 Men NavaiTour AI yordamchisiman.\nQuyidagilarni so'rab ko'ring:",
-  suggestions: ['Tarixiy joylar', 'Qachon borish yaxshi?', '7 kunlik plan yoz', 'Aravacha uchun qulay'],
+  reply: "Salom! 👋 Men NavaiTour AI yordamchisiman.\nNarx, qulayliklar, tarixiy joylar, sayohat rejasi va boshqa savollarga javob beraman. Quyidagilarni so'rab ko'ring:",
+  suggestions: ['Nima qila olasan?', 'Arzon mehmonxona', 'Bepul Wi-Fi bormi?', '3 kunlik plan yoz'],
 };
+
+// 720000 → "720 000 so'm"
+const fmtSom = (n) =>
+  Number.isFinite(n) ? `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm` : null;
 
 const AttractionMini = ({ a, onClick }) => (
   <button
@@ -25,7 +30,7 @@ const AttractionMini = ({ a, onClick }) => (
     className="group w-full flex gap-3 p-2.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
   >
     {a.image && (
-      <img src={a.image} alt={a.name} loading="lazy" decoding="async"
+      <img src={resolveMediaUrl(a.image)} alt={a.name} loading="lazy" decoding="async"
         className="w-14 h-14 rounded-xl object-cover shrink-0 ring-1 ring-amber-200/60 dark:ring-amber-900/40" />
     )}
     <div className="min-w-0 flex-1">
@@ -72,7 +77,7 @@ const HotelMini = ({ h, onClick }) => (
     className="group w-full flex gap-3 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
   >
     {h.image && (
-      <img src={h.image} alt={h.name} loading="lazy" decoding="async"
+      <img src={resolveMediaUrl(h.image)} alt={h.name} loading="lazy" decoding="async"
         className="w-14 h-14 rounded-xl object-cover shrink-0 ring-1 ring-slate-200/60 dark:ring-slate-700" />
     )}
     <div className="min-w-0 flex-1">
@@ -84,7 +89,13 @@ const HotelMini = ({ h, onClick }) => (
       </div>
       <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
         <FiMapPin className="w-3 h-3" />{h.district || h.city}{h.category ? ` · ${h.category}` : ''}
+        {Number.isFinite(h.stars) && <span className="text-amber-500">{' · '}{'★'.repeat(h.stars)}</span>}
       </p>
+      {Number.isFinite(h.price) && (
+        <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+          {fmtSom(h.price)}<span className="font-medium text-slate-400"> / kecha</span>
+        </p>
+      )}
       {Number.isFinite(h.distanceKm) && (
         <p className="text-[11px] font-bold text-indigo-500 dark:text-indigo-400 flex items-center gap-1 mt-0.5">
           <FiNavigation className="w-3 h-3" /> ~{h.distanceKm} km uzoqlikda

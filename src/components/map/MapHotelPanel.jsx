@@ -1,7 +1,8 @@
 import React from 'react';
-import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar } from 'react-icons/fi';
+import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar, FiImage } from 'react-icons/fi';
 import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtDist, fmtTime } from './mapUtils';
 import { calcAccessibilityScore, getScoreStyle } from '../../utils/accessibilityScore';
+import { resolveMediaUrl } from '../../utils/media';
 
 const MapHotelPanel = ({
   selected,
@@ -62,9 +63,7 @@ const MapHotelPanel = ({
           <div className="relative w-full h-[180px] sm:h-[220px] shrink-0 bg-slate-200 dark:bg-slate-800">
             {selected.images?.length > 0 || selected.image ? (
               <img
-                src={(selected.images?.[0] || selected.image).startsWith('http')
-                  ? (selected.images?.[0] || selected.image)
-                  : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${selected.images?.[0] || selected.image}`}
+                src={resolveMediaUrl(selected.images?.[0] || selected.image)}
                 alt={selected.name}
                 className="w-full h-full object-cover"
               />

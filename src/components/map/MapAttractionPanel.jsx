@@ -4,6 +4,7 @@ import {
   FiImage, FiLoader, FiPlayCircle,
 } from 'react-icons/fi';
 import { LuLandmark } from 'react-icons/lu';
+import { resolveMediaUrl } from '../../utils/media';
 
 /**
  * MapAttractionPanel — Xaritada tarixiy joy tanlanganda chiqadigan pastki panel.
@@ -12,12 +13,7 @@ import { LuLandmark } from 'react-icons/lu';
  * (avtomatik tanlangan) ko'rsatiladi. Foydalanuvchi tunash joyini ochishi yoki
  * o'zidan o'sha maskangacha marshrut chizishi mumkin.
  */
-const imgUrl = (src) => {
-  if (!src) return null;
-  if (src.startsWith('http')) return src;
-  const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-  return `${base}/${src}`;
-};
+const imgUrl = (src) => resolveMediaUrl(src) || null;
 
 const MapAttractionPanel = ({
   attraction,

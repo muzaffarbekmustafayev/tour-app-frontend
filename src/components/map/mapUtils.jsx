@@ -1,9 +1,5 @@
-import React, { useEffect } from 'react';
-import { renderToString } from 'react-dom/server';
-import { useMap } from 'react-leaflet';
-import L from 'leaflet';
+import React from 'react';
 import { FiStar } from 'react-icons/fi';
-import { FaBuilding } from 'react-icons/fa';
 
 export const NAVOIY_CENTER = [40.0842, 65.3791];
 
@@ -93,79 +89,6 @@ export async function fetchRoute(from, to, profile = 'driving') {
 export const fmtDist = m => m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`;
 export const fmtTime = s => s < 60 ? `${Math.round(s)} sek` : s < 3600 ? `${Math.round(s / 60)} daq` : `${Math.floor(s / 3600)}s ${Math.round((s % 3600) / 60)}d`;
 export const fmtPrice = p => p ? new Intl.NumberFormat('uz-UZ').format(p) : null;
-
-// Fix leafet default icon
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-export const userIcon = L.divIcon({
-  className: '',
-  html: `<div style="position:relative;width:22px;height:22px;">
-    <div style="position:absolute;inset:0;background:#10b981;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:2;"></div>
-    <div style="position:absolute;inset:-10px;background:rgba(16,185,129,0.3);border-radius:50%;z-index:1;animation:pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);"></div>
-    <div style="position:absolute;inset:-20px;background:rgba(16,185,129,0.15);border-radius:50%;z-index:0;animation:pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);animation-delay:1s;"></div>
-  </div>`,
-  iconSize: [22, 22], iconAnchor: [11, 11],
-});
-
-export const createHotelIcon = (selected = false) => {
-  const size = selected ? 40 : 30;
-  const bgColor = selected ? '#f43f5e' : '#4f46e5'; // Accent (Rose-500) vs Primary (Indigo-600)
-  const shadowOpacity = selected ? '0.5' : '0.3';
-  
-  // Use a serious icon instead of emoji
-  const iconSvg = renderToString(<FaBuilding style={{ color: 'white', width: selected ? '18px' : '14px', height: selected ? '18px' : '14px' }} />);
-
-  return L.divIcon({
-    className: '',
-    html: `<div style="filter:drop-shadow(0 4px 6px rgba(0,0,0,${shadowOpacity}));">
-      <div style="position:relative;width:${size}px;height:${size * 1.25}px;">
-        <div style="
-          width:${size}px;height:${size}px;
-          background:${bgColor};
-          border-radius:50% 50% 50% 0;
-          transform:rotate(-45deg);
-          border:${selected ? '3px' : '2px'} solid white;
-          position:absolute;top:0;left:0;
-          box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
-        "></div>
-        <span style="position:absolute;top:0;left:0;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;z-index:2;">
-          ${iconSvg}
-        </span>
-      </div>
-    </div>`,
-    iconSize: [size, size * 1.25],
-    iconAnchor: [size / 2, size * 1.25],
-    popupAnchor: [0, -size * 1.25],
-  });
-};
-
-export const FlyTo = ({ coords, zoom }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (!coords) return;
-    if (Array.isArray(coords[0])) {
-      const isMobile = window.innerWidth < 768;
-      const options = isMobile ? {
-        paddingTopLeft: [24, 180], // [left, top] pad top to avoid floating route overlay
-        paddingBottomRight: [24, 90], // [right, bottom] pad bottom to avoid bottom nav
-        duration: 1.2
-      } : {
-        paddingTopLeft: [60, 60], // [left, top]
-        paddingBottomRight: [400, 60], // [right, bottom] pad right to avoid floating route overlay
-        duration: 1.2
-      };
-      map.flyToBounds(L.latLngBounds(coords), options);
-    } else {
-      map.flyTo(coords, zoom || 15, { duration: 0.9 });
-    }
-  }, [coords, map, zoom]);
-  return null;
-};
 
 export const Stars = ({ count = 0, size = 'sm' }) => (
   <span className="flex items-center gap-0.5">

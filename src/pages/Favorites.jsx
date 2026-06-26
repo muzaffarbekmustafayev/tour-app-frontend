@@ -5,6 +5,7 @@ import BackButton from '../components/BackButton';
 import { FiHeart, FiTrash2, FiSearch, FiMapPin, FiStar, FiZap } from 'react-icons/fi';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { imgSrc } from '../utils/media';
 
 /* ── Skeleton card ── */
 const SkeletonCard = () => (
@@ -22,11 +23,7 @@ const SkeletonCard = () => (
 const FavCard = ({ hotel, onRemove }) => {
   const name = (hotel.name || 'Nomi yo\'q');
 
-  const img = hotel.images?.[0]
-    ? (hotel.images[0].startsWith('http')
-        ? hotel.images[0]
-        : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${hotel.images[0]}`)
-    : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800';
+  const img = imgSrc(hotel.images?.[0]);
 
   return (
     <article

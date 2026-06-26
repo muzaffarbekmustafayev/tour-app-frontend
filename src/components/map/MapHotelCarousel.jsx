@@ -1,5 +1,6 @@
 import React from 'react';
 import { Stars } from './mapUtils';
+import { resolveMediaUrl } from '../../utils/media';
 
 const MapHotelCarousel = ({ filtered, selected, openPanel }) => {
   return (
@@ -43,9 +44,7 @@ const MapHotelCarousel = ({ filtered, selected, openPanel }) => {
               >
                 {(hotel.images?.[0] || hotel.image) && (
                   <img
-                    src={(hotel.images?.[0] || hotel.image).startsWith('http')
-                      ? (hotel.images?.[0] || hotel.image)
-                      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${hotel.images?.[0] || hotel.image}`}
+                    src={resolveMediaUrl(hotel.images?.[0] || hotel.image)}
                     alt=""
                     className="w-full h-full object-cover"
                   />

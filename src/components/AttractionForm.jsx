@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import MapPickerModal from './MapPickerModal';
+import { imgSrc } from '../utils/media';
+import { parseLocationInput } from '../utils/geo';
 import {
   FiEdit3, FiMapPin, FiImage, FiPlus, FiTrash2, FiX, FiVideo,
   FiNavigation, FiCheck, FiCommand, FiUpload, FiClock, FiFeather,
+  FiLink, FiChevronDown,
 } from 'react-icons/fi';
 
 export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
@@ -44,15 +47,47 @@ const Card = ({ children }) => (
   <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm mb-6">{children}</div>
 );
 
+// Ixtiyoriy bo'limlar — yopiq holatda boshlanadi, forma yengilroq ko'rinadi
+const Collapsible = ({ title, icon, children, defaultOpen = false }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-sm mb-6 overflow-hidden">
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 px-6 md:px-8 py-5 text-left">
+        <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">{icon} {title}</span>
+        <span className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+          {!open && 'Ixtiyoriy'}
+          <FiChevronDown className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+      {open && <div className="px-6 md:px-8 pb-6 md:pb-8">{children}</div>}
+    </div>
+  );
+};
+
 const AttractionForm = ({ form, setForm }) => {
   const [uploading, setUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [locLink, setLocLink] = useState('');
+  const [locLinkError, setLocLinkError] = useState('');
   const imgRef = useRef(null);
 
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
   const setNested = (group, key, val) => setForm((p) => ({ ...p, [group]: { ...p[group], [key]: val } }));
+
+  // Google/Yandex/OSM xarita havolasi yoki "lat, lng" matnidan koordinata olish
+  const applyLocLink = () => {
+    const parsed = parseLocationInput(locLink);
+    if (!parsed) {
+      setLocLinkError('Koordinata topilmadi. "40.56, 65.68" yoki xarita havolasini joylang.');
+      return;
+    }
+    setLocLinkError('');
+    setLocLink('');
+    set('location', { lat: String(parsed.lat), lng: String(parsed.lng) });
+  };
 
   const handleImages = async (fileList) => {
     const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
@@ -62,13 +97,11 @@ const AttractionForm = ({ form, setForm }) => {
     setUploadError('');
     setUploading(true);
     try {
-      const urls = [];
-      for (const file of files) {
-        const fd = new FormData();
-        fd.append('image', file);
-        const res = await api.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-        urls.push(res.data.url);
-      }
+      // Barcha tanlangan rasmlarni bitta so'rovda yuklaymiz
+      const fd = new FormData();
+      files.forEach((f) => fd.append('images', f));
+      const res = await api.post('/upload/multiple', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const urls = res.data.urls || [];
       setForm((p) => ({ ...p, images: [...(p.images || []).filter(Boolean), ...urls] }));
     } catch (err) {
       setUploadError('Rasm yuklashda xatolik: ' + (err.response?.data?.message || err.message));
@@ -172,9 +205,8 @@ const AttractionForm = ({ form, setForm }) => {
         </label>
       </Card>
 
-      <Card>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><FiNavigation className="text-emerald-500" /> Atrofda nima bor</h2>
+      <Collapsible title="Atrofda nima bor" icon={<FiNavigation className="text-emerald-500" />}>
+        <div className="flex justify-end mb-4">
           <button type="button" onClick={addThing} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100 transition-all">
             <FiPlus className="w-4 h-4" /> Qo'shish
           </button>
@@ -196,42 +228,66 @@ const AttractionForm = ({ form, setForm }) => {
             </div>
           ))}
         </div>
-      </Card>
+      </Collapsible>
 
       <Card>
-        <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2"><FiMapPin className="text-rose-500" /> Lokatsiya (yaqin maskanlar uchun zarur)</h2>
+        <h2 className="text-sm font-bold mb-1 text-slate-900 dark:text-white flex items-center gap-2"><FiMapPin className="text-rose-500" /> Lokatsiya</h2>
+        <p className="text-[11px] text-slate-400 mb-4">Yaqin mehmonxonalarni avtomatik aniqlash uchun zarur. Eng osoni — xarita havolasini joylash.</p>
+
+        {/* Eng oson usul — havola yoki koordinata */}
+        <Label>Xarita havolasi yoki koordinata</Label>
+        <div className="flex items-stretch gap-2 mb-3">
+          <div className="relative flex-1">
+            <FiLink className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input value={locLink}
+              onChange={(e) => { setLocLink(e.target.value); setLocLinkError(''); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyLocLink(); } }}
+              placeholder="40.5640, 65.6895 yoki Google Maps havolasi" className="!pl-9" />
+          </div>
+          <button type="button" onClick={applyLocLink}
+            className="px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors active:scale-95 shrink-0">
+            Qo'yish
+          </button>
+        </div>
+        {locLinkError && <p className="text-[11px] font-bold text-rose-500 mb-3 ml-1">{locLinkError}</p>}
+
         <button type="button" onClick={() => setShowMap(true)}
-          className="w-full mb-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all">
-          <FiNavigation className="w-4 h-4" /> Xaritadan belgilash
+          className="w-full mb-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold flex items-center justify-center gap-2 transition-all">
+          <FiNavigation className="w-4 h-4" /> Yoki xaritadan belgilash
         </button>
+
+        {form.location?.lat && form.location?.lng && (
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-400">
+            <FiCheck className="w-4 h-4 shrink-0" />
+            <p className="text-[11px] font-bold font-mono truncate">Tanlandi: {form.location.lat}, {form.location.lng}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div><Label>Kenglik (lat)</Label><Input type="number" step="any" value={form.location?.lat || ''} onChange={(e) => set('location', { ...form.location, lat: e.target.value })} placeholder="40.5640" /></div>
           <div><Label>Uzunlik (lng)</Label><Input type="number" step="any" value={form.location?.lng || ''} onChange={(e) => set('location', { ...form.location, lng: e.target.value })} placeholder="65.6895" /></div>
         </div>
       </Card>
 
-      <Card>
-        <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2"><FiFeather className="text-emerald-500" /> Joy atmosferasi</h2>
+      <Collapsible title="Joy atmosferasi" icon={<FiFeather className="text-emerald-500" />}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><Label>Kayfiyat</Label><Input value={form.atmosphere?.mood} onChange={(e) => setNested('atmosphere', 'mood', e.target.value)} placeholder="Tinch va ziyoratbop" /></div>
           <div><Label>Eng yaxshi vaqt</Label><Input value={form.atmosphere?.bestTimeOfDay} onChange={(e) => setNested('atmosphere', 'bestTimeOfDay', e.target.value)} placeholder="Erta tong" /></div>
           <div className="md:col-span-2"><Label>Ovoz manzarasi</Label><Input value={form.atmosphere?.soundscape} onChange={(e) => setNested('atmosphere', 'soundscape', e.target.value)} placeholder="Buloq suvining shildirashi..." /></div>
           <div className="md:col-span-2"><Label>Mahalliy maslahat</Label><Input value={form.atmosphere?.localTip} onChange={(e) => setNested('atmosphere', 'localTip', e.target.value)} placeholder="Foydali maslahat" /></div>
         </div>
-      </Card>
+      </Collapsible>
 
-      <Card>
-        <h2 className="text-sm font-bold mb-1 text-slate-900 dark:text-white flex items-center gap-2"><FiClock className="text-rose-500" /> Pik va tinch vaqtlar</h2>
-        <p className="text-[11px] text-slate-400 mb-5">Ixtiyoriy. Bo'sh qoldirsangiz, AI yordamchi "eng yaxshi vaqt" va mavsumdan avtomatik aniqlaydi.</p>
+      <Collapsible title="Pik va tinch vaqtlar" icon={<FiClock className="text-rose-500" />}>
+        <p className="text-[11px] text-slate-400 mb-5">Bo'sh qoldirsangiz, AI yordamchi "eng yaxshi vaqt" va mavsumdan avtomatik aniqlaydi.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><Label>Pik (gavjum) vaqt</Label><Input value={form.peakInfo?.peak || ''} onChange={(e) => setNested('peakInfo', 'peak', e.target.value)} placeholder="Hafta oxiri 11:00–16:00, bayramlar" /></div>
           <div><Label>Tinch vaqt</Label><Input value={form.peakInfo?.quiet || ''} onChange={(e) => setNested('peakInfo', 'quiet', e.target.value)} placeholder="Erta tong va ish kunlari" /></div>
           <div className="md:col-span-2"><Label>Qo'shimcha izoh</Label><Input value={form.peakInfo?.note || ''} onChange={(e) => setNested('peakInfo', 'note', e.target.value)} placeholder="Masalan: Juma kuni ziyoratchilar ko'p bo'ladi" /></div>
         </div>
-      </Card>
+      </Collapsible>
 
-      <Card>
-        <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2"><FiCommand className="text-indigo-500" /> Inklyuziv qulayliklar</h2>
+      <Collapsible title="Inklyuziv qulayliklar" icon={<FiCommand className="text-indigo-500" />}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {ACCESSIBILITY_OPTS.map((opt) => (
             <label key={opt.key} className="flex items-center gap-3 cursor-pointer p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition-all">
@@ -240,7 +296,7 @@ const AttractionForm = ({ form, setForm }) => {
             </label>
           ))}
         </div>
-      </Card>
+      </Collapsible>
 
       <Card>
         <h2 className="text-sm font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2"><FiImage className="text-violet-500" /> Rasmlar</h2>
@@ -255,7 +311,7 @@ const AttractionForm = ({ form, setForm }) => {
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {(form.images || []).filter(Boolean).map((img, idx) => (
               <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                <img src={img} alt={`rasm-${idx}`} className="w-full h-full object-cover" />
+                <img src={imgSrc(img)} alt={`rasm-${idx}`} className="w-full h-full object-cover" />
                 <button type="button" onClick={() => removeImage(idx)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg bg-slate-900/80 hover:bg-rose-600 text-white flex items-center justify-center"><FiX className="w-4 h-4" /></button>
               </div>
             ))}
