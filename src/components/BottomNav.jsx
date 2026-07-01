@@ -224,7 +224,7 @@ const BottomNav = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          {user ? (
+          {user && (
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all"
@@ -232,14 +232,6 @@ const BottomNav = () => {
               <FiLogOut className="w-5 h-5" />
               <span>Chiqish</span>
             </button>
-          ) : (
-            <Link
-              to="/login"
-              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all"
-            >
-              <FiLogIn className="w-5 h-5" />
-              <span>Kirish</span>
-            </Link>
           )}
           
           <div className="pt-2 px-4">

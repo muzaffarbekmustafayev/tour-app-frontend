@@ -6,17 +6,25 @@ import Loader from '../components/Loader';
 import HotelCard from '../components/HotelCard';
 import { fetchAttraction, fetchNearbyStays, addAttractionReview } from '../services/attractions';
 import { imgSrc, resolveMediaUrl } from '../utils/media';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
+import 'swiper/css/free-mode';
 import {
   FiMapPin, FiStar, FiFrown, FiPlayCircle, FiX, FiClock, FiFeather,
-  FiAward, FiSun, FiNavigation, FiHome, FiCheck,
+  FiAward, FiSun, FiNavigation, FiHome, FiCheck, FiCalendar, FiDollarSign,
+  FiImage, FiExternalLink,
 } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
 
 const Section = ({ title, icon, children, className = '' }) => (
-  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm ${className}`}>
+  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-5 md:p-7 rounded-2xl mb-5 shadow-sm ${className}`}>
     {title && (
-      <h2 className="flex items-center gap-3 text-[13px] font-black mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
+      <h2 className="flex items-center gap-3 text-[13px] font-black mb-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
         <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-sm">{icon}</span> {title}
       </h2>
     )}
@@ -55,6 +63,8 @@ const AttractionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [videoOpen, setVideoOpen] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
+  const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -102,7 +112,8 @@ const AttractionDetail = () => {
     </div>
   );
 
-  const images = a.images?.length ? a.images : ['https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1000'];
+  const images = (a.images?.length ? a.images : ['https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1000']).filter(Boolean);
+  const hasVideo = !!a.video360?.url;
   const accFeatures = Object.entries({
     wheelchairAccessible: 'Aravacha uchun qulay',
     accessibleParking: 'Maxsus parking',
@@ -114,16 +125,26 @@ const AttractionDetail = () => {
     serviceAnimalFriendly: "Yo'l-yo'riq hayvonlari",
   }).filter(([k]) => a.accessibility?.[k]);
 
+  const hasAtmosphere = a.atmosphere && (a.atmosphere.mood || a.atmosphere.soundscape || a.atmosphere.bestTimeOfDay || a.atmosphere.localTip);
+  const hasPeak = a.peakInfo && (a.peakInfo.peak || a.peakInfo.quiet || a.peakInfo.note);
+
+  // Joylashuv — admin location yoki geo koordinatasidan
+  const lat = Number(a.location?.lat ?? a.geo?.coordinates?.[1]);
+  const lng = Number(a.location?.lng ?? a.geo?.coordinates?.[0]);
+  const hasGeo = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
+  const panoramas = (a.panoramas || []).filter((p) => p && p.url);
+  const addedDate = a.createdAt ? new Date(a.createdAt).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-28 md:pb-8">
 
         <div className="mb-4"><BackButton /></div>
 
         {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-6">
+        <div className="mb-5 flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-2.5 mb-3">
               <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
                 <LuLandmark className="w-3 h-3" /> Tarixiy joy
               </span>
@@ -131,7 +152,7 @@ const AttractionDetail = () => {
                 <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district} tumani
               </span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 leading-tight">{a.name}</h1>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 leading-tight">{a.name}</h1>
             {a.address && (
               <p className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm font-semibold">
                 <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> {a.address}
@@ -139,7 +160,7 @@ const AttractionDetail = () => {
             )}
           </div>
           {a.rating > 0 && (
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10 p-4 rounded-2xl flex items-center gap-3.5 border border-amber-100/80 dark:border-amber-900/30 shadow-sm shrink-0">
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10 p-4 rounded-2xl flex items-center gap-3.5 border border-amber-100/80 dark:border-amber-900/30 shadow-sm shrink-0 self-start">
               <div className="bg-amber-500 text-white w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-md shrink-0">
                 {a.rating?.toFixed(1)}
               </div>
@@ -151,29 +172,109 @@ const AttractionDetail = () => {
           )}
         </div>
 
-        {/* Hero image + 360 button */}
-        <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm mb-8">
-          <img src={imgSrc(images[0])} alt={a.name} className="w-full h-[300px] sm:h-[420px] object-cover" />
-          {a.video360?.url && (
-            <button onClick={() => setVideoOpen(true)}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-all group">
-              <span className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/95 text-indigo-700 font-black text-sm shadow-xl group-active:scale-95 transition-transform">
-                <FiPlayCircle className="w-5 h-5" /> 360° videoni ko'rish
-                {a.video360.captioned && <span className="ml-1 bg-blue-100 text-blue-700 text-[9px] font-black px-1.5 py-0.5 rounded">CC</span>}
-              </span>
-            </button>
+        {/* ── Rasm karuseli (bir nechta rasm) ── */}
+        <div className="mb-4">
+          <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm gallery-swiper-main">
+            <Swiper
+              modules={[Navigation, Pagination, Thumbs]}
+              navigation={{ nextEl: '.attr-next', prevEl: '.attr-prev' }}
+              pagination={{ clickable: true, dynamicBullets: true }}
+              thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+              onSlideChange={(s) => setActiveImg(s.realIndex)}
+              loop={images.length > 1}
+              className="w-full"
+              style={{ '--swiper-pagination-color': '#f59e0b', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
+            >
+              {images.map((img, i) => (
+                <SwiperSlide key={i}>
+                  <img src={imgSrc(img)} alt={`${a.name} - ${i + 1}`}
+                    className="w-full h-[260px] sm:h-[420px] object-cover"
+                    loading={i === 0 ? 'eager' : 'lazy'} />
+                </SwiperSlide>
+              ))}
+
+              {images.length > 1 && (
+                <>
+                  <button className="attr-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                  </button>
+                  <button className="attr-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </>
+              )}
+
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-600/90 backdrop-blur-sm">
+                  <LuLandmark className="w-3 h-3" /> Tarixiy joy
+                </span>
+                {hasVideo && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
+                    <FiPlayCircle className="w-3 h-3" /> 360°
+                  </span>
+                )}
+              </div>
+
+              {images.length > 1 && (
+                <div className="absolute top-3 right-3 z-10 bg-black/50 text-white text-[11px] font-bold px-2 py-1 rounded-full backdrop-blur-sm">
+                  {activeImg + 1} / {images.length}
+                </div>
+              )}
+            </Swiper>
+          </div>
+
+          {/* Thumbnail qatori */}
+          {images.length > 1 && (
+            <div className="mt-2">
+              <Swiper modules={[FreeMode, Thumbs]} onSwiper={setThumbsSwiper}
+                spaceBetween={6} slidesPerView="auto" freeMode watchSlidesProgress className="thumb-swiper">
+                {images.map((img, i) => (
+                  <SwiperSlide key={i} style={{ width: '72px', height: '52px' }}>
+                    <div className={`w-full h-full rounded-md overflow-hidden cursor-pointer border-2 transition-all ${activeImg === i ? 'border-amber-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}>
+                      <img src={imgSrc(img)} alt={`thumb-${i}`} className="w-full h-full object-cover" loading="lazy" />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           )}
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* ── 360° video — alohida, ko'zga tashlanadigan tugma ── */}
+        {hasVideo && (
+          <button onClick={() => setVideoOpen(true)}
+            className="w-full mb-6 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-white shadow-lg active:scale-[0.99] transition-transform"
+            style={{ background: 'linear-gradient(135deg,#4F46E5 0%,#7C3AED 60%,#8B5CF6 100%)' }}>
+            <span className="flex items-center gap-3 min-w-0">
+              <span className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <FiPlayCircle className="w-6 h-6" />
+              </span>
+              <span className="text-left min-w-0">
+                <span className="block font-black text-[15px] leading-tight">360° virtual sayohat</span>
+                <span className="block text-[12px] text-white/80 truncate">Bormasdan turib joyni his eting</span>
+              </span>
+            </span>
+            <span className="flex items-center gap-2 shrink-0">
+              {a.video360.captioned && <span className="bg-white/20 text-[10px] font-black px-1.5 py-0.5 rounded">CC</span>}
+              <span className="text-xs font-bold bg-white/15 px-3 py-1.5 rounded-xl hidden sm:inline">Ko'rish</span>
+            </span>
+          </button>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div className="flex-1 min-w-0">
 
             <Section title="Joy haqida" icon={<FiAward />}>
-              <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{a.description}</p>
+              {a.descriptionShort && (
+                <p className="text-slate-800 dark:text-slate-100 text-[15px] font-semibold leading-relaxed mb-3">{a.descriptionShort}</p>
+              )}
+              {a.description && (
+                <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{a.description}</p>
+              )}
               <div className="flex flex-wrap gap-2 mt-5">
                 {a.entryFee && (
-                  <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/30">
-                    Kirish: {a.entryFee}
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/30">
+                    <FiDollarSign className="w-3.5 h-3.5" /> Kirish: {a.entryFee}
                   </span>
                 )}
                 {a.bestSeason && (
@@ -182,17 +283,80 @@ const AttractionDetail = () => {
                   </span>
                 )}
               </div>
+              {addedDate && (
+                <p className="text-[11px] font-semibold text-slate-400 mt-4 flex items-center gap-1.5">
+                  <FiCalendar className="w-3.5 h-3.5" /> Qo'shilgan: {addedDate}
+                </p>
+              )}
             </Section>
+
+            {/* Joylashuv — xarita + havolalar */}
+            {hasGeo && (
+              <Section title="Joylashuv" icon={<FiMapPin />}>
+                {a.address && (
+                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+                    <FiMapPin className="w-4 h-4 text-rose-500 shrink-0" /> {a.address}
+                  </p>
+                )}
+                {/* Ilova ichidagi xaritada marshrutni ochish (foydalanuvchidan shu joygacha) */}
+                <button
+                  onClick={() => navigate('/map', { state: { targetAttractionId: a._id } })}
+                  className="w-full mb-4 py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)' }}
+                >
+                  <FiNavigation className="w-4 h-4" /> Marshrutni ochish
+                </button>
+                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 mb-3">
+                  <iframe
+                    title={`${a.name} — xarita`}
+                    className="w-full h-[260px]"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.012}%2C${lat - 0.008}%2C${lng + 0.012}%2C${lat + 0.008}&layer=mapnik&marker=${lat}%2C${lng}`}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition-all">
+                    <FiExternalLink className="w-4 h-4" /> Google Xaritada ochish
+                  </a>
+                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat}%2C${lng}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                    <FiNavigation className="w-4 h-4" /> Yo'l-yo'riq olish
+                  </a>
+                  <span className="inline-flex items-center px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 text-[11px] font-mono font-bold border border-slate-100 dark:border-slate-800">
+                    {lat.toFixed(5)}, {lng.toFixed(5)}
+                  </span>
+                </div>
+              </Section>
+            )}
+
+            {/* Panorama ko'rinishlari */}
+            {panoramas.length > 0 && (
+              <Section title="Panorama ko'rinishlari" icon={<FiImage />}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {panoramas.map((p, i) => (
+                    <figure key={i} className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/40">
+                      <img src={imgSrc(p.url)} alt={p.caption || `${a.name} panorama ${i + 1}`} className="w-full h-44 object-cover" loading="lazy" />
+                      {p.caption && <figcaption className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">{p.caption}</figcaption>}
+                    </figure>
+                  ))}
+                </div>
+              </Section>
+            )}
 
             {/* Atrofda nima bor */}
             {a.thingsToSeeAround?.length > 0 && (
               <Section title="Atrofda aylanishga arzigulik" icon={<FiNavigation />}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {a.thingsToSeeAround.map((t, i) => (
                     <div key={i} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{TYPE_LABELS[t.type] || t.type}</span>
-                        {Number.isFinite(t.walkingMinutes) && (
+                        {Number.isFinite(t.walkingMinutes) && t.walkingMinutes !== '' && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-500">
                             <FiClock className="w-3 h-3" /> {t.walkingMinutes} daq piyoda
                           </span>
@@ -207,9 +371,9 @@ const AttractionDetail = () => {
             )}
 
             {/* Atmosfera */}
-            {a.atmosphere && (a.atmosphere.mood || a.atmosphere.soundscape || a.atmosphere.bestTimeOfDay || a.atmosphere.localTip) && (
+            {hasAtmosphere && (
               <Section title="Joy atmosferasi" icon={<FiFeather />}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {a.atmosphere.mood && (
                     <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80">
                       <span className="text-xl shrink-0">🌿</span>
@@ -238,6 +402,32 @@ const AttractionDetail = () => {
               </Section>
             )}
 
+            {/* Pik va tinch vaqtlar */}
+            {hasPeak && (
+              <Section title="Qachon borish qulay" icon={<FiCalendar />}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {a.peakInfo.quiet && (
+                    <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
+                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-1.5">😌 Tinch vaqt</p>
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.peakInfo.quiet}</p>
+                    </div>
+                  )}
+                  {a.peakInfo.peak && (
+                    <div className="p-4 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30">
+                      <p className="text-[10px] font-black text-rose-500 uppercase tracking-wider mb-1.5">🔥 Gavjum (pik) vaqt</p>
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.peakInfo.peak}</p>
+                    </div>
+                  )}
+                  {a.peakInfo.note && (
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 sm:col-span-2">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">ℹ️ Izoh</p>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{a.peakInfo.note}</p>
+                    </div>
+                  )}
+                </div>
+              </Section>
+            )}
+
             {/* Inklyuziv qulayliklar */}
             {accFeatures.length > 0 && (
               <Section title="Inklyuziv qulayliklar" icon={<MdAccessible />}>
@@ -253,7 +443,6 @@ const AttractionDetail = () => {
 
             {/* Reviews */}
             <Section title="Sayohatchilar fikri" icon={<FiStar />}>
-              {/* Add review */}
               <form onSubmit={submitReview} className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-bold text-slate-500">Bahongiz:</span>
@@ -308,11 +497,10 @@ const AttractionDetail = () => {
                 <h3 className="font-black text-slate-800 dark:text-white mb-1 text-[11px] uppercase tracking-wider flex items-center gap-2">
                   <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin tunash joylari
                 </h3>
-                <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari. Eng yaqini avtomatik tanlangan — egasi bilan suhbatlashing.</p>
+                <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari. Eng yaqini avtomatik tanlangan.</p>
 
                 {nearby.length > 0 ? (
                   <div className="space-y-4">
-                    {/* Eng yaqin tunash joyi — avtomatik tanlangan */}
                     <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5">
                       <div className="flex items-center justify-between gap-2 mb-2 px-1">
                         <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-600 text-white flex items-center gap-1">
@@ -327,7 +515,6 @@ const AttractionDetail = () => {
                       <HotelCard hotel={nearby[0]} />
                     </div>
 
-                    {/* Qolgan yaqin joylar */}
                     {nearby.length > 1 && (
                       <>
                         <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1 ml-1">Boshqa yaqin joylar</p>

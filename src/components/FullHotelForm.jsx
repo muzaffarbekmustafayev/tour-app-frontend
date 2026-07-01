@@ -576,7 +576,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                       {idx === 0 && (
                         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black shadow">MUQOVA</span>
                       )}
-                      <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 transition-all">
                         {idx !== 0 && (
                           <button
                             type="button"

@@ -165,7 +165,7 @@ const AIAssistant = () => {
           aria-label="AI yordamchini ochish"
           className="ai-anim group"
           style={{
-            position: 'fixed', bottom: 90, right: 84, zIndex: 401,
+            position: 'fixed', bottom: 'calc(90px + env(safe-area-inset-bottom, 0px))', right: 84, zIndex: 401,
             width: 58, height: 58, borderRadius: '50%',
             background: 'linear-gradient(135deg,#6366f1 0%,#8b5cf6 55%,#a855f7 100%)',
             border: 'none', cursor: 'pointer',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle } from 'react-icons/fi';
+import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle, FiSun, FiNavigation } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
 import { imgSrc } from '../utils/media';
@@ -75,6 +75,18 @@ const AttractionCard = ({ attraction: a }) => {
               {a.entryFee}
             </span>
           )}
+          {a.bestSeason && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(14,165,233,0.1)', color: '#0284c7', border: '1px solid rgba(14,165,233,0.2)' }}>
+              <FiSun className="w-3 h-3" /> {a.bestSeason}
+            </span>
+          )}
+          {a.thingsToSeeAround?.length > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706', border: '1px solid rgba(245,158,11,0.2)' }}>
+              <FiNavigation className="w-3 h-3" /> {a.thingsToSeeAround.length} atrofda
+            </span>
+          )}
           {accCount > 0 && (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(99,102,241,0.08)', color: '#6366f1', border: '1px solid rgba(99,102,241,0.2)' }}>
@@ -90,7 +102,7 @@ const AttractionCard = ({ attraction: a }) => {
             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 hover:brightness-110 press-effect"
             style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 14px -4px rgba(217,119,6,0.4)', textDecoration: 'none', minHeight: 46 }}
           >
-            360° ko'rish va atrofi
+            {hasVideo ? "360° ko'rish va atrofi" : 'Batafsil va atrofi'}
             <FiArrowRight className="w-4 h-4" />
           </Link>
         </div>

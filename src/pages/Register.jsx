@@ -158,7 +158,7 @@ const Register = () => {
             {/* Role */}
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '7px' }}>
-                Men...
+                Siz kimsiz?
               </label>
               <div className="relative">
                 <select name="role" value={formData.role} onChange={handleChange}

@@ -36,7 +36,7 @@ const MapTopBar = ({
             Xarita
           </h1>
           <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-            {filteredCount} ta obyekt
+            {filteredCount} ta joy
           </p>
         </div>
         {/* My location FAB */}

@@ -84,6 +84,17 @@ const HotelsMap = () => {
     }
   }, [hotels, location.state]);
 
+  // Tarixiy joy detali sahifasidan "Marshrutni ochish" → o'sha joygacha yo'nalish
+  useEffect(() => {
+    if (attractions.length > 0 && location.state?.targetAttractionId && !routeLoading) {
+      const target = attractions.find(a => a._id === location.state.targetAttractionId);
+      if (target) {
+        setTimeout(() => startGuidance(target), 500);
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [attractions, location.state]);
+
   // ── Filtr: tur (kategoriya/tarixiy joy) + tuman ──────────────────────────────
   const inDistrict = (o) => districtFilter === 'all' || o.district === districtFilter;
 

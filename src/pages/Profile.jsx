@@ -38,12 +38,12 @@ const Profile = () => {
 
   const menuItems = [
     { icon: <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-500"><FiHeart className="w-5 h-5"/></div>, label: 'Sevimlilar', path: '/favorites', roles: ['CUSTOMER', 'ADMIN'] },
-    { icon: <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-500"><FiHome className="w-5 h-5"/></div>, label: 'Mening Obyektlarim', path: '/owner', roles: ['HOTEL_OWNER'] },
+    { icon: <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-500"><FiHome className="w-5 h-5"/></div>, label: 'Mehmonxonalarim', path: '/owner', roles: ['HOTEL_OWNER'] },
     { icon: <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-500"><FiSettings className="w-5 h-5"/></div>, label: 'Admin Panel', path: '/admin', roles: ['ADMIN'] },
   ].filter(item => !item.roles || item.roles.includes(profile?.role));
 
   const stats = [
-    { icon: <FiCalendar className="w-4 h-4 text-slate-400"/>, label: "Yil", value: profile?.createdAt ? new Date(profile.createdAt).getFullYear() : '—' },
+    { icon: <FiCalendar className="w-4 h-4 text-slate-400"/>, label: "A'zolik yili", value: profile?.createdAt ? new Date(profile.createdAt).getFullYear() : '—' },
     { icon: <FiShield className="w-4 h-4 text-slate-400"/>, label: 'Holat', value: profile?.blocked ? 'Bloklangan' : 'Faol' },
     { icon: <FiUser className="w-4 h-4 text-slate-400"/>, label: 'Rol', value: roleLabels[profile?.role] || 'Mehmon' },
   ];
@@ -65,7 +65,7 @@ const Profile = () => {
              {profile?.name?.[0]?.toUpperCase() || '?'}
            </div>
            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-1">{profile?.name || 'Foydalanuvchi'}</h2>
-           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">{profile?.phone || profile?.email || 'Noma\'lum manzil'}</p>
+           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">{profile?.phone || profile?.email || "Aloqa ma'lumoti kiritilmagan"}</p>
            <span className={`px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest ${roleColors[profile?.role] || roleColors.GUEST}`}>
              {roleLabels[profile?.role] || 'Mehmon'}
            </span>

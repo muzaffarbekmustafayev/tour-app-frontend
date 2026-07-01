@@ -322,7 +322,7 @@ const HotelDetail = () => {
                 {hotel.rating?.toFixed(1) || '0.0'}
              </div>
              <div>
-                <p className="font-black text-indigo-950 dark:text-indigo-200 text-sm leading-tight">{hotel.rating >= 4.7 ? 'Mukammal' : hotel.rating >= 4.3 ? 'Juda yaxshi' : hotel.rating >= 4.0 ? 'Ajoyib' : 'Yaxshi'}</p>
+                <p className="font-black text-indigo-950 dark:text-indigo-200 text-sm leading-tight">{hotel.rating >= 4.7 ? 'Mukammal' : hotel.rating >= 4.3 ? 'Ajoyib' : hotel.rating >= 4.0 ? 'Juda yaxshi' : 'Yaxshi'}</p>
                 <p className="text-xs font-bold text-indigo-600/85 dark:text-indigo-400/85 mt-0.5">{reviews.length} ta sharh</p>
              </div>
           </div>

@@ -182,7 +182,7 @@ const ChatWindow = () => {
       `}</style>
 
       <div className="chat-window-anim" style={{
-        position: 'fixed', bottom: 90, right: 'max(16px, env(safe-area-inset-right))',
+        position: 'fixed', bottom: 'calc(90px + env(safe-area-inset-bottom, 0px))', right: 'max(16px, env(safe-area-inset-right))',
         width: 'min(384px, calc(100vw - 28px))',
         maxHeight: minimized ? 66 : 'min(560px, calc(100dvh - 140px))',
         borderRadius: '1.75rem',

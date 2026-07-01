@@ -759,7 +759,7 @@ const AdminDashboard = () => {
                 <span className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center"><FiHome className="w-5 h-5" /></span>
                 Yangi Mehmonxona Qo'shish
               </h2>
-              <p className="text-[12px] text-slate-500 font-bold ml-12 uppercase tracking-widest mt-1">Mehmonxona yaratish paneli</p>
+              <p className="text-[12px] text-slate-500 font-bold ml-12 uppercase tracking-widest mt-1">Obyekt yaratish paneli</p>
             </div>
             
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto relative z-10">

@@ -12,28 +12,8 @@ import heroBg from '../assets/image.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
-  FiArrowRight, FiHome, FiSun, FiAward,
-  FiDollarSign, FiBriefcase, FiChevronRight
+  FiArrowRight, FiChevronRight
 } from 'react-icons/fi';
-import {
-  MdAccessible, MdHearing, MdVisibility,
-  MdFamilyRestroom, MdElderly, MdSignLanguage,
-} from 'react-icons/md';
-import { TbWheelchair, TbBraille } from 'react-icons/tb';
-
-/* ── Category chips ── */
-const CATEGORIES = [
-  { name: 'Hashamatli', icon: <FiAward className="w-5 h-5" />, query: 'luxury', color: '#f59e0b' },
-  { name: 'Resort', icon: <FiSun className="w-5 h-5" />, query: 'resort', color: '#10b981' },
-  { name: 'Arzon', icon: <FiDollarSign className="w-5 h-5" />, query: 'budget', color: '#6366f1' },
-  { name: 'Oilaviy', icon: <MdFamilyRestroom className="w-5 h-5" />, query: 'family', color: '#ec4899' },
-  { name: 'Butik', icon: <FiHome className="w-5 h-5" />, query: 'boutique', color: '#8b5cf6' },
-  { name: 'Biznes', icon: <FiBriefcase className="w-5 h-5" />, query: 'business', color: '#0ea5e9' },
-  { name: 'Aravacha', icon: <TbWheelchair className="w-5 h-5" />, query: 'wheelchair', color: '#7c3aed', accessKey: 'wheelchair' },
-  { name: 'Eshitish', icon: <MdHearing className="w-5 h-5" />, query: 'audioGuides', color: '#06b6d4', accessKey: 'audioGuides' },
-  { name: "Ko'rish", icon: <MdVisibility className="w-5 h-5" />, query: 'tactilePaving', color: '#059669', accessKey: 'tactilePaving' },
-  { name: 'Keksalar', icon: <MdElderly className="w-5 h-5" />, query: 'family', color: '#d97706' },
-];
 
 /* ── Skeleton ── */
 const Skeleton = () => (
@@ -217,47 +197,6 @@ const Home = () => {
             </div>
           );
         })()}
-
-        {/* ── Navoiy highlights banner ── */}
-
-
-        {/* ── Categories ── */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Kategoriyalar</h2>
-            <button onClick={() => navigate('/search')}
-              className="flex items-center gap-1 text-sm font-bold transition-all hover:gap-2"
-              style={{ color: '#6366f1' }}>
-              Barchasi <FiChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="snap-x-scroll -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
-            {CATEGORIES.map((cat, i) => (
-              <button
-                key={cat.name}
-                onClick={() => {
-                  if (cat.accessKey) {
-                    navigate(`/search?accessibility=${cat.accessKey}`);
-                  } else {
-                    navigate(`/search?q=${cat.query}`);
-                  }
-                }}
-                className="press-effect flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-colors"
-                style={{
-                  background: `${cat.color}12`,
-                  border: `1.5px solid ${cat.color}25`,
-                  color: cat.color,
-                  minHeight: 'unset',
-                  minWidth: 'unset',
-                }}
-                aria-label={`${cat.name} mehmonxonalarini qidirish`}
-              >
-                {cat.icon}
-                <span className="whitespace-nowrap">{cat.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* ── Map quick link ── */}
         <button

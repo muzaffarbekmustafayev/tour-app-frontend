@@ -72,7 +72,7 @@ const FavCard = ({ hotel, onRemove }) => {
         {/* Remove button */}
         <button
           onClick={() => onRemove(hotel._id)}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 opacity-0 group-hover:opacity-100"
+          className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={{
             background: 'rgba(239,68,68,0.85)',
             backdropFilter: 'blur(10px)',
