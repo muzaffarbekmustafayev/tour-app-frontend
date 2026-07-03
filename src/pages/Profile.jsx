@@ -49,7 +49,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="h-[100dvh] w-full bg-slate-50 dark:bg-[#0B1120] animate-fade-in flex justify-center overflow-hidden">
+    <div className="page-vh w-full bg-slate-50 dark:bg-[#0B1120] animate-fade-in flex justify-center overflow-hidden">
       
       <div className="w-full flex flex-col h-full px-5 py-4 pt-6 md:pt-8 bg-slate-50 dark:bg-[#0B1120] max-w-md">
         

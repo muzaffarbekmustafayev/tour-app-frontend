@@ -33,12 +33,12 @@ const MapRouteOverlay = ({
     `https://www.google.com/maps/dir/?api=1&destination=${hotel.location.lat},${hotel.location.lng}&travelmode=${prof === 'walking' ? 'walking' : 'driving'}`;
 
   return (
-    <div className="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 z-[550] w-[92%] md:w-[360px] max-w-[400px] pointer-events-none animate-slide-up">
+    <div className="absolute bottom-3 md:bottom-auto md:top-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 z-[550] w-[94%] md:w-[360px] max-w-[400px] pointer-events-none animate-slide-up">
       <div
         className="pointer-events-auto flex flex-col overflow-hidden rounded-2xl shadow-xl shadow-slate-200/40 dark:shadow-black/40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60"
       >
         {/* Header Region */}
-        <div className="relative flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="relative flex items-center justify-between px-4 py-3 md:px-5 md:py-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
               <FiNavigation className="w-[18px] h-[18px] text-blue-600 dark:text-blue-400 animate-pulse" />
@@ -54,6 +54,7 @@ const MapRouteOverlay = ({
           </div>
           <button
             onClick={clearGuidance}
+            aria-label="Yo'nalishni yopish"
             className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors shrink-0 text-slate-500"
           >
             <FiX className="w-5 h-5" />
@@ -61,7 +62,7 @@ const MapRouteOverlay = ({
         </div>
 
         {/* Content Region */}
-        <div className="p-4 flex flex-col gap-4">
+        <div className="p-3 md:p-4 flex flex-col gap-3 md:gap-4">
 
           {/* Mode Toggle */}
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
@@ -154,7 +155,7 @@ const MapRouteOverlay = ({
               </button>
 
               {showSteps && (
-                <ol className="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                <ol className="max-h-[32dvh] md:max-h-52 overflow-y-auto overscroll-contain divide-y divide-slate-100 dark:divide-slate-800">
                   {routeSteps.map((s, i) => (
                     <li key={i} className="flex items-start gap-3 px-3.5 py-2.5">
                       <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">

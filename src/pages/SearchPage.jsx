@@ -428,16 +428,16 @@ const SearchPage = () => {
       {showFilters && (
         <>
           <div
-            className="fixed inset-0 z-[150] md:hidden"
+            className="fixed inset-0 z-[210] md:hidden"
             style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
             onClick={() => setShowFilters(false)}
           />
           <div
-            className="fixed bottom-0 left-0 right-0 z-[160] md:hidden rounded-t-[2rem] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-[220] md:hidden rounded-t-[2rem] overflow-y-auto overscroll-contain"
             style={{
               background: 'var(--bg-main)',
-              maxHeight: '88vh',
-              padding: '1.5rem 1rem 2rem',
+              maxHeight: '88dvh',
+              padding: '1.5rem 1rem calc(2rem + env(safe-area-inset-bottom, 0px))',
               boxShadow: '0 -20px 60px -12px rgba(0,0,0,0.3)',
             }}
           >

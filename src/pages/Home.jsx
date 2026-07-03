@@ -87,7 +87,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════
           HERO — Navoiy vibe
       ══════════════════════════════════════════ */}
-      <header className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(420px, 85svh, 720px)' }}>
+      <header className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(400px, 72svh, 720px)' }}>
 
         {/* Background */}
         <img
@@ -246,8 +246,6 @@ const Home = () => {
                   background: `${cat.color}12`,
                   border: `1.5px solid ${cat.color}25`,
                   color: cat.color,
-                  minHeight: 'unset',
-                  minWidth: 'unset',
                 }}
                 aria-label={`${cat.name} mehmonxonalarini qidirish`}
               >
@@ -425,7 +423,7 @@ const Home = () => {
       {showTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.92] press-effect"
+          className="fixed bottom-40 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.92] press-effect"
           style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}
           aria-label="Yuqoriga"
         >

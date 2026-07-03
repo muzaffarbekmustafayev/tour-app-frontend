@@ -24,9 +24,10 @@ const MapTopBar = ({
       className="pointer-events-auto w-full bg-white dark:bg-[#0f172a] transition-all"
     >
       {/* Row 1: Back + Title + Location count */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+      <div className="flex items-center gap-3 px-3 sm:px-4 pt-2.5 sm:pt-4 pb-2 sm:pb-3">
         <button
           onClick={() => navigate(-1)}
+          aria-label="Orqaga"
           className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors shrink-0"
         >
           <FiArrowLeft className="w-5 h-5" />
@@ -65,6 +66,7 @@ const MapTopBar = ({
               { timeout: 4000, enableHighAccuracy: false }
             );
           }}
+          aria-label="Mening joylashuvim"
           className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400"
         >
           {geoLoading ? (
@@ -77,7 +79,7 @@ const MapTopBar = ({
 
       {/* Row 2: Tur (kategoriya) filtri */}
       <div
-        className="flex gap-2 px-4 pb-2 pt-1 overflow-x-auto hide-scrollbar"
+        className="flex gap-2 px-3 sm:px-4 pb-2 pt-0.5 overflow-x-auto hide-scrollbar"
         style={{ scrollSnapType: 'x mandatory' }}
       >
         {FILTERS.map(f => {
@@ -104,7 +106,7 @@ const MapTopBar = ({
       {/* Row 3: Tuman filtri (3 tuman) */}
       {DISTRICT_FILTERS.length > 0 && (
         <div
-          className="flex items-center gap-2 px-4 pb-4 pt-0.5 overflow-x-auto hide-scrollbar"
+          className="flex items-center gap-2 px-3 sm:px-4 pb-2.5 sm:pb-4 pt-0.5 overflow-x-auto hide-scrollbar"
           style={{ scrollSnapType: 'x mandatory' }}
         >
           <span className="shrink-0 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-0.5">Tuman:</span>

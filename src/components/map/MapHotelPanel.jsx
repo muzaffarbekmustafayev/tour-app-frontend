@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar } from 'react-icons/fi';
+import { FiMapPin, FiX, FiImage, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar } from 'react-icons/fi';
 import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtDist, fmtTime } from './mapUtils';
 import { calcAccessibilityScore, getScoreStyle } from '../../utils/accessibilityScore';
 
@@ -27,9 +27,8 @@ const MapHotelPanel = ({
       <div
         className="fixed inset-0 z-[600]"
         style={{
-          background: 'rgba(15, 23, 42, 0.4)',
-          backdropFilter: 'blur(4px)',
           background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(4px)',
           opacity: showPanel ? 1 : 0,
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           pointerEvents: showPanel ? 'auto' : 'none',
@@ -51,7 +50,7 @@ const MapHotelPanel = ({
         }}
       >
         {/* Scrollable Content Container */}
-        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain pb-6 md:pb-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain">
 
           {/* ── Float Drag Handle (Mobile Only) ── */}
           <div className="md:hidden absolute top-3 left-1/2 -translate-x-1/2 z-[660] pointer-events-none">
@@ -79,6 +78,7 @@ const MapHotelPanel = ({
             {/* Close button inside image */}
             <button
               onClick={closePanel}
+              aria-label="Panelni yopish"
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
             >
               <FiX className="w-5 h-5" />
@@ -153,43 +153,49 @@ const MapHotelPanel = ({
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={() => navigate(`/hotel/${selected._id}`)}
-                className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-semibold flex items-center justify-center gap-2 transition-colors"
-              >
-                Batafsil <FiChevronRight />
-              </button>
-              
-              {activeHotel?._id === selected._id ? (
-                <button
-                  onClick={clearGuidance}
-                  className="flex-1 py-3 rounded-xl bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold flex items-center justify-center gap-2 transition-colors"
-                >
-                  <FiX /> Yo'lni yopish
-                </button>
-              ) : (
-                <button
-                  onClick={() => startGuidance(selected)}
-                  className="btn-primary flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"
-                >
-                  <FiNavigation /> Marshrut
-                </button>
-              )}
-            </div>
+          </div>
+        </div>
 
-            {activeHotel?._id === selected._id && !isRouting && routeInfo && (
-              <a
-                href={googleUrl(selected, profile)}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-center gap-2 transition-colors mt-1"
+        {/* ── Sticky Action Footer — primary action doim ko'rinadi ── */}
+        <div
+          className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 pt-3 flex flex-col gap-2"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+        >
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(`/hotel/${selected._id}`)}
+              className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+            >
+              Batafsil <FiChevronRight />
+            </button>
+
+            {activeHotel?._id === selected._id ? (
+              <button
+                onClick={clearGuidance}
+                className="flex-1 py-3 rounded-xl bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold flex items-center justify-center gap-2 transition-colors"
               >
-                <FiExternalLink className="text-emerald-500" /> Google Maps
-              </a>
+                <FiX /> Yo'lni yopish
+              </button>
+            ) : (
+              <button
+                onClick={() => startGuidance(selected)}
+                className="btn-primary flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"
+              >
+                <FiNavigation /> Marshrut
+              </button>
             )}
           </div>
+
+          {activeHotel?._id === selected._id && !isRouting && routeInfo && (
+            <a
+              href={googleUrl(selected, profile)}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-center gap-2 transition-colors"
+            >
+              <FiExternalLink className="text-emerald-500" /> Google Maps
+            </a>
+          )}
         </div>
       </div>
     </>

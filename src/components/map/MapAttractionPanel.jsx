@@ -53,7 +53,12 @@ const MapAttractionPanel = ({
           boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
         }}
       >
-        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain" style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar w-full overscroll-contain">
+
+          {/* Drag handle (mobile) */}
+          <div className="md:hidden absolute top-3 left-1/2 -translate-x-1/2 z-[660] pointer-events-none">
+            <div className="w-10 h-1.5 rounded-full bg-white/60 dark:bg-slate-500/70" />
+          </div>
 
           {/* Header image */}
           <div className="relative w-full h-[170px] sm:h-[210px] shrink-0 bg-slate-200 dark:bg-slate-800">
@@ -63,7 +68,7 @@ const MapAttractionPanel = ({
               <div className="w-full h-full flex items-center justify-center text-slate-400"><FiImage className="w-8 h-8 opacity-50" /></div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors">
+            <button onClick={onClose} aria-label="Panelni yopish" className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors">
               <FiX className="w-5 h-5" />
             </button>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -159,11 +164,17 @@ const MapAttractionPanel = ({
               </div>
             )}
 
-            {/* Tarixiy joy batafsil */}
-            <button onClick={() => onViewAttraction?.(attraction)} className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors active:scale-95">
-              Tarixiy joy haqida batafsil <FiChevronRight className="w-4 h-4" />
-            </button>
           </div>
+        </div>
+
+        {/* Sticky footer — batafsil CTA doim ko'rinadi */}
+        <div
+          className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 pt-3"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+        >
+          <button onClick={() => onViewAttraction?.(attraction)} className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors active:scale-95">
+            Tarixiy joy haqida batafsil <FiChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </>

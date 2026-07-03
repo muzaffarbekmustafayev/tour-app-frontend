@@ -5,6 +5,11 @@ import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import HotelCard from '../components/HotelCard';
 import { fetchAttraction, fetchNearbyStays, addAttractionReview } from '../services/attractions';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import {
   FiMapPin, FiStar, FiFrown, FiPlayCircle, FiX, FiClock, FiFeather,
   FiAward, FiSun, FiNavigation, FiHome, FiCheck,
@@ -13,7 +18,7 @@ import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
 
 const Section = ({ title, icon, children, className = '' }) => (
-  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm ${className}`}>
+  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-4 sm:p-6 md:p-8 rounded-2xl mb-6 shadow-sm ${className}`}>
     {title && (
       <h2 className="flex items-center gap-3 text-[13px] font-black mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
         <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-sm">{icon}</span> {title}
@@ -54,6 +59,7 @@ const AttractionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [videoOpen, setVideoOpen] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -102,6 +108,9 @@ const AttractionDetail = () => {
   );
 
   const images = a.images?.length ? a.images : ['https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1000'];
+  const imgSrc = (src) => src?.startsWith('http')
+    ? src
+    : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${src}`;
   const accFeatures = Object.entries({
     wheelchairAccessible: 'Aravacha uchun qulay',
     accessibleParking: 'Maxsus parking',
@@ -150,16 +159,56 @@ const AttractionDetail = () => {
           )}
         </div>
 
-        {/* Hero image + 360 button */}
+        {/* Hero gallery — avto aylanadigan karusel + ALOHIDA 360° tugma.
+            360° endi butun rasmni to'sib turmaydi — swipe/karusel erkin ishlaydi */}
         <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm mb-8">
-          <img src={images[0]} alt={a.name} className="w-full h-[300px] sm:h-[420px] object-cover" />
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            navigation={{ nextEl: '.attr-next', prevEl: '.attr-prev' }}
+            pagination={{ clickable: true, dynamicBullets: true }}
+            autoplay={images.length > 1 ? { delay: 3800, disableOnInteraction: false, pauseOnMouseEnter: true } : false}
+            loop={images.length > 1}
+            onSlideChange={(s) => setActiveImg(s.realIndex)}
+            className="w-full h-[300px] sm:h-[420px]"
+            style={{ '--swiper-pagination-color': '#f59e0b', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
+          >
+            {images.map((img, i) => (
+              <SwiperSlide key={i}>
+                <img
+                  src={imgSrc(img)}
+                  alt={`${a.name} — ${i + 1}-rasm`}
+                  className="w-full h-full object-cover"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {images.length > 1 && (
+            <>
+              {/* Navigatsiya strelkalari (desktop; mobilda swipe) */}
+              <button aria-label="Oldingi rasm" className="attr-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full hidden sm:flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button aria-label="Keyingi rasm" className="attr-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full hidden sm:flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+              {/* Rasm hisoblagichi */}
+              <div className="absolute top-3 right-3 z-10 bg-black/50 text-white text-[11px] font-bold px-2 py-1 rounded-full backdrop-blur-sm">
+                {activeImg + 1} / {images.length}
+              </div>
+            </>
+          )}
+
+          {/* 360° video — alohida, doim ko'rinadigan tugma */}
           {a.video360?.url && (
-            <button onClick={() => setVideoOpen(true)}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-all group">
-              <span className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/95 text-indigo-700 font-black text-sm shadow-xl group-active:scale-95 transition-transform">
-                <FiPlayCircle className="w-5 h-5" /> 360° videoni ko'rish
-                {a.video360.captioned && <span className="ml-1 bg-blue-100 text-blue-700 text-[9px] font-black px-1.5 py-0.5 rounded">CC</span>}
-              </span>
+            <button
+              onClick={() => setVideoOpen(true)}
+              aria-label="360° videoni ochish"
+              className="absolute bottom-3 right-3 z-10 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/95 hover:bg-white text-amber-700 font-black text-xs sm:text-sm shadow-xl border border-amber-200/70 transition-all active:scale-95"
+            >
+              <FiPlayCircle className="w-4 h-4 sm:w-5 sm:h-5" /> 360° video
+              {a.video360.captioned && <span className="bg-blue-100 text-blue-700 text-[9px] font-black px-1.5 py-0.5 rounded">CC</span>}
             </button>
           )}
         </div>

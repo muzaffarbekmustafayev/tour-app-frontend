@@ -552,6 +552,19 @@ button, a, [role="button"], [role="link"] {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ── To'liq balandlikdagi sahifalar (xarita, profil) — mobilda bottom nav
+      (72px) balandligini hisobga oladi, aks holda sahifaning pastki qismi
+      nav ortida qolib keraksiz scroll paydo bo'ladi ── */
+.page-vh {
+  height: 100dvh;
+}
+
+@media (max-width: 767px) {
+  .page-vh {
+    height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ── Mobile typography scale ─────────────────────────────── */
 @media (max-width: 480px) {
   h1 { font-size: clamp(1.5rem, 7vw, 2.5rem); }

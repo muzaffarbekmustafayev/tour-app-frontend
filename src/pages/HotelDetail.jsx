@@ -45,7 +45,7 @@ const AMENITY_ICONS = {
 };
 
 const Section = ({ title, icon, children, className = '', id = '' }) => (
-  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm transition-all hover:shadow-md ${className}`} id={id}>
+  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-4 sm:p-6 md:p-8 rounded-2xl mb-6 shadow-sm transition-all hover:shadow-md ${className}`} id={id}>
     {title && (
       <h2 className="flex items-center gap-3 text-[13px] font-black mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
         <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm">{icon}</span> {title}
@@ -272,8 +272,12 @@ const HotelDetail = () => {
            </div>
         </div>
 
-        {/* ── Floating Mobile Bar ── — Kirish/Chiqish vaqtlari */}
-        <div className="md:hidden fixed bottom-6 left-0 right-0 z-[150] px-4 animate-slide-up">
+        {/* ── Floating Mobile Bar ── — Kirish/Chiqish vaqtlari.
+             Bottom nav (72px) ustida turadi — aks holda nav ortida qolib ketadi */}
+        <div
+          className="md:hidden fixed left-0 right-0 z-[190] px-4 animate-slide-up"
+          style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 10px)' }}
+        >
           <div className="bg-white dark:bg-slate-900 p-4 flex items-center justify-between shadow-2xl border border-gray-100 dark:border-slate-800 rounded-2xl">
             <div className="flex items-center gap-4 text-sm">
               <div>
@@ -511,7 +515,7 @@ const HotelDetail = () => {
               </h2>
               <div className="space-y-4">
                 {hotel.rooms?.map(r => (
-                  <div key={r._id} className="bg-white/85 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row justify-between gap-5 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-300">
+                  <div key={r._id} className="bg-white/85 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col md:flex-row justify-between gap-5 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-300">
                     <div className="flex-1">
                       <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2 leading-snug">{r.name}</h3>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3 font-semibold">

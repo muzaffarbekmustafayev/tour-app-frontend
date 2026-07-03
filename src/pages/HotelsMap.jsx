@@ -250,8 +250,8 @@ const HotelsMap = () => {
 
   return (
     <div
-      className="relative w-full overflow-hidden flex flex-col"
-      style={{ height: '100dvh', background: 'var(--bg-main)' }}
+      className="relative w-full overflow-hidden flex flex-col page-vh"
+      style={{ background: 'var(--bg-main)' }}
     >
       {/* TOP BAR OUTSIDE MAP */}
       <div className="shrink-0 z-[600] border-b border-slate-200 dark:border-slate-800 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
