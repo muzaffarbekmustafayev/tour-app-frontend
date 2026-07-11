@@ -15,7 +15,7 @@ const AttractionCard = ({ attraction: a }) => {
     : 0;
 
   return (
-    <article className="premium-card group relative flex flex-col" aria-label={`${name} tarixiy joyi`}>
+    <article className="premium-card group relative flex flex-col" aria-label={`${name} tarixiy obidasi`}>
       {/* ── Image ── */}
       <div className="relative overflow-hidden" style={{ aspectRatio: '4/3', minHeight: 0 }}>
         <div className="absolute inset-0 shimmer" aria-hidden="true" />
@@ -32,7 +32,7 @@ const AttractionCard = ({ attraction: a }) => {
         <div className="absolute top-2.5 left-2.5 z-30 flex flex-col gap-1.5">
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
             style={{ background: 'rgba(217,119,6,0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            <LuLandmark className="w-3 h-3" /> Tarixiy joy
+            <LuLandmark className="w-3 h-3" /> Tarixiy obida
           </div>
           {hasVideo && (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white"
@@ -102,7 +102,7 @@ const AttractionCard = ({ attraction: a }) => {
             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 hover:brightness-110 press-effect"
             style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 14px -4px rgba(217,119,6,0.4)', textDecoration: 'none', minHeight: 46 }}
           >
-            {hasVideo ? "360° ko'rish va atrofi" : 'Batafsil va atrofi'}
+            {'Batafsil'}
             <FiArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -523,20 +523,13 @@ button, a, [role="button"], [role="link"] {
 /* ── Card responsive grid ────────────────────────────────── */
 .hotel-grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 640px) {
   .hotel-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .hotel-grid {
-    gap: 1.25rem;
   }
 }
 
@@ -544,6 +537,13 @@ button, a, [role="button"], [role="link"] {
   .hotel-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hotel-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.75rem;
   }
 }
 
@@ -635,3 +635,15 @@ button, a, [role="button"], [role="link"] {
 .thumb-swiper {
   padding: 4px 0 !important;
 }
+
+/* ── Map Page Wrapper (Mobile vs Desktop) ── */
+.map-page-wrapper {
+  height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .map-page-wrapper {
+    height: 100dvh;
+  }
+}
+

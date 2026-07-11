@@ -302,7 +302,7 @@ const OwnerDashboard = () => {
 
     // Validation
     if (!form.district) {
-      setFormError('Tuman tanlanishi shart! "Umumiy Ma\'lumot" bo\'limidan Nurota, Xatirchi yoki Qiziltepa tumanini tanlang.');
+      setFormError('Tuman tanlanishi shart! "Umumiy Ma\'lumot" bo\'limidan viloyat tumanini tanlang.');
       setFormLoading(false);
       return;
     }

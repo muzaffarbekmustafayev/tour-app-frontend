@@ -27,11 +27,9 @@ const iconSvg = (IconCmp, px) =>
  *   darkMode    — qorong'i rejim
  */
 
-// Bepul, API kalit talab qilmaydigan vektorli uslublar
-// Light: OpenFreeMap Liberty (3D binolar bilan)
-// Dark:  OpenFreeMap Fiord — ko'kish-kulrang professional ohang
-const STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/liberty';
-const STYLE_DARK = 'https://tiles.openfreemap.org/styles/fiord';
+// CartoDB vektorli uslublari (yuqori aniqlik va detallarga ega)
+const STYLE_LIGHT = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+const STYLE_DARK = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
 const NAVOIY = [65.3791, 40.0842]; // [lng, lat]
 
@@ -79,7 +77,11 @@ const MapLibreView = ({
       syncUser();
     });
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; loadedRef.current = false; };
+    return () => { 
+      try { map.remove(); } catch (e) { console.warn('MapLibre remove error:', e); }
+      mapRef.current = null; 
+      loadedRef.current = false; 
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

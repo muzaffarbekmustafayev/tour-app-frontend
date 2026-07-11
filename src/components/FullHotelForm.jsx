@@ -29,8 +29,12 @@ const securityList = [
   'Signalizatsiya', 'Kodli qulf', 'Elektron kalit', 'Video domofon'
 ];
 
-// Navoiy viloyatining 3 tumani — maskan aynan shulardan biriga tegishli bo'lishi shart
-export const HOTEL_DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+// Navoiy viloyatining barcha tuman va shaharlari — maskan aynan shulardan biriga tegishli bo'lishi shart
+export const HOTEL_DISTRICTS = [
+  'Navoiy shahri', 'Zarafshon shahri', 'G\'ozg\'on shahri',
+  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
+  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+];
 
 export const emptyHotelTemplate = {
   name: '', description: '', shortDescription: '',
@@ -231,7 +235,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <input type="text" required value={form.name} onChange={e => handleFormChange('name', e.target.value)} className={InputClass} placeholder="Masalan: Registon Plaza" />
               </div>
               <div>
-                <label className={LabelClass}>Tuman * <span className="text-rose-500 normal-case font-bold tracking-normal">(Navoiy viloyatining 3 tumanidan biri)</span></label>
+                <label className={LabelClass}>Tuman * <span className="text-rose-500 normal-case font-bold tracking-normal">(Navoiy viloyatining tumanlaridan biri)</span></label>
                 <select
                   required
                   value={form.district || ''}

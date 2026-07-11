@@ -15,6 +15,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import {
   fetchAttractions, createAttraction, updateAttraction, deleteAttraction as apiDeleteAttraction,
 } from '../services/attractions';
+import { imgSrc } from '../utils/media';
 
 
 const AdminDashboard = () => {
@@ -163,7 +164,7 @@ const AdminDashboard = () => {
     setAddHotelLoading(true);
     setAddHotelError('');
     if (!addHotelForm.district) {
-      setAddHotelError('Tuman tanlanishi shart: Nurota, Xatirchi yoki Qiziltepa.');
+      setAddHotelError('Tuman tanlanishi shart: viloyat tumanlaridan birini tanlang.');
       setAddHotelLoading(false);
       return;
     }
@@ -334,18 +335,42 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Tab navigatsiya */}
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {navItems.map((it) => {
-                const active = activeTab === it.key;
-                return (
-                  <button key={it.key} onClick={() => goTab(it.key)}
-                    className={`group flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 shrink-0 ${active ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>
-                    <it.icon className="w-[18px] h-[18px]" /> {it.label}
-                    {it.count != null && <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${active ? 'bg-white/25' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{it.count}</span>}
+            {/* Sarlavha + gorizontal tab navigatsiya va Aksiya tugmalari */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 flex-1">
+                {navItems.map((it) => {
+                  const active = activeTab === it.key;
+                  return (
+                    <button key={it.key} onClick={() => goTab(it.key)}
+                      className={`group flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 shrink-0 ${active ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>
+                      <it.icon className="w-[18px] h-[18px]" /> {it.label}
+                      {it.count != null && <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${active ? 'bg-white/25' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{it.count}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Aksiya tugmalari (Yangi qo'shish) */}
+              <div className="shrink-0 flex items-center">
+                {activeTab === 'users' && (
+                  <button onClick={() => { setAddUser(true); setAddError(''); setAddForm({ name: '', email: '', password: '', role: 'CUSTOMER', phone: '' }); }}
+                    className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <FiPlus className="w-5 h-5" /> Yangi Foydalanuvchi
                   </button>
-                );
-              })}
+                )}
+                {activeTab === 'hotels' && !addHotel && !editHotel && (
+                  <button onClick={() => setAddHotel(true)} 
+                    className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <FiPlus className="w-5 h-5" /> Yangi Mehmonxona
+                  </button>
+                )}
+                {activeTab === 'attractions' && !addAttraction && !editAttraction && (
+                  <button onClick={() => { setAddAttraction(true); setAttractionError(''); setAttractionForm(emptyAttractionTemplate); }}
+                    className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <FiPlus className="w-5 h-5" /> Yangi Tarixiy Joy
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -356,18 +381,18 @@ const AdminDashboard = () => {
           {/* Main Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { label: 'Foydalanuvchilar', value: stats.totalUsers, gradient: 'from-indigo-500 to-violet-600', glow: 'shadow-indigo-500/30', icon: <FiUsers className="w-5 h-5" /> },
-              { label: 'Mehmonxonalar', value: stats.totalHotels, gradient: 'from-slate-700 to-slate-900', glow: 'shadow-slate-900/30', icon: <FiHome className="w-5 h-5" /> },
-              { label: 'Tashriflar', value: stats.totalVisitors || 0, gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/30', icon: <FiTrendingUp className="w-5 h-5" /> },
+              { label: 'Foydalanuvchilar', value: stats.totalUsers, gradient: 'from-blue-600 to-indigo-600', glow: 'shadow-blue-500/30', icon: <FiUsers className="w-6 h-6 text-white" /> },
+              { label: 'Mehmonxonalar', value: stats.totalHotels, gradient: 'from-rose-500 to-pink-600', glow: 'shadow-rose-500/30', icon: <FiHome className="w-6 h-6 text-white" /> },
+              { label: 'Tashriflar', value: stats.totalVisitors || 0, gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/30', icon: <FiTrendingUp className="w-6 h-6 text-white" /> },
             ].map((stat, i) => (
-              <div key={i} className="group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full bg-gradient-to-br ${stat.gradient} opacity-[0.07] group-hover:opacity-[0.13] blur-xl transition-opacity duration-300`} />
-                <div className="relative flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} text-white flex items-center justify-center shadow-lg ${stat.glow} group-hover:scale-105 transition-transform duration-300`}>
+              <div key={i} className="group relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-6 rounded-[24px] border border-white/50 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300">
+                <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full bg-gradient-to-br ${stat.gradient} opacity-[0.08] group-hover:opacity-[0.15] blur-2xl transition-opacity duration-300`} />
+                <div className="relative flex items-center gap-5">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg ${stat.glow} group-hover:scale-110 transition-transform duration-300`}>
                     {stat.icon}
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">{stat.label}</p>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">{stat.label}</p>
                     <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">{stat.value}</h3>
                   </div>
                 </div>
@@ -378,23 +403,28 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Top Hotels Section */}
             {stats.topHotels && stats.topHotels.length > 0 && (
-              <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm">
-                <h2 className="text-lg font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-2">
-                  <FiAward className="text-amber-500" /> Top Mehmonxonalar
+              <div className="lg:col-span-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[24px] p-6 border border-white/50 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <h2 className="text-lg font-black mb-6 text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    <FiAward className="text-amber-500 w-4 h-4" />
+                  </div>
+                  Top Mehmonxonalar
                 </h2>
                 <div className="space-y-3">
                   {stats.topHotels.map((h, i) => (
-                    <div key={h._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                    <div key={h._id} className="group flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 hover:border-amber-200 dark:hover:border-amber-900 hover:shadow-md transition-all">
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-400">#{i + 1}</span>
+                        <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-black text-xs flex items-center justify-center">
+                          #{i + 1}
+                        </div>
                         <div>
-                          <p className="font-bold text-sm text-slate-900 dark:text-white leading-tight">{h.name}</p>
-                          <p className="text-[10px] text-slate-500 font-medium">{h.city}</p>
+                          <p className="font-bold text-sm text-slate-900 dark:text-white leading-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{h.name}</p>
+                          <p className="text-[10px] text-slate-500 font-semibold">{h.city}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <FiStar className="text-amber-500 fill-current w-3 h-3" />
-                        <span className="font-bold text-slate-900 dark:text-white text-xs">{h.rating?.toFixed(1) || '—'}</span>
+                      <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-lg">
+                        <FiStar className="text-amber-500 fill-current w-3.5 h-3.5" />
+                        <span className="font-bold text-amber-700 dark:text-amber-400 text-xs">{h.rating?.toFixed(1) || '—'}</span>
                       </div>
                     </div>
                   ))}
@@ -403,31 +433,34 @@ const AdminDashboard = () => {
             )}
 
             {/* Platform Overall Metrics Chart */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm">
-              <h2 className="text-lg font-bold mb-6 text-slate-900 dark:text-white flex items-center gap-2">
-                <FiTrendingUp className="text-indigo-500" /> Platforma faolligi
+            <div className="lg:col-span-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[24px] p-6 border border-white/50 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <h2 className="text-lg font-black mb-6 text-slate-900 dark:text-white flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                  <FiTrendingUp className="text-indigo-500 w-4 h-4" />
+                </div>
+                Platforma faolligi
               </h2>
               
               <div className="space-y-6 py-2">
                 {[
-                  { label: 'Foydalanuvchilar', value: stats.totalUsers, color: 'bg-gradient-to-r from-indigo-500 to-violet-600', icon: <FiUsers /> },
-                  { label: 'Mehmonxonalar', value: stats.totalHotels, color: 'bg-gradient-to-r from-slate-600 to-slate-800 dark:from-slate-500 dark:to-slate-700', icon: <FiHome /> },
-                  { label: 'Umumiy tashriflar', value: stats.totalVisitors || 0, color: 'bg-gradient-to-r from-emerald-500 to-teal-600', icon: <FiTrendingUp /> },
+                  { label: 'Foydalanuvchilar', value: stats.totalUsers, color: 'bg-gradient-to-r from-blue-500 to-indigo-600 shadow-blue-500/50' },
+                  { label: 'Mehmonxonalar', value: stats.totalHotels, color: 'bg-gradient-to-r from-rose-500 to-pink-600 shadow-rose-500/50' },
+                  { label: 'Umumiy tashriflar', value: stats.totalVisitors || 0, color: 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-teal-500/50' },
                 ].map((item, idx) => {
                   const maxVal = Math.max(stats.totalVisitors || 1, stats.totalHotels, stats.totalUsers);
                   const widthPercent = (item.value / maxVal) * 100;
                   
                   return (
-                    <div key={idx}>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                    <div key={idx} className="group">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wide uppercase">
                           {item.label}
                         </span>
-                        <span className="text-xs font-black text-slate-900 dark:text-white">{item.value}</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white">{item.value}</span>
                       </div>
-                      <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-3 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shadow-inner">
                         <div
-                          className={`h-full ${item.color} rounded-full shadow-sm transition-all duration-1000 ease-out`}
+                          className={`h-full ${item.color} rounded-full shadow-lg transition-all duration-1000 ease-out group-hover:brightness-110`}
                           style={{ width: `${Math.max(2, widthPercent)}%` }}
                         />
                       </div>
@@ -440,7 +473,7 @@ const AdminDashboard = () => {
                  <div className="text-[11px] font-bold text-slate-500 flex items-center gap-2 uppercase tracking-widest">
                    Oxirgi 30 kunlik o'sish
                  </div>
-                 <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-black">
+                 <div className="px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 text-teal-700 dark:text-teal-400 rounded-lg text-xs font-black shadow-sm">
                    +{Math.floor(stats.totalUsers * 0.4 + 5)}%
                  </div>
               </div>
@@ -458,25 +491,6 @@ const AdminDashboard = () => {
       {/* USERS */}
       {activeTab === 'users' && (
         <div className="animate-fade-in space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
-                <FiUsers className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">Foydalanuvchilar boshqaruvi</h2>
-                <p className="text-xs font-semibold text-slate-500">Jami {users.length} ta ro'yxatdan o'tgan foydalanuvchi</p>
-              </div>
-            </div>
-            <button
-              onClick={() => { setAddUser(true); setAddError(''); setAddForm({ name: '', email: '', password: '', role: 'CUSTOMER', phone: '' }); }}
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <FiPlus className="w-5 h-5" />
-              Yangi Foydalanuvchi
-            </button>
-          </div>
-          
           <div className="flex flex-col gap-3">
             {users.map(u => (
               <div key={u._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm hover:border-indigo-200 dark:hover:border-indigo-900 transition-all gap-4">
@@ -534,42 +548,42 @@ const AdminDashboard = () => {
       {/* HOTELS */}
       {activeTab === 'hotels' && !addHotel && !editHotel && (
         <div className="animate-fade-in space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
-                <FiHome className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">Mehmonxonalar</h2>
-                <p className="text-xs font-semibold text-slate-500">Platformadagi barcha mehmonxonalar ro'yxati</p>
-              </div>
-            </div>
-            <button onClick={() => setAddHotel(true)} className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2">
-              <FiPlus className="w-5 h-5" />
-              Yangi Mehmonxona
-            </button>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {hotels.map(h => (
-            <div key={h._id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col group hover:border-indigo-200 dark:hover:border-indigo-900 transition-all">
-              <div className="flex justify-between items-start mb-5">
-                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${h.approved ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50'}`}>
-                  {h.approved ? 'Faol' : 'Kutilmoqda'}
-                </span>
-                <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700">
-                  <FiStar className="text-amber-500 fill-current w-3.5 h-3.5" />
-                  <span className="font-bold text-slate-900 dark:text-white text-xs">{h.rating?.toFixed(1) || '—'}</span>
-                </div>
+            <div key={h._id} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-[24px] border border-white/50 dark:border-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex flex-col group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              <div className="w-full h-36 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-5 overflow-hidden relative shadow-inner">
+                 {h.images && h.images.length > 0 ? (
+                   <img src={imgSrc(h.images[0])} alt={h.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><FiHome className="w-10 h-10" /></div>
+                 )}
+                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                 <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md shadow-sm ${h.approved ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
+                      {h.approved ? 'Faol' : 'Kutilmoqda'}
+                    </span>
+                    <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 shadow-sm">
+                      <FiStar className="text-amber-400 fill-current w-3.5 h-3.5" />
+                      <span className="font-bold text-white text-xs">{h.rating?.toFixed(1) || '—'}</span>
+                    </div>
+                 </div>
               </div>
 
-              <div className="flex-1 min-w-0 mb-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight truncate">{h.name}</h3>
-                <div className="space-y-1.5">
-                  <p className="text-xs font-bold text-slate-500 flex items-center gap-2"><FiMapPin className="text-slate-400 w-3.5 h-3.5"/> {h.district || h.city}</p>
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                    <FiUsers className="w-3.5 h-3.5 text-slate-400" /> {h.owner?.name || 'Egasi yo\'q'}
-                  </p>
+              <div className="flex-1 min-w-0 mb-6 px-1">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 leading-tight truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{h.name}</h3>
+                <div className="space-y-2">
+                  <div className="text-[13px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <FiMapPin className="text-rose-500 w-3 h-3"/>
+                    </div>
+                    {h.district || h.city}
+                  </div>
+                  <div className="text-[13px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <FiUsers className="text-blue-500 w-3 h-3" />
+                    </div>
+                    {h.owner?.name || 'Egasi yo\'q'}
+                  </div>
                 </div>
               </div>
 
@@ -605,40 +619,33 @@ const AdminDashboard = () => {
       {/* ATTRACTIONS — list */}
       {activeTab === 'attractions' && !addAttraction && !editAttraction && (
         <div className="animate-fade-in space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/25 shrink-0">
-                <FiCompass className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-0.5">Tarixiy joylar</h2>
-                <p className="text-xs font-semibold text-slate-500">Diqqatga sazovor joylar — faqat admin boshqaradi (egasi yo'q)</p>
-              </div>
-            </div>
-            <button onClick={() => { setAddAttraction(true); setAttractionError(''); setAttractionForm(emptyAttractionTemplate); }}
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2">
-              <FiPlus className="w-5 h-5" /> Yangi Tarixiy Joy
-            </button>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {attractions.map((a) => (
-              <div key={a._id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
-                    <LuLandmark className="w-3 h-3" /> {a.district}
-                  </span>
-                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <FiStar className="text-amber-500 fill-current w-3.5 h-3.5" />
-                    <span className="font-bold text-slate-900 dark:text-white text-xs">{a.rating?.toFixed(1) || '—'}</span>
-                  </div>
+              <div key={a._id} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-[24px] border border-white/50 dark:border-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex flex-col group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-full h-36 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-5 overflow-hidden relative shadow-inner">
+                   {a.images && a.images.length > 0 ? (
+                     <img src={imgSrc(a.images[0])} alt={a.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                   ) : (
+                     <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><FiCompass className="w-10 h-10" /></div>
+                   )}
+                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                   <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-black/40 backdrop-blur-md text-white border border-white/10 shadow-sm">
+                        <LuLandmark className="w-3.5 h-3.5 text-amber-400" /> {a.district}
+                      </span>
+                      <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 shadow-sm">
+                        <FiStar className="text-amber-400 fill-current w-3.5 h-3.5" />
+                        <span className="font-bold text-white text-xs">{a.rating?.toFixed(1) || '—'}</span>
+                      </div>
+                   </div>
                 </div>
-                <div className="flex-1 mb-5">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">{a.name}</h3>
-                  <p className="text-xs text-slate-500 line-clamp-2">{a.descriptionShort || a.description}</p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {a.video360?.url && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20">360° video</span>}
-                    {a.entryFee && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">{a.entryFee}</span>}
+
+                <div className="flex-1 min-w-0 mb-5 px-1">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 leading-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{a.name}</h3>
+                  <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{a.descriptionShort || a.description}</p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {a.video360?.url && <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-wide shadow-sm">360° video</span>}
+                    {a.entryFee && <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 uppercase tracking-wide shadow-sm">{a.entryFee}</span>}
                   </div>
                 </div>
                 <div className="flex gap-2">

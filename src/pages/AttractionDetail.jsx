@@ -134,6 +134,7 @@ const AttractionDetail = () => {
   const hasGeo = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
   const panoramas = (a.panoramas || []).filter((p) => p && p.url);
   const addedDate = a.createdAt ? new Date(a.createdAt).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  const hasAbout = a.descriptionShort || a.description || a.entryFee || a.bestSeason;
 
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen">
@@ -146,11 +147,13 @@ const AttractionDetail = () => {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2.5 mb-3">
               <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
-                <LuLandmark className="w-3 h-3" /> Tarixiy joy
+                <LuLandmark className="w-3 h-3" /> Tarixiy obida
               </span>
-              <span className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district} tumani
-              </span>
+              {a.district && (
+                <span className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
+                  <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district} tumani
+                </span>
+              )}
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 leading-tight">{a.name}</h1>
             {a.address && (
@@ -206,7 +209,7 @@ const AttractionDetail = () => {
 
               <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
                 <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-600/90 backdrop-blur-sm">
-                  <LuLandmark className="w-3 h-3" /> Tarixiy joy
+                  <LuLandmark className="w-3 h-3" /> Tarixiy obida
                 </span>
                 {hasVideo && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
@@ -264,7 +267,8 @@ const AttractionDetail = () => {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div className="flex-1 min-w-0">
 
-            <Section title="Joy haqida" icon={<FiAward />}>
+            {hasAbout && (
+              <Section title="Joy haqida" icon={<FiAward />}>
               {a.descriptionShort && (
                 <p className="text-slate-800 dark:text-slate-100 text-[15px] font-semibold leading-relaxed mb-3">{a.descriptionShort}</p>
               )}
@@ -288,7 +292,8 @@ const AttractionDetail = () => {
                   <FiCalendar className="w-3.5 h-3.5" /> Qo'shilgan: {addedDate}
                 </p>
               )}
-            </Section>
+              </Section>
+            )}
 
             {/* Joylashuv — xarita + havolalar */}
             {hasGeo && (

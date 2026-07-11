@@ -5,7 +5,7 @@ import { ChatProvider } from './context/ChatContext';
 import ChatWindow from './components/Chat/ChatWindow';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
-import ThemeToggle from './components/ThemeToggle';
+
 import Loader from './components/Loader';
 import { APP_NAME } from './config/app';
 
@@ -34,8 +34,7 @@ const AppContent = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-        {/* Theme toggle — barcha sahifalarda ko'rinadi */}
-        <ThemeToggle />
+
         <div className="flex-grow scroll-smooth main-container relative">
           <Routes>
             <Route path="/" element={<Home />} />

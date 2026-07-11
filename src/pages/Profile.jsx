@@ -100,21 +100,7 @@ const Profile = () => {
              </div>
            )}
 
-           {/* Section 2: Preferences */}
-           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-              <button onClick={() => setDarkMode(!darkMode)} className="w-full flex items-center px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:bg-slate-100 dark:active:bg-slate-800">
-                <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  {darkMode ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-                </div>
-                <span className="ml-3 flex-1 text-left font-semibold text-sm md:text-base text-slate-900 dark:text-white">
-                  Tungi Rejim
-                </span>
-                <div className={`w-12 h-7 rounded-full p-[3px] transition-colors ${darkMode ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                   <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${darkMode ? 'translate-x-[20px]' : 'translate-x-0'}`}></div>
-                </div>
-              </button>
-           </div>
-           
+
            {/* Section 3: Logout Action */}
            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 overflow-hidden">
               <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-4 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors active:bg-rose-100 dark:active:bg-rose-900/20 text-rose-500 font-bold text-sm md:text-base">

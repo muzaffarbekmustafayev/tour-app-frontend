@@ -172,7 +172,7 @@ const Home = () => {
           const districts = [...new Set(hotels.map(h => h.city).filter(Boolean))];
           const colors = ['#6366f1', '#f43f5e', '#f59e0b'];
           return (
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-1">
+            <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-4 sm:px-1 snap-x snap-mandatory pb-4">
               {districts.map((district, i) => {
                 const count = hotels.filter(h => h.city === district).length;
                 const color = colors[i % colors.length];
@@ -180,7 +180,7 @@ const Home = () => {
                   <button
                     key={district}
                     onClick={() => navigate(`/search?city=${encodeURIComponent(district)}`)}
-                    className="glass-panel press-effect flex flex-col items-center gap-1 sm:gap-1.5 py-4 sm:py-5 px-1 sm:px-2 text-center transition-all hover:shadow-md active:scale-[0.97]"
+                    className="glass-panel press-effect flex flex-col items-center justify-center gap-1 sm:gap-1.5 py-4 sm:py-5 px-3 min-w-[120px] sm:min-w-[140px] text-center transition-all hover:shadow-md active:scale-[0.97] shrink-0 snap-center"
                     style={{
                       borderRadius: '1.25rem',
                       borderTop: `3px solid ${color}`,
@@ -229,7 +229,7 @@ const Home = () => {
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
-                <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Diqqatga sazovor joylar</h2>
+                <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy obidalar va ziyoratgohlar</h2>
               </div>
               <button onClick={() => navigate('/attractions')}
                 className="flex items-center gap-1 text-sm font-bold transition-all hover:gap-2" style={{ color: '#d97706' }}>
@@ -237,7 +237,7 @@ const Home = () => {
               </button>
             </div>
             <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
-              360° video bilan kashf eting — har joyga yaqin tunash maskanlari tavsiya qilinadi
+              Boy tariximiz va madaniy merosimiz bilan yaqindan tanishing — 360° panoramali videolar hamda atrofdagi qulay tunash maskanlari
             </p>
             <div className="hotel-grid">
               {attractions.slice(0, 3).map((a) => <AttractionCard key={a._id} attraction={a} />)}
@@ -258,10 +258,10 @@ const Home = () => {
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-1">
               <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
-              <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy joylar va yaqin maskanlar</h2>
+              <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy qadamjolar va ularga yaqin maskanlar</h2>
             </div>
             <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
-              Har bir tarixiy yoki sayohatbop joyga eng yaqin dam olish maskanlari
+              Har bir tarixiy va muqaddas qadamjoga eng yaqin joylashgan qulay dam olish maskanlari ro'yxati
             </p>
 
             <div className="space-y-6">

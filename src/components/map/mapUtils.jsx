@@ -18,13 +18,15 @@ export const FILTERS = [
   { key: 'hostel',     label: 'Hostellar' },
 ];
 
-// Navoiy viloyatining 3 tumani — xarita filtri
-export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+// Navoiy viloyatining barcha tuman va shaharlari
+export const DISTRICTS = [
+  'Navoiy shahri', 'Zarafshon shahri', 'G\'ozg\'on shahri',
+  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
+  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+];
 export const DISTRICT_FILTERS = [
-  { key: 'all',      label: 'Barcha tumanlar' },
-  { key: 'Nurota',   label: 'Nurota' },
-  { key: 'Xatirchi', label: 'Xatirchi' },
-  { key: 'Qiziltepa', label: 'Qiziltepa' },
+  { key: 'all', label: 'Barcha tumanlar' },
+  ...DISTRICTS.map(d => ({ key: d, label: d }))
 ];
 
 // OSRM manevr turini o'zbekcha yo'riqnomaga aylantirish
