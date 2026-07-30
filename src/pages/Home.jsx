@@ -174,13 +174,14 @@ const Home = () => {
       <main className="px-4 max-w-7xl mx-auto">
 
         {/* ── Hududlar (tumanlar) — bosilganda shu tuman joylari chiqadi ── */}
-        {!loading && hotels.length > 0 && (() => {
-          const districts = [...new Set(hotels.map(h => h.city).filter(Boolean))];
-          const colors = ['#6366f1', '#f43f5e', '#f59e0b'];
+        {!loading && (hotels.length > 0 || attractions.length > 0) && (() => {
+          const districts = [...new Set([...hotels, ...attractions].map(item => item.city).filter(Boolean))];
+          const colors = ['#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6'];
           return (
             <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-4 sm:px-1 snap-x snap-mandatory pb-4">
               {districts.map((district, i) => {
-                const count = hotels.filter(h => h.city === district).length;
+                const hCount = hotels.filter(h => h.city === district).length;
+                const aCount = attractions.filter(a => a.city === district).length;
                 const color = colors[i % colors.length];
                 return (
                   <button
@@ -192,11 +193,15 @@ const Home = () => {
                       borderTop: `3px solid ${color}`,
                       boxShadow: `0 4px 20px -6px ${color}30`,
                     }}
-                    aria-label={district === 'Navoiy' ? "Navoiy viloyatidagi joylar" : `${district} tumanidagi joylar`}
+                    aria-label={`${district} tumanidagi joylar`}
                   >
                     <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
                     <p className="text-sm sm:text-lg font-black leading-tight" style={{ color }}>{district}</p>
-                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{count} ta maskan</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                      {aCount > 0 && <span>{aCount} ta tarixiy joy</span>}
+                      {aCount > 0 && hCount > 0 && <br />}
+                      {hCount > 0 && <span>{hCount} ta mehmonxona</span>}
+                    </p>
                   </button>
                 );
               })}
