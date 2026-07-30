@@ -175,13 +175,13 @@ const Home = () => {
 
         {/* ── Hududlar (tumanlar) — bosilganda shu tuman joylari chiqadi ── */}
         {!loading && (hotels.length > 0 || attractions.length > 0) && (() => {
-          const districts = [...new Set([...hotels, ...attractions].map(item => item.city).filter(Boolean))];
+          const districts = [...new Set([...hotels, ...attractions].map(item => item.city || item.district).filter(Boolean))];
           const colors = ['#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6'];
           return (
             <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-4 sm:px-1 snap-x snap-mandatory pb-4">
               {districts.map((district, i) => {
-                const hCount = hotels.filter(h => h.city === district).length;
-                const aCount = attractions.filter(a => a.city === district).length;
+                const hCount = hotels.filter(h => h.city === district || h.district === district).length;
+                const aCount = attractions.filter(a => a.city === district || a.district === district).length;
                 const color = colors[i % colors.length];
                 return (
                   <button
