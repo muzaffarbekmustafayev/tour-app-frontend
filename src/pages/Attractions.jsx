@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 import AttractionCard from '../components/AttractionCard';
 import BackButton from '../components/BackButton';
@@ -45,7 +46,12 @@ const Attractions = () => {
   };
 
   return (
-    <div className="pb-24 md:pb-8 px-4 max-w-7xl mx-auto pt-6">
+    <>
+      <Helmet>
+        <title>Tarixiy Obidalar va Ziyoratgohlar — Tourism for Everyone</title>
+        <meta name="description" content="Navoiy viloyatining boy tarixiy va madaniy merosi bilan tanishing. Qadimiy obidalar hamda muqaddas qadamjolarga virtual sayohat qiling." />
+      </Helmet>
+      <div className="pb-24 md:pb-8 px-4 max-w-7xl mx-auto pt-6">
       <div className="mb-5"><BackButton /></div>
 
       <div className="flex items-center gap-2 mb-1">
@@ -95,11 +101,12 @@ const Attractions = () => {
           <FiFrown className="mx-auto w-14 h-14 mb-4 text-gray-300" />
           <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-main)' }}>Tarixiy obida topilmadi</h3>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {district ? `${district} tumani bo'yicha hozircha obida yoki ziyoratgoh yo'q.` : "Ma'lumot qo'shilishini kuting."}
+            {district ? (district === 'Navoiy' ? `Navoiy viloyati bo'yicha hozircha obida yoki ziyoratgoh yo'q.` : `${district} tumani bo'yicha hozircha obida yoki ziyoratgoh yo'q.`) : "Ma'lumot qo'shilishini kuting."}
           </p>
         </div>
       ) : null}
     </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
 import ChatWindow from './components/Chat/ChatWindow';
@@ -68,12 +69,14 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <ChatProvider>
-        <AppContent />
-        <ChatWindow />
-      </ChatProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <ChatProvider>
+          <AppContent />
+          <ChatWindow />
+        </ChatProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 };
 

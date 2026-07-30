@@ -72,7 +72,7 @@ const MapAttractionPanel = ({
               <h2 className="text-[20px] font-bold leading-tight mb-1">{attraction.name}</h2>
               <div className="flex items-center gap-1 text-sm text-slate-200">
                 <FiMapPin className="w-3.5 h-3.5" />
-                <span className="truncate">{attraction.district} tumani</span>
+                <span className="truncate">{attraction.district === 'Navoiy' ? 'Navoiy viloyati' : `${attraction.district} tumani`}</span>
               </div>
             </div>
           </div>

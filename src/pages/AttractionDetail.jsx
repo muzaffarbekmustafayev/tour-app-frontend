@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
@@ -137,7 +138,36 @@ const AttractionDetail = () => {
   const hasAbout = a.descriptionShort || a.description || a.entryFee || a.bestSeason;
 
   return (
-    <div className="bg-white dark:bg-slate-950 min-h-screen">
+    <>
+      <Helmet>
+        <title>{a.name} — Tourism for Everyone</title>
+        <meta name="description" content={a.descriptionShort || a.description || ''} />
+        <meta property="og:title" content={`${a.name} — Navoiy Inklyuziv Turizm`} />
+        <meta property="og:description" content={a.descriptionShort || a.description || ''} />
+        <meta property="og:image" content={images[0]} />
+        <meta property="og:url" content={`https://tourism-for-everyone.uz/attraction/${a._id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TouristAttraction",
+            "name": a.name,
+            "description": a.description,
+            "touristType": ["Inclusive Tourism", "Historical Tourism"],
+            "location": {
+              "@type": "Place",
+              "name": a.district,
+              "geo": hasGeo ? {
+                "@type": "GeoCoordinates",
+                "latitude": lat,
+                "longitude": lng
+              } : undefined
+            },
+            "isAccessibleForFree": !a.entryFee || a.entryFee.toLowerCase().includes('bepul'),
+            "publicAccess": true
+          })}
+        </script>
+      </Helmet>
+      <div className="bg-white dark:bg-slate-950 min-h-screen">
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-28 md:pb-8">
 
         <div className="mb-4"><BackButton /></div>
@@ -151,7 +181,7 @@ const AttractionDetail = () => {
               </span>
               {a.district && (
                 <span className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                  <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district} tumani
+                  <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district === 'Navoiy' ? 'Navoiy viloyati' : `${a.district} tumani`}
                 </span>
               )}
             </div>
@@ -213,7 +243,7 @@ const AttractionDetail = () => {
                 </span>
                 {hasVideo && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
-                    <FiPlayCircle className="w-3 h-3" /> 360°
+                    <FiPlayCircle className="w-3 h-3" /> Video
                   </span>
                 )}
               </div>
@@ -243,7 +273,7 @@ const AttractionDetail = () => {
           )}
         </div>
 
-        {/* ── 360° video — alohida, ko'zga tashlanadigan tugma ── */}
+        {/* ── Virtual sayohat video tugmasi ── */}
         {hasVideo && (
           <button onClick={() => setVideoOpen(true)}
             className="w-full mb-6 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-white shadow-lg active:scale-[0.99] transition-transform"
@@ -253,7 +283,7 @@ const AttractionDetail = () => {
                 <FiPlayCircle className="w-6 h-6" />
               </span>
               <span className="text-left min-w-0">
-                <span className="block font-black text-[15px] leading-tight">360° virtual sayohat</span>
+                <span className="block font-black text-[15px] leading-tight">Virtual sayohat</span>
                 <span className="block text-[12px] text-white/80 truncate">Bormasdan turib joyni his eting</span>
               </span>
             </span>
@@ -563,6 +593,7 @@ const AttractionDetail = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

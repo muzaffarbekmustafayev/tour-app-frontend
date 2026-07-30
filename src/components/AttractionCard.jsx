@@ -22,7 +22,7 @@ const AttractionCard = ({ attraction: a }) => {
         <img
           src={imgSrc(a.images?.[0], FALLBACK)}
           alt={`${name}`}
-          className="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-[1.03]"
+          className="w-full h-full object-cover relative z-10 transition-transform duration-700 ease-out group-hover:scale-110"
           loading="lazy"
         />
         <div className="absolute inset-0 z-20"
@@ -37,7 +37,7 @@ const AttractionCard = ({ attraction: a }) => {
           {hasVideo && (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white"
               style={{ background: 'rgba(79,70,229,0.85)', backdropFilter: 'blur(8px)' }}>
-              <FiPlayCircle className="w-3 h-3" /> 360°
+              <FiPlayCircle className="w-3 h-3" /> Video
             </div>
           )}
         </div>

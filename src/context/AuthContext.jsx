@@ -53,9 +53,10 @@ export const AuthProvider = ({ children }) => {
     return res.data.user;
   };
 
-  /** Google OAuth — access_token ni backendga yuborish */
-  const loginWithGoogle = async (access_token) => {
-    const res = await api.post('/auth/google', { access_token });
+  /** Google OAuth — access_token / id_token ni backendga yuborish */
+  const loginWithGoogle = async (tokenPayload) => {
+    const payload = typeof tokenPayload === 'string' ? { access_token: tokenPayload } : tokenPayload;
+    const res = await api.post('/auth/google', payload);
     localStorage.setItem('token', res.data.token);
     setUser(res.data.user);
     fetchFavorites();

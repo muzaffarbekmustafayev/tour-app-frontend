@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 // Removed MapView import
 import api from '../services/api';
@@ -260,8 +261,38 @@ const HotelDetail = () => {
   const srText     = hotel?.digitalInclusion?.screenReaderDescription || '';
 
   return (
-    <div className="bg-white dark:bg-slate-950 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">
+    <>
+      <Helmet>
+        <title>{name} — Tourism for Everyone</title>
+        <meta name="description" content={desc || ''} />
+        <meta property="og:title" content={`${name} — Navoiy Inklyuziv Turizm`} />
+        <meta property="og:description" content={desc || ''} />
+        <meta property="og:image" content={images[0]} />
+        <meta property="og:url" content={`https://tourism-for-everyone.uz/hotel/${hotel?._id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Hotel",
+            "name": name,
+            "description": desc,
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": hotel?.address,
+              "addressLocality": hotel?.district,
+              "addressRegion": "Navoiy",
+              "addressCountry": "UZ"
+            },
+            "starRating": {
+              "@type": "Rating",
+              "ratingValue": hotel?.rating || 0
+            },
+            "priceRange": "$$",
+            "telephone": hotel?.contact?.phone
+          })}
+        </script>
+      </Helmet>
+      <div className="bg-white dark:bg-slate-950 min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">
         
         {/* ── Sticky Mobile Header ── */}
         <div className="md:hidden fixed top-0 left-0 right-0 z-[160] bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 p-3 transform translate-y-[-100%] opacity-0 transition-all shadow-sm" id="sticky-header">
@@ -389,7 +420,7 @@ const HotelDetail = () => {
                     className="bg-white/90 text-indigo-600 px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-lg border border-gray-200 transition active:scale-95 hover:bg-white"
                   >
                     <FiMaximize className="w-3.5 h-3.5" />
-                    360° Ko'rinish
+                    Panoramik ko'rinish
                   </button>
                 )}
               </div>
@@ -762,6 +793,7 @@ const HotelDetail = () => {
 
       </div>
     </div>
+    </>
   );
 };
 

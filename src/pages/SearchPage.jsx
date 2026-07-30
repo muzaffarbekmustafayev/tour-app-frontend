@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import api from '../services/api';
@@ -117,12 +118,13 @@ const AccordionGroup = ({ group, filters, onToggle, openGroups, onToggleGroup })
         <div className="px-4 pb-4 pt-1 flex flex-col gap-2.5"
           style={{ borderTop: '1px solid var(--border)' }}>
           {group.options.map(opt => (
-            <label key={opt.key} className="flex items-center gap-3 cursor-pointer group">
+            <label key={opt.key} className="flex items-center gap-3 cursor-pointer group transition-all hover:translate-x-1">
               <div
-                className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all"
+                className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all group-hover:scale-110"
                 style={{
                   background: filters.access[opt.key] ? 'var(--primary)' : 'var(--bg-main)',
                   border: `2px solid ${filters.access[opt.key] ? 'var(--primary)' : 'var(--border)'}`,
+                  boxShadow: filters.access[opt.key] ? '0 0 10px rgba(79,70,229,0.3)' : 'none'
                 }}
               >
                 {filters.access[opt.key] && <FiCheck className="w-3 h-3 text-white" />}
@@ -130,7 +132,7 @@ const AccordionGroup = ({ group, filters, onToggle, openGroups, onToggleGroup })
               <input type="checkbox" className="sr-only"
                 checked={!!filters.access[opt.key]}
                 onChange={() => onToggle(opt.key)} />
-              <span className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-sm font-semibold leading-tight transition-colors group-hover:text-indigo-500" style={{ color: filters.access[opt.key] ? 'var(--primary)' : 'var(--text-muted)' }}>
                 {opt.label}
               </span>
             </label>
@@ -320,7 +322,12 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="pb-28 md:pb-8 pt-3 sm:pt-4 px-4 max-w-7xl mx-auto min-h-screen">
+    <>
+      <Helmet>
+        <title>Mehmonxonalarni qidirish — Tourism for Everyone</title>
+        <meta name="description" content="Navoiy viloyatidagi barcha inklyuziv mehmonxonalar, dam olish maskanlari va sanatoriylarni izlang va band qiling." />
+      </Helmet>
+      <div className="pb-28 md:pb-8 pt-3 sm:pt-4 px-4 max-w-7xl mx-auto min-h-screen">
 
       {/* ── Top bar ── */}
       <div className="flex items-center gap-2.5 mb-5">
@@ -449,6 +456,7 @@ const SearchPage = () => {
         </>
       )}
     </div>
+    </>
   );
 };
 

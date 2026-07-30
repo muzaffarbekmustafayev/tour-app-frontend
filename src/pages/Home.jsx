@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import HotelCard from '../components/HotelCard';
 import AttractionCard from '../components/AttractionCard';
@@ -8,7 +9,7 @@ import api from '../services/api';
 import { fetchAttractions } from '../services/attractions';
 import { imgSrc } from '../utils/media';
 import { LuLandmark } from 'react-icons/lu';
-import heroBg from '../assets/image.png';
+import heroBg from '../assets/hero.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
@@ -63,7 +64,12 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="pb-24 md:pb-8 lg:pb-12 overflow-x-hidden">
+    <>
+      <Helmet>
+        <title>Tourism for Everyone — Navoiy Viloyati Turizm Platformasi</title>
+        <meta name="description" content="Navoiy viloyatidagi inklyuziv va qulay tarixiy joylar, ziyoratgohlar hamda mehmonxonalar haqida to'liq ma'lumot va 360° virtual turlar." />
+      </Helmet>
+      <div className="pb-24 md:pb-8 lg:pb-12 overflow-x-hidden">
 
       {/* ══════════════════════════════════════════
           HERO — Navoiy vibe
@@ -85,10 +91,10 @@ const Home = () => {
         }} />
 
         {/* Decorative orbs */}
-        <div className="absolute top-10 right-10 w-80 h-80 rounded-full pointer-events-none"
+        <div className="absolute top-10 right-10 w-80 h-80 rounded-full pointer-events-none animate-float"
           style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%)', filter: 'blur(40px)' }} />
-        <div className="absolute bottom-32 left-0 w-72 h-72 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.15), transparent 70%)', filter: 'blur(50px)' }} />
+        <div className="absolute bottom-32 left-0 w-72 h-72 rounded-full pointer-events-none animate-float"
+          style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.15), transparent 70%)', filter: 'blur(50px)', animationDelay: '2s' }} />
 
         {/* Top border removed for classic clean look */}
 
@@ -186,7 +192,7 @@ const Home = () => {
                       borderTop: `3px solid ${color}`,
                       boxShadow: `0 4px 20px -6px ${color}30`,
                     }}
-                    aria-label={`${district} tumanidagi joylar`}
+                    aria-label={district === 'Navoiy' ? "Navoiy viloyatidagi joylar" : `${district} tumanidagi joylar`}
                   >
                     <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
                     <p className="text-sm sm:text-lg font-black leading-tight" style={{ color }}>{district}</p>
@@ -237,10 +243,14 @@ const Home = () => {
               </button>
             </div>
             <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
-              Boy tariximiz va madaniy merosimiz bilan yaqindan tanishing — 360° panoramali videolar hamda atrofdagi qulay tunash maskanlari
+              Boy tariximiz va madaniy merosimiz bilan yaqindan tanishing — atrofdagi qulay tunash maskanlari
             </p>
-            <div className="hotel-grid">
-              {attractions.slice(0, 3).map((a) => <AttractionCard key={a._id} attraction={a} />)}
+            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 snap-x snap-mandatory">
+              {attractions.map((a) => (
+                <div key={a._id} className="min-w-[280px] sm:min-w-[320px] max-w-[320px] snap-center shrink-0">
+                  <AttractionCard attraction={a} />
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -273,7 +283,7 @@ const Home = () => {
                     {/* District + historical places */}
                     <div className="flex items-center gap-2 mb-2">
                       <FiMapPin className="w-4 h-4 text-rose-500" />
-                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district} tumani</h3>
+                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district === 'Navoiy' ? 'Navoiy viloyati' : `${district} tumani`}</h3>
                     </div>
                     {places.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -373,6 +383,7 @@ const Home = () => {
         </button>
       )}
     </div>
+    </>
   );
 };
 

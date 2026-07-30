@@ -644,7 +644,7 @@ const AdminDashboard = () => {
                   <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 leading-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{a.name}</h3>
                   <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{a.descriptionShort || a.description}</p>
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {a.video360?.url && <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-wide shadow-sm">360° video</span>}
+                    {a.video360?.url && <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-wide shadow-sm">Video</span>}
                     {a.entryFee && <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 uppercase tracking-wide shadow-sm">{a.entryFee}</span>}
                   </div>
                 </div>

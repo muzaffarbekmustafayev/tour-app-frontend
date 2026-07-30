@@ -78,7 +78,7 @@ const HotelCard = ({ hotel }) => {
         <img
           src={imgSrc(hotel.image || hotel.images?.[0])}
           alt={`${name} mehmonxonasi`}
-          className="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-[1.03]"
+          className="w-full h-full object-cover relative z-10 transition-transform duration-700 ease-out group-hover:scale-110"
           loading="lazy"
         />
         {/* Gradient */}
