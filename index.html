@@ -47,6 +47,21 @@
 
   <!-- ── Sitemap reference ──────────────────────────────────────── -->
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#4f46e5', hover: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
   <script>
     try {
       const dark = localStorage.getItem('darkMode');
