@@ -9,7 +9,11 @@ import {
   FiLink, FiChevronDown,
 } from 'react-icons/fi';
 
-export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+export const DISTRICTS = [
+  'Navoiy shahri', 'Zarafshon shahri', 'G\'ozg\'on shahri',
+  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
+  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+];
 
 export const ACCESSIBILITY_OPTS = [
   { key: 'wheelchairAccessible', label: 'Aravacha uchun qulay' },

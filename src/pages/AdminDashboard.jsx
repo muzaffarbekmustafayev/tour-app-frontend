@@ -173,6 +173,13 @@ const AdminDashboard = () => {
         ...addHotelForm,
         roomsAvailable: Number(addHotelForm.roomsAvailable),
         location: { lat: Number(addHotelForm.location.lat), lng: Number(addHotelForm.location.lng) },
+        rooms: (addHotelForm.rooms || []).map(r => ({
+          ...r,
+          capacity: Number(r.capacity),
+          pricePerNight: Number(r.pricePerNight),
+          totalRooms: Number(r.totalRooms),
+          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms)
+        }))
       };
       const res = await api.post('/hotels', payload);
       setHotels(prev => [...prev, res.data]);
@@ -240,6 +247,13 @@ const AdminDashboard = () => {
         ...editHotelForm,
         roomsAvailable: Number(editHotelForm.roomsAvailable),
         location: { lat: Number(editHotelForm.location.lat), lng: Number(editHotelForm.location.lng) },
+        rooms: (editHotelForm.rooms || []).map(r => ({
+          ...r,
+          capacity: Number(r.capacity),
+          pricePerNight: Number(r.pricePerNight),
+          totalRooms: Number(r.totalRooms),
+          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms)
+        }))
       };
       const res = await api.put(`/hotels/${editHotel._id}`, payload);
       setHotels(prev => prev.map(h => h._id === editHotel._id ? res.data : h));
