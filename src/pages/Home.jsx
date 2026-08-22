@@ -175,13 +175,13 @@ const Home = () => {
 
         {/* ── Hududlar (tumanlar) — bosilganda shu tuman joylari chiqadi ── */}
         {!loading && (hotels.length > 0 || attractions.length > 0) && (() => {
-          const districts = [...new Set([...hotels, ...attractions].map(item => item.city || item.district).filter(Boolean))];
+          const districts = [...new Set([...hotels, ...attractions].map(item => item.district || item.city).filter(Boolean))];
           const colors = ['#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6'];
           return (
             <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-4 sm:px-1 snap-x snap-mandatory pb-4">
               {districts.map((district, i) => {
-                const hCount = hotels.filter(h => h.city === district || h.district === district).length;
-                const aCount = attractions.filter(a => a.city === district || a.district === district).length;
+                const hCount = hotels.filter(h => (h.district || h.city) === district).length;
+                const aCount = attractions.filter(a => (a.district || a.city) === district).length;
                 const color = colors[i % colors.length];
                 return (
                   <button
@@ -280,15 +280,15 @@ const Home = () => {
             </p>
 
             <div className="space-y-6">
-              {[...new Set(hotels.map(h => h.city).filter(Boolean))].map(district => {
-                const group = hotels.filter(h => h.city === district);
+              {[...new Set(hotels.map(h => h.district || h.city).filter(Boolean))].map(district => {
+                const group = hotels.filter(h => (h.district || h.city) === district);
                 const places = [...new Set(group.flatMap(h => h.nearbyPlaces || []))];
                 return (
                   <div key={district} className="glass-panel p-4 sm:p-5" style={{ borderRadius: '1.5rem' }}>
                     {/* District + historical places */}
                     <div className="flex items-center gap-2 mb-2">
                       <FiMapPin className="w-4 h-4 text-rose-500" />
-                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district === 'Navoiy' ? 'Navoiy viloyati' : `${district} tumani`}</h3>
+                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district === 'Navoiy' ? 'Navoiy viloyati' : (district.includes('shahri') ? district : `${district} tumani`)}</h3>
                     </div>
                     {places.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-4">

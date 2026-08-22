@@ -4,7 +4,11 @@
  */
 import api from './api';
 
-export const DISTRICTS = ['Nurota', 'Xatirchi', 'Qiziltepa'];
+export const DISTRICTS = [
+  'Navoiy shahri', 'Zarafshon shahri', "G'ozg'on shahri",
+  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
+  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+];
 
 // Public
 export const fetchAttractions = (params = {}) =>

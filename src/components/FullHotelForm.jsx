@@ -39,10 +39,11 @@ export const HOTEL_DISTRICTS = [
 export const emptyHotelTemplate = {
   name: '', description: '', shortDescription: '',
   district: '', city: 'Navoiy', country: 'Uzbekistan', address: '',
-  category: 'hotel', basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
-  checkInTime: '14:00', checkOutTime: '12:00',
+  category: 'hotel', stars: 4, basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: 10, maxGuests: '',
+  checkInTime: '14:00', checkOutTime: '12:00', checkIn: '14:00', checkOut: '12:00',
+  contact: { phone: '', email: '', website: '' },
   amenities: [],
-  images: [''],
+  images: [],
   videoTour: { url: '', captioned: false, durationSec: '' },
   panoramas: [],
   atmosphere: { mood: '', soundscape: '', bestTimeOfDay: '', localTip: '' },
@@ -192,11 +193,11 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
           <label className="block text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 ml-1 flex items-center gap-2">
             <FiCheck className="w-4 h-4" /> Mehmonxona Egasi (Owner) ni tanlang
           </label>
-          <select required value={form.owner || ''} onChange={e => handleFormChange('owner', e.target.value)}
+          <select value={form.owner || ''} onChange={e => handleFormChange('owner', e.target.value)}
             className="w-full px-4 py-3.5 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-800/50 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all shadow-sm">
-            <option value="">Ro'yxatdan ega tanlang...</option>
-            {users.filter(u => u.role === 'HOTEL_OWNER').map(u => (
-              <option key={u._id} value={u._id}>{u.name} ( {u.email} )</option>
+            <option value="">Admin / Joriy hisob egasi (sukut bo'yicha)</option>
+            {users.map(u => (
+              <option key={u._id} value={u._id}>{u.name} ({u.role}) — {u.email}</option>
             ))}
           </select>
         </div>
@@ -234,27 +235,115 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <label className={LabelClass}>Mehmonxona Nomi *</label>
                 <input type="text" required value={form.name} onChange={e => handleFormChange('name', e.target.value)} className={InputClass} placeholder="Masalan: Registon Plaza" />
               </div>
-              <div>
-                <label className={LabelClass}>Tuman * <span className="text-rose-500 normal-case font-bold tracking-normal">(Navoiy viloyatining tumanlaridan biri)</span></label>
-                <select
-                  required
-                  value={form.district || ''}
-                  onChange={e => handleFormChange('district', e.target.value)}
-                  className={`${InputClass} ${!form.district ? 'border-amber-400 dark:border-amber-500/60' : ''}`}
-                >
-                  <option value="">— Tuman tanlang —</option>
-                  {HOTEL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                {!form.district && (
-                  <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-1.5 ml-1">
-                    ⚠️ Maskan qo'shish uchun tuman tanlanishi shart.
-                  </p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className={LabelClass}>Tuman * <span className="text-rose-500 normal-case font-bold tracking-normal">(Navoiy viloyatining tumanlaridan biri)</span></label>
+                  <select
+                    required
+                    value={form.district || ''}
+                    onChange={e => handleFormChange('district', e.target.value)}
+                    className={`${InputClass} ${!form.district ? 'border-amber-400 dark:border-amber-500/60' : ''}`}
+                  >
+                    <option value="">— Tuman tanlang —</option>
+                    {HOTEL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  {!form.district && (
+                    <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-1.5 ml-1">
+                      ⚠️ Maskan qo'shish uchun tuman tanlanishi shart.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className={LabelClass}>Kategoriya</label>
+                  <select value={form.category || 'hotel'} onChange={e => handleFormChange('category', e.target.value)} className={InputClass}>
+                    {['hotel', 'resort', 'hostel', 'boutique', 'motel', 'guesthouse'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className={LabelClass}>Tavsif (Description) *</label>
-                <textarea required rows={5} value={form.description} onChange={e => handleFormChange('description', e.target.value)} className={`${InputClass} resize-none`} placeholder="Mehmonxona haqida batafsil ma'lumot..." />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div>
+                  <label className={LabelClass}>Boshlang'ich Narx (1 kecha, so'mda) *</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.basePricePerNight || form.pricePerNight || ''}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      setForm(p => ({ ...p, basePricePerNight: val, pricePerNight: val }));
+                    }}
+                    className={InputClass}
+                    placeholder="500000"
+                  />
+                </div>
+                <div>
+                  <label className={LabelClass}>Yulduzlar (1-5)</label>
+                  <select
+                    value={form.stars || 4}
+                    onChange={e => handleFormChange('stars', Number(e.target.value))}
+                    className={InputClass}
+                  >
+                    {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} yulduzli</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={LabelClass}>Xonalar soni (Jami) *</label>
+                  <input type="number" min={1} required value={form.roomsAvailable ?? form.totalRooms ?? 10} onChange={e => {
+                    const val = Number(e.target.value);
+                    setForm(p => ({ ...p, roomsAvailable: val, totalRooms: val }));
+                  }} className={InputClass} placeholder="10" />
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div>
+                  <label className={LabelClass}>Telefon raqam</label>
+                  <input
+                    type="text"
+                    value={form.contact?.phone || ''}
+                    onChange={e => setForm(p => ({ ...p, contact: { ...p.contact, phone: e.target.value } }))}
+                    className={InputClass}
+                    placeholder="+998 90 123 45 67"
+                  />
+                </div>
+                <div>
+                  <label className={LabelClass}>Kirish vaqti (Check-in)</label>
+                  <input
+                    type="text"
+                    value={form.checkInTime || form.checkIn || '14:00'}
+                    onChange={e => setForm(p => ({ ...p, checkInTime: e.target.value, checkIn: e.target.value }))}
+                    className={InputClass}
+                    placeholder="14:00"
+                  />
+                </div>
+                <div>
+                  <label className={LabelClass}>Chiqish vaqti (Check-out)</label>
+                  <input
+                    type="text"
+                    value={form.checkOutTime || form.checkOut || '12:00'}
+                    onChange={e => setForm(p => ({ ...p, checkOutTime: e.target.value, checkOut: e.target.value }))}
+                    className={InputClass}
+                    placeholder="12:00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={LabelClass}>Qisqa tavsif (kartochka uchun)</label>
+                <input
+                  type="text"
+                  value={form.shortDescription || form.descriptionShort || ''}
+                  onChange={e => setForm(p => ({ ...p, shortDescription: e.target.value, descriptionShort: e.target.value }))}
+                  className={InputClass}
+                  placeholder="Masalan: Markazda joylashgan shinam va zamonaviy mehmonxona"
+                />
+              </div>
+
+              <div>
+                <label className={LabelClass}>To'liq Tavsif (Description) *</label>
+                <textarea required rows={4} value={form.description} onChange={e => handleFormChange('description', e.target.value)} className={`${InputClass} resize-none`} placeholder="Mehmonxona haqida batafsil ma'lumot..." />
+              </div>
+
               {/* ── Atmosfera ── */}
               <div className="pt-2 pb-1">
                 <p className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center gap-1.5">
@@ -293,19 +382,6 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                       className={`${InputClass} resize-none`}
                       placeholder="Masalan: Ertalab 7da yaqin tandirdan issiq non hidi tarqaladi..." />
                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className={LabelClass}>Kategoriya</label>
-                  <select value={form.category} onChange={e => handleFormChange('category', e.target.value)} className={InputClass}>
-                    {['hotel', 'resort', 'hostel', 'boutique', 'motel', 'guesthouse'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={LabelClass}>Xonalar soni (Jami) *</label>
-                  <input type="number" required value={form.roomsAvailable} onChange={e => handleFormChange('roomsAvailable', e.target.value)} className={InputClass} placeholder="10" />
                 </div>
               </div>
             </div>
@@ -461,21 +537,36 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                         {['Standard', 'Comfort', 'Deluxe', 'Suite', 'Luxury / VIP'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
+                    <div>
+                      <label className={LabelClass}>Xona Narxi (1 kecha uchun, so'mda)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={room.pricePerNight || ''}
+                        onChange={e => handleRoomFieldChange(idx, 'pricePerNight', Number(e.target.value))}
+                        className={InputClass}
+                        placeholder="500000"
+                      />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className={LabelClass}>Sig'imi (Kishi)</label>
-                        <select value={room.capacity} onChange={e => handleRoomFieldChange(idx, 'capacity', e.target.value)} className={InputClass}>
+                        <select value={room.capacity || 2} onChange={e => handleRoomFieldChange(idx, 'capacity', Number(e.target.value))} className={InputClass}>
                           {[1, 2, 3, 4, 5, 6, 8, 10].map(n => <option key={n} value={n}>{n} kishilik</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className={LabelClass}>Soni (Mavjud)</label>
-                        <input type="number" min={1} value={room.totalRooms} required onChange={e => handleRoomFieldChange(idx, 'totalRooms', e.target.value)} className={InputClass} placeholder="5" />
+                        <label className={LabelClass}>Soni (Jami xonalar)</label>
+                        <input type="number" min={1} value={room.totalRooms ?? 1} required onChange={e => {
+                          const val = Number(e.target.value);
+                          handleRoomFieldChange(idx, 'totalRooms', val);
+                          handleRoomFieldChange(idx, 'roomsAvailable', val);
+                        }} className={InputClass} placeholder="5" />
                       </div>
                     </div>
                     <div>
                       <label className={LabelClass}>Xona turi vizuali</label>
-                      <select value={room.roomType} onChange={e => handleRoomFieldChange(idx, 'roomType', e.target.value)} className={InputClass}>
+                      <select value={room.roomType || 'Double Room'} onChange={e => handleRoomFieldChange(idx, 'roomType', e.target.value)} className={InputClass}>
                         {['Single Room', 'Double Room', 'Triple Room', 'Quad Room', 'Family Room'].map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>

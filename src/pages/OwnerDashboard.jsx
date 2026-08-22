@@ -301,57 +301,42 @@ const OwnerDashboard = () => {
     setFormError('');
 
     // Validation
+    if (!form.name || !form.name.trim()) {
+      setFormError('Mehmonxona nomi kiritilishi shart!');
+      setFormLoading(false);
+      return;
+    }
     if (!form.district) {
       setFormError('Tuman tanlanishi shart! "Umumiy Ma\'lumot" bo\'limidan viloyat tumanini tanlang.');
       setFormLoading(false);
       return;
     }
-    const images = form.images.filter(img => img.trim() !== '');
-    if (images.length === 0) {
-      setFormError('Kamida bitta rasm havolasini kiritish shart!');
-      setFormLoading(false);
-      return;
-    }
-    if (!form.address || form.address.trim() === '') {
-      setFormError('Mehmonxona manzili kiritilishi shart!');
-      setFormLoading(false);
-      return;
-    }
-    if (!form.location.lat || !form.location.lng) {
-      setFormError('Xaritadagi joylashuv (koordinatalar) aniqlanishi shart!');
-      setFormLoading(false);
-      return;
-    }
-    if (!form.amenities || form.amenities.length === 0) {
-      setFormError('Kamida bitta qulaylik (Amenity) tanlanishi shart!');
-      setFormLoading(false);
-      return;
-    }
-    if (!form.category) {
-      setFormError('Mehmonxona kategoriyasi tanlanishi shart!');
-      setFormLoading(false);
-      return;
-    }
+
+    const basePrice = Number(form.basePricePerNight || form.pricePerNight) || 500000;
+    const images = (form.images || []).filter(img => typeof img === 'string' && img.trim() !== '');
 
     const payload = {
       ...form,
-      pricePerNight: Number(form.basePricePerNight || form.pricePerNight),
-      basePricePerNight: Number(form.basePricePerNight || form.pricePerNight),
-      roomsAvailable: Number(form.roomsAvailable),
-      totalRooms: Number(form.totalRooms),
+      pricePerNight: basePrice,
+      basePricePerNight: basePrice,
+      roomsAvailable: Number(form.roomsAvailable || form.totalRooms) || 10,
+      totalRooms: Number(form.totalRooms || form.roomsAvailable) || 10,
+      stars: Number(form.stars) || 4,
       maxGuests: form.maxGuests ? Number(form.maxGuests) : undefined,
       images: images,
-      location: { lat: Number(form.location.lat), lng: Number(form.location.lng) },
-      rooms: form.rooms.map(r => ({
+      location: (form.location?.lat && form.location?.lng) ? {
+        lat: Number(form.location.lat),
+        lng: Number(form.location.lng)
+      } : undefined,
+      rooms: (form.rooms || []).map(r => ({
         ...r,
-        capacity: Number(r.capacity),
-        pricePerNight: Number(r.pricePerNight),
-        totalRooms: Number(r.totalRooms),
-        roomsAvailable: Number(r.totalRooms) // Dastlab jami xonalarga teng
+        name: r.name || `${r.capacity || 2} kishilik ${r.category || 'Standard'}`,
+        capacity: Number(r.capacity) || 2,
+        pricePerNight: Number(r.pricePerNight || basePrice) || basePrice,
+        totalRooms: Number(r.totalRooms) || 1,
+        roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
       }))
     };
-
-
 
     try {
       if (editingId) {
@@ -362,7 +347,7 @@ const OwnerDashboard = () => {
       setShowForm(false);
       fetchData(); // Refresh list
     } catch (err) {
-      setFormError(err.response?.data?.message || "Mehmonxonani saqlab bo'lmadi. Barcha maydonlarni tekshiring.");
+      setFormError(err.response?.data?.message || err.message || "Mehmonxonani saqlab bo'lmadi. Barcha maydonlarni tekshiring.");
     } finally {
       setFormLoading(false);
     }

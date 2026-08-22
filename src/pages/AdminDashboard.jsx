@@ -79,7 +79,16 @@ const AdminDashboard = () => {
   const handleAddAttraction = async () => {
     setAttractionLoading(true); setAttractionError('');
     try {
-      const created = await createAttraction(attractionForm);
+      const payload = {
+        ...attractionForm,
+        images: (attractionForm.images || []).filter(img => typeof img === 'string' && img.trim() !== ''),
+        location: (attractionForm.location?.lat && attractionForm.location?.lng) ? {
+          lat: Number(attractionForm.location.lat),
+          lng: Number(attractionForm.location.lng)
+        } : undefined,
+        thingsToSeeAround: (attractionForm.thingsToSeeAround || []).filter(t => t && t.title && t.title.trim()),
+      };
+      const created = await createAttraction(payload);
       setAttractions((prev) => [created, ...prev]);
       setAddAttraction(false);
       setAttractionForm(emptyAttractionTemplate);
@@ -92,7 +101,16 @@ const AdminDashboard = () => {
   const handleSaveAttraction = async () => {
     setAttractionLoading(true); setAttractionError('');
     try {
-      const updated = await updateAttraction(editAttraction._id, attractionForm);
+      const payload = {
+        ...attractionForm,
+        images: (attractionForm.images || []).filter(img => typeof img === 'string' && img.trim() !== ''),
+        location: (attractionForm.location?.lat && attractionForm.location?.lng) ? {
+          lat: Number(attractionForm.location.lat),
+          lng: Number(attractionForm.location.lng)
+        } : undefined,
+        thingsToSeeAround: (attractionForm.thingsToSeeAround || []).filter(t => t && t.title && t.title.trim()),
+      };
+      const updated = await updateAttraction(editAttraction._id, payload);
       setAttractions((prev) => prev.map((a) => a._id === editAttraction._id ? updated : a));
       setEditAttraction(null);
       showToast('Tarixiy joy yangilandi', 'success');
@@ -163,30 +181,46 @@ const AdminDashboard = () => {
   const handleAddHotel = async () => {
     setAddHotelLoading(true);
     setAddHotelError('');
+    if (!addHotelForm.name || !addHotelForm.name.trim()) {
+      setAddHotelError('Mehmonxona nomi kiritilishi shart.');
+      setAddHotelLoading(false);
+      return;
+    }
     if (!addHotelForm.district) {
-      setAddHotelError('Tuman tanlanishi shart: viloyat tumanlaridan birini tanlang.');
+      setAddHotelError('Tuman tanlanishi shart: Navoiy viloyati tumanlaridan birini tanlang.');
       setAddHotelLoading(false);
       return;
     }
     try {
+      const basePrice = Number(addHotelForm.basePricePerNight || addHotelForm.pricePerNight) || 500000;
       const payload = {
         ...addHotelForm,
-        roomsAvailable: Number(addHotelForm.roomsAvailable),
-        location: { lat: Number(addHotelForm.location.lat), lng: Number(addHotelForm.location.lng) },
+        basePricePerNight: basePrice,
+        pricePerNight: basePrice,
+        roomsAvailable: Number(addHotelForm.roomsAvailable || addHotelForm.totalRooms) || 10,
+        totalRooms: Number(addHotelForm.totalRooms || addHotelForm.roomsAvailable) || 10,
+        stars: Number(addHotelForm.stars) || 4,
+        images: (addHotelForm.images || []).filter(img => typeof img === 'string' && img.trim() !== ''),
+        location: (addHotelForm.location?.lat && addHotelForm.location?.lng) ? {
+          lat: Number(addHotelForm.location.lat),
+          lng: Number(addHotelForm.location.lng)
+        } : undefined,
         rooms: (addHotelForm.rooms || []).map(r => ({
           ...r,
-          capacity: Number(r.capacity),
-          pricePerNight: Number(r.pricePerNight),
-          totalRooms: Number(r.totalRooms),
-          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms)
+          name: r.name || `${r.capacity || 2} kishilik ${r.category || 'Standard'}`,
+          capacity: Number(r.capacity) || 2,
+          pricePerNight: Number(r.pricePerNight || basePrice) || basePrice,
+          totalRooms: Number(r.totalRooms) || 1,
+          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
         }))
       };
       const res = await api.post('/hotels', payload);
-      setHotels(prev => [...prev, res.data]);
+      setHotels(prev => [res.data, ...prev]);
       setAddHotel(false);
       setAddHotelForm(emptyHotelTemplate);
+      showToast('Mehmonxona qo\'shildi', 'success');
     } catch (err) {
-      setAddHotelError(err.response?.data?.message || 'Xatolik yuz berdi');
+      setAddHotelError(err.response?.data?.message || err.message || 'Xatolik yuz berdi');
     } finally {
       setAddHotelLoading(false);
     }
@@ -233,8 +267,10 @@ const AdminDashboard = () => {
     setEditHotelForm({
       ...emptyHotelTemplate,
       ...h,
-      owner: h.owner?._id || h.owner,
-      basePricePerNight: h.basePricePerNight || h.pricePerNight,
+      owner: h.owner?._id || h.owner || '',
+      basePricePerNight: h.basePricePerNight || h.pricePerNight || 500000,
+      pricePerNight: h.basePricePerNight || h.pricePerNight || 500000,
+      stars: h.stars || 4,
       location: h.location || { lat: '', lng: '' },
       rooms: h.rooms && h.rooms.length > 0 ? h.rooms : emptyHotelTemplate.rooms
     });
@@ -243,16 +279,26 @@ const AdminDashboard = () => {
   const handleSaveHotel = async () => {
     setEditHotelLoading(true);
     try {
+      const basePrice = Number(editHotelForm.basePricePerNight || editHotelForm.pricePerNight) || 500000;
       const payload = {
         ...editHotelForm,
-        roomsAvailable: Number(editHotelForm.roomsAvailable),
-        location: { lat: Number(editHotelForm.location.lat), lng: Number(editHotelForm.location.lng) },
+        basePricePerNight: basePrice,
+        pricePerNight: basePrice,
+        roomsAvailable: Number(editHotelForm.roomsAvailable || editHotelForm.totalRooms) || 10,
+        totalRooms: Number(editHotelForm.totalRooms || editHotelForm.roomsAvailable) || 10,
+        stars: Number(editHotelForm.stars) || 4,
+        images: (editHotelForm.images || []).filter(img => typeof img === 'string' && img.trim() !== ''),
+        location: (editHotelForm.location?.lat && editHotelForm.location?.lng) ? {
+          lat: Number(editHotelForm.location.lat),
+          lng: Number(editHotelForm.location.lng)
+        } : undefined,
         rooms: (editHotelForm.rooms || []).map(r => ({
           ...r,
-          capacity: Number(r.capacity),
-          pricePerNight: Number(r.pricePerNight),
-          totalRooms: Number(r.totalRooms),
-          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms)
+          name: r.name || `${r.capacity || 2} kishilik ${r.category || 'Standard'}`,
+          capacity: Number(r.capacity) || 2,
+          pricePerNight: Number(r.pricePerNight || basePrice) || basePrice,
+          totalRooms: Number(r.totalRooms) || 1,
+          roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
         }))
       };
       const res = await api.put(`/hotels/${editHotel._id}`, payload);
@@ -260,7 +306,7 @@ const AdminDashboard = () => {
       setEditHotel(null);
       showToast('Mehmonxona yangilandi', 'success');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Xatolik yuz berdi', 'error');
+      showToast(err.response?.data?.message || err.message || 'Xatolik yuz berdi', 'error');
     } finally {
       setEditHotelLoading(false);
     }
@@ -789,7 +835,7 @@ const AdminDashboard = () => {
                </button>
                <button
                  onClick={handleAddHotel}
-                 disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.address || !addHotelForm.owner || !addHotelForm.district}
+                 disabled={addHotelLoading || !addHotelForm.name || !addHotelForm.district}
                  className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-[0_8px_20px_-6px_rgba(79,70,229,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
                >
                  <FiCheck className="w-4 h-4" />

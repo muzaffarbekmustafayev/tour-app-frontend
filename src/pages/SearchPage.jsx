@@ -6,7 +6,7 @@ import api from '../services/api';
 import BackButton from '../components/BackButton';
 import {
   FiSearch, FiFilter, FiX, FiAward, FiThumbsUp, FiSmile, FiCheck,
-  FiChevronDown, FiChevronUp, FiSliders, FiStar, FiAlertCircle
+  FiChevronDown, FiChevronUp, FiSliders, FiStar, FiAlertCircle, FiMapPin
 } from 'react-icons/fi';
 import {
   MdAccessible, MdHearing, MdVisibility,
@@ -14,6 +14,7 @@ import {
   MdSelfImprovement,
 } from 'react-icons/md';
 import { TbWheelchair, TbBraille, TbEar } from 'react-icons/tb';
+import { DISTRICTS } from '../components/map/mapUtils';
 
 /* ── Filter groups ── */
 const FILTER_GROUPS = [
@@ -261,20 +262,22 @@ const SearchPage = () => {
         </div>
       </div>
 
-      {/* City */}
-      {/* <FilterSection label="Shahar" icon={<FiMapPin className="w-3.5 h-3.5" />}>
+      {/* Tuman / Shahar */}
+      <FilterSection label="Tuman / Shahar" icon={<FiMapPin className="w-3.5 h-3.5" />}>
         <div className="relative">
-          <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400" />
-          <input
-            type="text"
-            placeholder="masalan: Navoiy"
-            value={filters.city}
+          <select
+            value={filters.city || ''}
             onChange={e => set('city', e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 text-sm font-semibold rounded-xl outline-none"
+            className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl outline-none"
             style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-main)' }}
-          />
+          >
+            <option value="">Barcha tumanlar</option>
+            {DISTRICTS.map(d => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
         </div>
-      </FilterSection> */}
+      </FilterSection>
 
       {/* Rating */}
       <FilterSection label="Minimal reyting" icon={<FiStar className="w-3.5 h-3.5" />}>
