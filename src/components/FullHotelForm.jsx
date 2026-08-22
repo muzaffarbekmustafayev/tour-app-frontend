@@ -196,7 +196,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
           <select value={form.owner || ''} onChange={e => handleFormChange('owner', e.target.value)}
             className="w-full px-4 py-3.5 bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-800/50 rounded-xl font-bold text-sm outline-none focus:border-indigo-500 transition-all shadow-sm">
             <option value="">Admin / Joriy hisob egasi (sukut bo'yicha)</option>
-            {users.map(u => (
+            {users.filter(u => u.role === 'HOTEL_OWNER').map(u => (
               <option key={u._id} value={u._id}>{u.name} ({u.role}) — {u.email}</option>
             ))}
           </select>
