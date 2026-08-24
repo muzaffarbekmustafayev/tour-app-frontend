@@ -76,7 +76,7 @@ const Home = () => {
   useEffect(() => { fetchHotels(); }, [fetchHotels]);
 
   useEffect(() => {
-    fetchAttractions({ limit: 12 })
+    fetchAttractions({ limit: 100 })
       .then((res) => setAttractions(Array.isArray(res) ? res : (res.data || [])))
       .catch(() => setAttractions([]));
   }, []);
@@ -186,7 +186,7 @@ const Home = () => {
           {/* ── 2.1. 4 TA ASOSIY HUDUD KARTALARI ── */}
           <section>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              {DISTRICT_INFO.map((d, i) => {
+              {DISTRICT_INFO.map((d) => {
                 const hCount = hotels.filter(h => (h.district || h.city) === d.name).length;
                 const aCount = attractions.filter(a => (a.district || a.city) === d.name).length;
                 return (
@@ -208,7 +208,7 @@ const Home = () => {
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">{d.desc}</p>
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      <span>{aCount || 'Ko\'rish'} ta maskan</span>
+                      <span>{aCount > 0 ? `${aCount} ta maskan` : "Ko'rish"}</span>
                       <span>{hCount > 0 ? `${hCount} hotel` : ''}</span>
                     </div>
                   </button>

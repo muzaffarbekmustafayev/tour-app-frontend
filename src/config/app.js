@@ -11,7 +11,11 @@ export const APP_NAME        = import.meta.env.VITE_APP_NAME        || 'NavaiTou
 export const APP_DESCRIPTION = import.meta.env.VITE_APP_DESCRIPTION || 'Navoiy viloyatidagi mehmonxonalarni qidiring';
 
 // ── API ulanish sozlamalari ───────────────────────────────────
-export const API_URL         = import.meta.env.VITE_API_URL         || 'http://localhost:5000/api';
+export const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? `${window.location.origin}/api`
+    : 'http://localhost:5000/api');
 export const API_TIMEOUT_MS  = 15_000;   // 15 soniya
 
 // ── Token saqlash kaliti ──────────────────────────────────────
