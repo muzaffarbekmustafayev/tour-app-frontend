@@ -64,7 +64,17 @@ const MapAttractionPanel = ({
             </button>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex items-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white uppercase tracking-wide"><LuLandmark className="w-3 h-3" /> Tarixiy joy</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-600 text-white uppercase tracking-wide shadow-sm"
+                  style={{
+                    backgroundColor: attraction.category === 'kasalxona' ? '#dc2626' :
+                      attraction.category === 'iib' ? '#2563eb' :
+                      attraction.category === 'ziyoratgoh' ? '#059669' :
+                      attraction.category === 'tabiat' ? '#16a34a' :
+                      attraction.category === 'supermarket' || attraction.category === 'bozor' ? '#ea580c' :
+                      attraction.category === 'mall' ? '#9333ea' : '#d97706'
+                  }}>
+                  <LuLandmark className="w-3 h-3" /> {attraction.category ? (attraction.category.charAt(0).toUpperCase() + attraction.category.slice(1).replace('_', ' ')) : 'Tarixiy joy'}
+                </span>
                 {attraction.video360?.url && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-black/40 text-white"><FiPlayCircle className="w-3 h-3" /> 360°</span>
                 )}
@@ -72,7 +82,7 @@ const MapAttractionPanel = ({
               <h2 className="text-[20px] font-bold leading-tight mb-1">{attraction.name}</h2>
               <div className="flex items-center gap-1 text-sm text-slate-200">
                 <FiMapPin className="w-3.5 h-3.5" />
-                <span className="truncate">{attraction.district === 'Navoiy' ? 'Navoiy viloyati' : `${attraction.district} tumani`}</span>
+                <span className="truncate">{attraction.district}</span>
               </div>
             </div>
           </div>

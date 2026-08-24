@@ -8,25 +8,43 @@ import AccessibilityBanner from '../components/AccessibilityBanner';
 import api from '../services/api';
 import { fetchAttractions } from '../services/attractions';
 import { imgSrc } from '../utils/media';
-import { LuLandmark } from 'react-icons/lu';
 import heroBg from '../assets/hero.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
-  FiArrowRight, FiChevronRight
+  FiArrowRight, FiChevronRight, FiPlayCircle, FiShield, FiCompass
 } from 'react-icons/fi';
+import { LuLandmark, LuHospital, LuStore, LuBuilding2 } from 'react-icons/lu';
+import { FaMosque, FaMountain, FaShoppingBag } from 'react-icons/fa';
 
 /* ── Skeleton ── */
 const Skeleton = () => (
-  <div className="glass-panel overflow-hidden animate-pulse" style={{ borderRadius: '2rem' }}>
-    <div className="h-52 shimmer" />
-    <div className="p-5 flex flex-col gap-3">
+  <div className="glass-panel overflow-hidden animate-pulse rounded-2xl">
+    <div className="h-48 shimmer" />
+    <div className="p-4 flex flex-col gap-3">
       <div className="h-4 shimmer rounded-full w-3/4" />
       <div className="h-3 shimmer rounded-full w-1/2" />
-      <div className="h-8 shimmer rounded-2xl w-full mt-2" />
+      <div className="h-9 shimmer rounded-xl w-full mt-2" />
     </div>
   </div>
 );
+
+const DISTRICT_INFO = [
+  { name: 'Navoiy shahri', desc: 'Zamonaviy shahar, parklar, savdo majmualari', color: '#6366f1', gradient: 'from-indigo-500/20 to-indigo-600/10' },
+  { name: 'Nurota', desc: 'Chashma, Nur qal\'asi, ziyorat va tabiat', color: '#f59e0b', gradient: 'from-amber-500/20 to-amber-600/10' },
+  { name: 'Xatirchi', desc: 'Qadimiy obidalar, ziyoratgohlar va bog\'lar', color: '#10b981', gradient: 'from-emerald-500/20 to-emerald-600/10' },
+  { name: 'Qiziltepa', desc: 'Raboti Malik, Sardoba va tarixiy meros', color: '#8b5cf6', gradient: 'from-violet-500/20 to-violet-600/10' },
+];
+
+const CATEGORY_QUICK_EXPLORER = [
+  { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark, color: '#f59e0b', to: '/attractions?category=tarixiy' },
+  { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque, color: '#10b981', to: '/attractions?category=ziyoratgoh' },
+  { key: 'tabiat', label: 'Tabiat & Tog\'lar', icon: FaMountain, color: '#059669', to: '/attractions?category=tabiat' },
+  { key: 'hotels', label: 'Mehmonxonalar', icon: LuBuilding2, color: '#6366f1', to: '/search' },
+  { key: 'kasalxona', label: 'Kasalxona (24/7)', icon: LuHospital, color: '#ef4444', to: '/attractions?category=kasalxona' },
+  { key: 'iib', label: 'IIB / Xavfsizlik', icon: FiShield, color: '#3b82f6', to: '/attractions?category=iib' },
+  { key: 'savdo', label: 'Bozor & Supermarket', icon: FaShoppingBag, color: '#ec4899', to: '/attractions?category=savdo' },
+];
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -58,7 +76,7 @@ const Home = () => {
   useEffect(() => { fetchHotels(); }, [fetchHotels]);
 
   useEffect(() => {
-    fetchAttractions({ limit: 6 })
+    fetchAttractions({ limit: 12 })
       .then((res) => setAttractions(Array.isArray(res) ? res : (res.data || [])))
       .catch(() => setAttractions([]));
   }, []);
@@ -66,328 +84,295 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>Tourism for Everyone — Navoiy Viloyati Turizm Platformasi</title>
-        <meta name="description" content="Navoiy viloyatidagi inklyuziv va qulay tarixiy joylar, ziyoratgohlar hamda mehmonxonalar haqida to'liq ma'lumot va 360° virtual turlar." />
+        <title>Tourism for Everyone — Navoiy Viloyati Inklyuziv Turizm Markazi</title>
+        <meta name="description" content="Navoiy shahri, Nurota, Xatirchi va Qiziltepa tumanlaridagi barcha tarixiy obidalar, ziyoratgohlar, shifoxonalar, 360° virtual turlar va mehmonxonalar." />
       </Helmet>
-      <div className="pb-24 md:pb-8 lg:pb-12 overflow-x-hidden">
 
-      {/* ══════════════════════════════════════════
-          HERO — Navoiy vibe
-      ══════════════════════════════════════════ */}
-      <header className="relative w-full overflow-hidden" style={{ minHeight: 'clamp(420px, 85svh, 720px)' }}>
+      <div className="pb-24 md:pb-12 overflow-x-hidden">
+        {/* ══════════════════════════════════════════
+            1. HERO SECTION — PREMIUM NAVOIY VIBE
+        ══════════════════════════════════════════ */}
+        <header className="relative w-full overflow-hidden min-h-[520px] sm:min-h-[600px] flex items-center justify-center">
+          {/* Background Image */}
+          <img
+            src={heroBg}
+            alt="Navoiy viloyati"
+            className="absolute inset-0 w-full h-full object-cover object-center transform scale-105"
+            loading="eager"
+          />
 
-        {/* Background */}
-        <img
-          src={heroBg}
-          alt="Navoiy viloyati"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center 35%' }}
-          loading="eager"
-        />
-
-        {/* Deep gradient — Navoiy night sky tones */}
-        <div className="absolute inset-0" style={{
-          background: 'linear-gradient(160deg, rgba(10,8,45,0.72) 0%, rgba(30,20,80,0.45) 40%, rgba(8,6,35,0.92) 100%)'
-        }} />
-
-        {/* Decorative orbs */}
-        <div className="absolute top-10 right-10 w-80 h-80 rounded-full pointer-events-none animate-float"
-          style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%)', filter: 'blur(40px)' }} />
-        <div className="absolute bottom-32 left-0 w-72 h-72 rounded-full pointer-events-none animate-float"
-          style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.15), transparent 70%)', filter: 'blur(50px)', animationDelay: '2s' }} />
-
-        {/* Top border removed for classic clean look */}
-
-        {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-5 sm:px-8 text-center pb-16 sm:pb-20">
-
-          {/* Location pill */}
-          <div className="flex items-center gap-2 mb-4 sm:mb-5 px-4 py-2 rounded-full animate-fade-in"
+          {/* Deep Gradient Overlay */}
+          <div
+            className="absolute inset-0"
             style={{
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              animationDelay: '0.1s'
-            }}>
-            <FiMapPin className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-white text-xs font-black uppercase tracking-[0.2em]">Navoiy · O'zbekiston</span>
+              background: 'linear-gradient(170deg, rgba(10,8,45,0.78) 0%, rgba(20,15,60,0.55) 45%, rgba(6,4,28,0.95) 100%)'
+            }}
+          />
+
+          {/* Decorative Glowing Orbs */}
+          <div className="absolute top-10 right-10 w-96 h-96 rounded-full pointer-events-none animate-float blur-3xl opacity-40"
+            style={{ background: 'radial-gradient(circle, #8b5cf6, transparent 70%)' }} />
+          <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full pointer-events-none animate-float blur-3xl opacity-30"
+            style={{ background: 'radial-gradient(circle, #f59e0b, transparent 70%)', animationDelay: '2s' }} />
+
+          {/* Hero Content */}
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center py-16 sm:py-20 flex flex-col items-center">
+            {/* Top Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white shadow-lg mb-4 sm:mb-6 animate-fade-in">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <FiMapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-black uppercase tracking-wider">Navoiy Viloyati · Inklyuziv Turizm Portali</span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-4 sm:mb-6 animate-fade-in">
+              Qadimiy Meros va Zamonaviy <br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-violet-400 bg-clip-text text-transparent">
+                Dam Olish Maskani
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 max-w-2xl font-medium mb-8 leading-relaxed animate-fade-in">
+              Navoiy shahri, Nurota, Xatirchi va Qiziltepadagi tarixiy obidalar, 360° virtual sayohatlar, qulay mehmonxonalar va shoshilinch xizmatlar.
+            </p>
+
+            {/* Search Bar Shortcut */}
+            <div className="w-full max-w-xl animate-fade-in">
+              <div
+                onClick={() => navigate('/search')}
+                className="w-full flex items-center gap-3 p-2 sm:p-2.5 rounded-2xl bg-white/15 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/25 shadow-2xl cursor-pointer hover:bg-white/20 transition-all duration-200 active:scale-[0.99]"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shrink-0">
+                  <FiSearch className="w-4 h-4" />
+                </div>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white/90 truncate">Obida, ziyoratgoh yoki mehmonxona qidirish...</p>
+                  <p className="text-[10px] text-white/60">Tuman, toifa yoki nomi bo'yicha</p>
+                </div>
+                <div className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl font-black text-xs transition-colors shrink-0 flex items-center gap-1.5">
+                  <span>Qidirish</span>
+                  <FiArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Live Stats Ticker */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-white/80 text-xs font-bold animate-fade-in">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <FiCompass className="text-amber-400" />
+                <span>4 ta Asosiy Hudud</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <FiPlayCircle className="text-indigo-400" />
+                <span>360° Virtual Turlar</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <LuHospital className="text-rose-400" />
+                <span>24/7 Shoshilinch Xizmatlar</span>
+              </div>
+            </div>
           </div>
 
-          {/* Main heading */}
-          <h1
-            className="text-white font-black leading-[1.08] mb-3 sm:mb-5 animate-fade-in"
-            style={{
-              fontSize: 'clamp(2rem, 9vw, 5rem)',
-              textShadow: '0 8px 40px rgba(0,0,0,0.6)',
-              animationDelay: '0.2s',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Navoiy viloyatidagi
-            <br />
-            <span style={{
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 40%, #a78bfa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              Ko'ngil ochar maskanlar
-            </span>
-          </h1>
+          {/* Bottom Wave Softener */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-t from-[var(--bg-main)] to-transparent" />
+        </header>
 
-          {/* Subtitle — mobilda ham ko'rinadi */}
-          <p className="text-white/75 font-medium mb-6 sm:mb-8 max-w-xs sm:max-w-lg animate-fade-in"
-            style={{ fontSize: 'clamp(0.8rem, 3.5vw, 1.1rem)', lineHeight: 1.6, animationDelay: '0.3s' }}>
-            Eng sara mehmonxonalar, resortlar va dam olish maskanlarini kashf eting.
-          </p>
+        {/* ══════════════════════════════════════════
+            2. MAIN CONTENT WRAPPER
+        ══════════════════════════════════════════ */}
+        <main className="px-4 max-w-7xl mx-auto space-y-12 sm:space-y-16 -mt-8 relative z-20">
 
-          {/* Search shortcut button */}
-          <button
-            onClick={() => navigate('/search')}
-            className="w-full max-w-sm animate-fade-in flex items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4 rounded-[2rem] font-bold text-sm transition-all hover:bg-white/5 active:scale-[0.98]"
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(20px)',
-              border: '1.5px solid rgba(255,255,255,0.35)',
-              color: 'rgba(255,255,255,0.95)',
-              animationDelay: '0.4s',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
-            }}
-          >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(255,255,255,0.25)' }}>
-              <FiSearch className="w-4 h-4" />
-            </div>
-            <span className="flex-1 text-left opacity-80">Mehmonxona qidirish...</span>
-            <FiArrowRight className="w-4 h-4 opacity-60" />
-          </button>
-        </div>
-
-        {/* Bottom wave */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-          style={{ background: 'linear-gradient(to top, var(--bg-main), transparent)' }} />
-      </header>
-
-      {/* ══════════════════════════════════════════
-          MAIN CONTENT
-      ══════════════════════════════════════════ */}
-      <main className="px-4 max-w-7xl mx-auto">
-
-        {/* ── Hududlar (tumanlar) — bosilganda shu tuman joylari chiqadi ── */}
-        {!loading && (hotels.length > 0 || attractions.length > 0) && (() => {
-          const districts = [...new Set([...hotels, ...attractions].map(item => item.district || item.city).filter(Boolean))];
-          const colors = ['#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6'];
-          return (
-            <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 -mt-8 sm:-mt-6 mb-8 sm:mb-12 relative z-10 px-4 sm:px-1 snap-x snap-mandatory pb-4">
-              {districts.map((district, i) => {
-                const hCount = hotels.filter(h => (h.district || h.city) === district).length;
-                const aCount = attractions.filter(a => (a.district || a.city) === district).length;
-                const color = colors[i % colors.length];
+          {/* ── 2.1. 4 TA ASOSIY HUDUD KARTALARI ── */}
+          <section>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              {DISTRICT_INFO.map((d, i) => {
+                const hCount = hotels.filter(h => (h.district || h.city) === d.name).length;
+                const aCount = attractions.filter(a => (a.district || a.city) === d.name).length;
                 return (
                   <button
-                    key={district}
-                    onClick={() => navigate(`/search?city=${encodeURIComponent(district)}`)}
-                    className="glass-panel press-effect flex flex-col items-center justify-center gap-1 sm:gap-1.5 py-4 sm:py-5 px-3 min-w-[120px] sm:min-w-[140px] text-center transition-all hover:shadow-md active:scale-[0.97] shrink-0 snap-center"
-                    style={{
-                      borderRadius: '1.25rem',
-                      borderTop: `3px solid ${color}`,
-                      boxShadow: `0 4px 20px -6px ${color}30`,
-                    }}
-                    aria-label={`${district} tumanidagi joylar`}
+                    key={d.name}
+                    type="button"
+                    onClick={() => navigate(`/attractions?district=${encodeURIComponent(d.name)}`)}
+                    className="glass-panel p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 hover:shadow-lg active:scale-[0.98] border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between group"
+                    style={{ borderTop: `4px solid ${d.color}` }}
                   >
-                    <FiMapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
-                    <p className="text-sm sm:text-lg font-black leading-tight" style={{ color }}>{district}</p>
-                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                      {aCount > 0 && <span>{aCount} ta tarixiy joy</span>}
-                      {aCount > 0 && hCount > 0 && <br />}
-                      {hCount > 0 && <span>{hCount} ta mehmonxona</span>}
-                    </p>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-xs" style={{ background: d.color }}>
+                          <FiMapPin className="w-4 h-4" />
+                        </span>
+                        <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                      </div>
+                      <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white mb-1">{d.name}</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">{d.desc}</p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <span>{aCount || 'Ko\'rish'} ta maskan</span>
+                      <span>{hCount > 0 ? `${hCount} hotel` : ''}</span>
+                    </div>
                   </button>
                 );
               })}
             </div>
-          );
-        })()}
+          </section>
 
-        {/* ── Map quick link ── */}
-        <button
-          onClick={() => navigate('/map')}
-          className="w-full mb-10 sm:mb-12 flex items-center gap-4 p-4 sm:p-5 rounded-[1.5rem] transition-all active:scale-[0.98] hover:shadow-md text-left press-effect"
-          style={{
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.09) 0%, rgba(139,92,246,0.07) 100%)',
-            border: '1.5px solid rgba(99,102,241,0.22)',
-            boxShadow: '0 4px 24px -8px rgba(99,102,241,0.22)',
-          }}
-        >
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 6px 16px -4px rgba(99,102,241,0.5)' }}>
-            <FiMap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-extrabold text-sm sm:text-base mb-0.5" style={{ color: 'var(--text-main)' }}>
-              Mehmonxonalar xaritasi
-            </p>
-            <p className="text-xs font-medium line-clamp-1" style={{ color: 'var(--text-muted)' }}>
-              Barcha dam olish maskanlarini xaritada ko'ring
-            </p>
-          </div>
-          <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-indigo-400" />
-        </button>
-
-        {/* ── Diqqatga sazovor (tarixiy) joylar ── */}
-        {attractions.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
-                <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy obidalar va ziyoratgohlar</h2>
+          {/* ── 2.2. TOIFALAR BO'YICHA TEZKOR EXPLORER ── */}
+          <section className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <FiCompass className="text-indigo-500" /> Qulay Yo'nalish Bo'yicha Qidiruv
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">O'zingizga kerakli turdagi obyektlarni bir bosishda toping</p>
               </div>
-              <button onClick={() => navigate('/attractions')}
-                className="flex items-center gap-1 text-sm font-bold transition-all hover:gap-2" style={{ color: '#d97706' }}>
-                Barchasi <FiChevronRight className="w-4 h-4" />
-              </button>
             </div>
-            <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
-              Boy tariximiz va madaniy merosimiz bilan yaqindan tanishing — atrofdagi qulay tunash maskanlari
-            </p>
-            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 snap-x snap-mandatory">
-              {attractions.map((a) => (
-                <div key={a._id} className="min-w-[280px] sm:min-w-[320px] max-w-[320px] snap-center shrink-0">
-                  <AttractionCard attraction={a} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* ── Accessibility Banner ── */}
-        <AccessibilityBanner />
-
-        {/* ── AI Recommendations ── */}
-        <div className="mb-12">
-          <AIRecommendations />
-        </div>
-
-        {/* ── Tarixiy joylar bo'yicha dam olish maskanlari ── */}
-        {!loading && hotels.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-1">
-              <LuLandmark className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0" />
-              <h2 className="text-xl font-black" style={{ color: 'var(--text-main)' }}>Tarixiy qadamjolar va ularga yaqin maskanlar</h2>
-            </div>
-            <p className="text-xs font-medium mb-5" style={{ color: 'var(--text-muted)' }}>
-              Har bir tarixiy va muqaddas qadamjoga eng yaqin joylashgan qulay dam olish maskanlari ro'yxati
-            </p>
-
-            <div className="space-y-6">
-              {[...new Set(hotels.map(h => h.district || h.city).filter(Boolean))].map(district => {
-                const group = hotels.filter(h => (h.district || h.city) === district);
-                const places = [...new Set(group.flatMap(h => h.nearbyPlaces || []))];
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+              {CATEGORY_QUICK_EXPLORER.map((cat) => {
+                const CatIcon = cat.icon;
                 return (
-                  <div key={district} className="glass-panel p-4 sm:p-5" style={{ borderRadius: '1.5rem' }}>
-                    {/* District + historical places */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiMapPin className="w-4 h-4 text-rose-500" />
-                      <h3 className="text-base font-black" style={{ color: 'var(--text-main)' }}>{district === 'Navoiy' ? 'Navoiy viloyati' : (district.includes('shahri') ? district : `${district} tumani`)}</h3>
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => navigate(cat.to)}
+                    className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200 active:scale-95 flex flex-col items-center text-center group"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 shadow-xs transition-transform group-hover:scale-110"
+                      style={{ background: `${cat.color}15`, color: cat.color }}
+                    >
+                      <CatIcon className="w-5 h-5" />
                     </div>
-                    {places.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {places.map((p, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
-                            style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.25)' }}>
-                            <LuLandmark className="w-3 h-3" /> {p}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {/* Nearby resting places */}
-                    <p className="text-[10px] font-black uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-                      Yaqin dam olish maskanlari
-                    </p>
-                    <div className="snap-x-scroll -mx-1 px-1 pb-1 flex gap-3">
-                      {group.map(h => (
-                        <button key={h._id} onClick={() => navigate(`/hotel/${h._id}`)}
-                          className="press-effect shrink-0 w-44 text-left rounded-2xl overflow-hidden border transition-all hover:shadow-md active:scale-[0.98]"
-                          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-                          {h.images?.[0] && (
-                            <img src={imgSrc(h.images[0])} alt={h.name} className="w-full h-24 object-cover" loading="lazy" />
-                          )}
-                          <div className="p-2.5">
-                            <p className="font-bold text-sm line-clamp-1" style={{ color: 'var(--text-main)' }}>{h.name}</p>
-                            <div className="flex items-center justify-between mt-1">
-                              <span className="text-[11px] font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{h.category}</span>
-                              <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
-                                <FiStar className="w-3 h-3 fill-current" />{h.rating?.toFixed?.(1) ?? h.rating}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate w-full">{cat.label}</span>
+                  </button>
                 );
               })}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* ── Hotels grid ── */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <FiTrendingUp className="text-rose-500" />
-              Mashhur mehmonxonalar
-            </h2>
-            {!loading && hotels.length > 0 && (
-              <button onClick={() => navigate('/search')}
-                className="flex items-center gap-1 text-sm font-bold"
-                style={{ color: '#6366f1' }}>
-                Hammasi <FiChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          {/* ── 2.3. INTERAKTIV 3D XARITA BANNERI ── */}
+          <section>
+            <div
+              onClick={() => navigate('/map')}
+              className="p-6 sm:p-8 rounded-3xl cursor-pointer transition-all duration-300 active:scale-[0.99] border border-indigo-200/60 dark:border-indigo-900/40 relative overflow-hidden group shadow-lg shadow-indigo-500/10"
+              style={{
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.15) 100%)'
+              }}
+            >
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
+                    <FiMap className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <span className="text-[10.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Interaktiv Xarita</span>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">Navoiy Viloyatining Barcha Joylari Bir Xaritada</h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
+                      Obidalar, ziyoratgohlar, shifoxonalar va eng yaqin mehmonxonalarni 3D xaritada filtrlang va masofasini ko'ring.
+                    </p>
+                  </div>
+                </div>
 
-          {error && (
-            <div className="rounded-2xl p-4 mb-6 flex items-start gap-3"
-              style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
-              <FiAlertTriangle className="text-red-500 mt-0.5 shrink-0" />
-              <p className="text-sm font-semibold text-red-500">{error}</p>
+                <div className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center gap-2 self-start sm:self-auto shrink-0 shadow-md shadow-indigo-500/25 group-hover:bg-indigo-700 transition-colors">
+                  <span>Xaritani Ochish</span>
+                  <FiArrowRight className="w-4 h-4" />
+                </div>
+              </div>
             </div>
+          </section>
+
+          {/* ── 2.4. DIQQATGA SAZOVOR JOYLAR VA 360° VR ── */}
+          {attractions.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <LuLandmark className="text-amber-500 w-6 h-6" /> Diqqatga Sazovor Obyektlar
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Tarixiy obidalar, ziyoratgohlar va tabiat maskanlari
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/attractions')}
+                  className="text-xs font-black text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+                >
+                  Barchasini ko'rish ({attractions.length}) <FiChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {attractions.slice(0, 6).map((a) => (
+                  <AttractionCard key={a._id} attraction={a} />
+                ))}
+              </div>
+            </section>
           )}
 
-          {loading ? (
-            <div className="hotel-grid">
-              {[1, 2, 3, 4].map(i => <Skeleton key={i} />)}
-            </div>
-          ) : hotels.length > 0 ? (
-            <div className="hotel-grid">
-              {hotels.map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
-            </div>
-          ) : !error ? (
-            <div className="text-center py-20 glass-panel" style={{ borderRadius: '2rem' }}>
-              <FiFrown className="mx-auto w-14 h-14 mb-4 text-gray-300" />
-              <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-main)' }}>Mehmonxonalar topilmadi</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-                Ma'lumot qo'shish uchun <code className="px-2 py-0.5 rounded-lg text-xs font-mono"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>npm run seed</code> ni ishga tushiring.
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </main>
+          {/* ── 2.5. INKLYUZIVLIK BANNERI & AI TAVSIYALAR ── */}
+          <AccessibilityBanner />
+          <AIRecommendations />
 
-      {/* ── Scroll to top ── */}
-      {showTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:-translate-y-1 active:scale-[0.92] press-effect"
-          style={{ background: 'var(--gradient-main)', boxShadow: 'var(--shadow-colored)' }}
-          aria-label="Yuqoriga"
-        >
-          <FiArrowUp className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </button>
-      )}
-    </div>
+          {/* ── 2.6. MASHHUR MEHMONXONALAR ── */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <FiTrendingUp className="text-rose-500 w-5 h-5" /> Qulay Mehmonxonalar & Turar Joylar
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Sayohat davomida qulay hordiq chiqarish uchun maskanlar
+                </p>
+              </div>
+              {!loading && hotels.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/search')}
+                  className="text-xs font-black text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                >
+                  Barchasi <FiChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {error && (
+              <div className="rounded-2xl p-4 mb-6 flex items-start gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 text-rose-600">
+                <FiAlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm font-bold">{error}</p>
+              </div>
+            )}
+
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1, 2, 3].map(i => <Skeleton key={i} />)}
+              </div>
+            ) : hotels.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {hotels.slice(0, 6).map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
+              </div>
+            ) : !error ? (
+              <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                <FiFrown className="mx-auto w-12 h-12 mb-3 text-slate-300 dark:text-slate-600" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Mehmonxonalar topilmadi</h3>
+                <p className="text-xs text-slate-400">Admin paneldan yangi mehmonxona qo'shishingiz mumkin.</p>
+              </div>
+            ) : null}
+          </section>
+        </main>
+
+        {/* Scroll To Top */}
+        {showTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-gradient-to-r from-indigo-600 to-violet-600"
+            aria-label="Yuqoriga"
+          >
+            <FiArrowUp className="w-5 h-5" strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
     </>
   );
 };

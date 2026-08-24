@@ -2,11 +2,40 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { renderToString } from 'react-dom/server';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { FaBuilding, FaUmbrellaBeach, FaBed, FaLandmark } from 'react-icons/fa';
+import { 
+  FaBuilding, FaUmbrellaBeach, FaBed, FaLandmark, 
+  FaMosque, FaTheaterMasks, FaTree, FaWater, 
+  FaHospital, FaShieldAlt, FaPlane, FaShoppingBasket, 
+  FaShoppingCart, FaShoppingBag, FaHome, FaGem, FaMapMarkerAlt 
+} from 'react-icons/fa';
 import { CATEGORY_COLORS, ATTRACTION_COLOR } from './mapUtils';
 
-// Marker ikonkasini SVG matn ko'rinishida (emoji o'rniga jiddiy ikon)
-const HOTEL_ICON = { resort: FaUmbrellaBeach, hostel: FaBed, hotel: FaBuilding };
+// Marker ikonkalari
+const HOTEL_ICON = { 
+  hotel: FaBuilding,
+  resort: FaUmbrellaBeach, 
+  hostel: FaBed, 
+  guesthouse: FaHome,
+  boutique: FaGem,
+};
+
+const ATTRACTION_ICONS = {
+  tarixiy: FaLandmark,
+  ziyoratgoh: FaMosque,
+  madaniy: FaTheaterMasks,
+  tabiat: FaTree,
+  istirohat_bogi: FaWater,
+  kasalxona: FaHospital,
+  iib: FaShieldAlt,
+  hokimiyat: FaLandmark,
+  transport: FaPlane,
+  bozor: FaShoppingBasket,
+  supermarket: FaShoppingCart,
+  mall: FaShoppingBag,
+  boshqa: FaMapMarkerAlt,
+  attraction: FaLandmark,
+};
+
 const iconSvg = (IconCmp, px) =>
   renderToString(<IconCmp style={{ color: '#fff', width: px, height: px }} />);
 
@@ -161,11 +190,13 @@ const MapLibreView = ({
 
   useEffect(() => { syncMarkers(); }, [syncMarkers]);
 
-  // ── Tarixiy joy markerlari (amber, landmark ikoni) ──────────────────
+  // ── Tarixiy joy & Infratuzilma markerlari (toifaga mos ikonkalar va ranglar) ──
   const buildAttractionEl = useCallback((attraction, selected) => {
-    const head = ATTRACTION_COLOR;
+    const cat = attraction.category || 'tarixiy';
+    const head = CATEGORY_COLORS[cat] || ATTRACTION_COLOR;
     const size = selected ? 40 : 30;
-    const glyph = iconSvg(FaLandmark, selected ? 16 : 13);
+    const IconCmp = ATTRACTION_ICONS[cat] || FaLandmark;
+    const glyph = iconSvg(IconCmp, selected ? 16 : 13);
     const el = document.createElement('div');
     el.style.cssText = `width:${size}px;height:${size * 1.32}px;cursor:pointer;`;
     el.innerHTML = `

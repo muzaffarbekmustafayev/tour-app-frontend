@@ -43,7 +43,7 @@ const FavCard = ({ hotel, onRemove }) => {
         <img
           src={img}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover"
           loading="lazy"
         />
         <div className="absolute inset-0"

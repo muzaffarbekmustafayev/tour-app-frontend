@@ -27,7 +27,7 @@ const fmtSom = (n) =>
 const AttractionMini = ({ a, onClick }) => (
   <button
     onClick={onClick}
-    className="group w-full flex gap-3 p-2.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+    className="group w-full flex gap-3 p-2.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left"
   >
     {a.image && (
       <img src={resolveMediaUrl(a.image)} alt={a.name} loading="lazy" decoding="async"
@@ -74,7 +74,7 @@ const AttractionMini = ({ a, onClick }) => (
 const HotelMini = ({ h, onClick }) => (
   <button
     onClick={onClick}
-    className="group w-full flex gap-3 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+    className="group w-full flex gap-3 p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md active:scale-[0.98] transition-all duration-200 text-left"
   >
     {h.image && (
       <img src={resolveMediaUrl(h.image)} alt={h.name} loading="lazy" decoding="async"

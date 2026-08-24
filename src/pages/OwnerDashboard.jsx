@@ -568,7 +568,7 @@ const OwnerDashboard = () => {
                 </p>
                 <button
                   onClick={openAddForm}
-                  className="mt-4 px-6 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:scale-102"
+                  className="mt-4 px-6 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md transition-all hover:brightness-110 active:scale-95"
                 >
                   Birinchi mehmonxonani qo'shish
                 </button>

@@ -145,7 +145,7 @@ const AccessibilityBanner = () => {
         {/* CTA */}
         <button
           onClick={() => navigate('/search?accessibility=wheelchair')}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white transition-all hover:brightness-110 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
             boxShadow: '0 8px 24px -6px rgba(99,102,241,0.5)',

@@ -11,7 +11,7 @@ import ComingSoonModal from '../components/ComingSoonModal';
 import { resolveMediaUrl } from '../utils/media';
 import { LuLandmark } from 'react-icons/lu';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+import { Navigation, Pagination, Thumbs, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -348,7 +348,7 @@ const HotelDetail = () => {
               <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> <span className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">{hotel.address}, {hotel.city}</span>
             </p>
           </div>
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/20 dark:to-indigo-900/10 p-4 rounded-2xl flex items-center gap-3.5 border border-indigo-100/80 dark:border-indigo-900/30 shadow-sm shrink-0 hover:scale-[1.02] transition-transform duration-300">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/20 dark:to-indigo-900/10 p-4 rounded-2xl flex items-center gap-3.5 border border-indigo-100/80 dark:border-indigo-900/30 shadow-sm shrink-0">
              <div className="bg-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-md shadow-indigo-600/20 shrink-0">
                 {hotel.rating?.toFixed(1) || '0.0'}
              </div>
@@ -364,7 +364,7 @@ const HotelDetail = () => {
           {/* Main Swiper */}
           <div className="gallery-swiper-main relative rounded-xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm">
             <Swiper
-              modules={[Navigation, Pagination, Thumbs]}
+              modules={[Navigation, Pagination, Thumbs, Autoplay]}
               navigation={{
                 nextEl: '.gallery-next',
                 prevEl: '.gallery-prev',
@@ -373,6 +373,7 @@ const HotelDetail = () => {
               thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
               onSlideChange={(s) => setActiveImg(s.activeIndex)}
               loop={images.length > 1}
+              autoplay={{ delay: 2000, disableOnInteraction: false }}
               className="w-full h-full"
               style={{ '--swiper-pagination-color': '#2563eb', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
             >

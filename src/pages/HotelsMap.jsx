@@ -98,12 +98,20 @@ const HotelsMap = () => {
   // ── Filtr: tur (kategoriya/tarixiy joy) + tuman ──────────────────────────────
   const inDistrict = (o) => districtFilter === 'all' || o.district === districtFilter;
 
-  const visibleHotels = (filterCat === 'attraction' ? [] : hotels).filter(
-    (h) => (filterCat === 'all' || filterCat === 'attraction' || h.category === filterCat) && inDistrict(h)
-  );
-  const visibleAttractions = (filterCat === 'all' || filterCat === 'attraction')
-    ? attractions.filter(inDistrict)
-    : [];
+  const visibleHotels = hotels.filter((h) => {
+    if (!inDistrict(h)) return false;
+    if (filterCat === 'all') return true;
+    if (filterCat === h.category) return true;
+    return false;
+  });
+
+  const visibleAttractions = attractions.filter((a) => {
+    if (!inDistrict(a)) return false;
+    if (filterCat === 'all') return true;
+    if (filterCat === a.category) return true;
+    if (filterCat === 'savdo' && ['bozor', 'supermarket', 'mall'].includes(a.category)) return true;
+    return false;
+  });
 
   // Marker soni (yuqori paneldagi hisob)
   const totalVisible = visibleHotels.length + visibleAttractions.length;

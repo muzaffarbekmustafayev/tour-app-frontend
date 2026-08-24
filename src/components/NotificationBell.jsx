@@ -19,7 +19,7 @@ const NotificationBell = () => {
         onClick={() => setShow(!show)}
         aria-label="Bildirishnomalar"
         aria-expanded={show}
-        className="relative bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:scale-110 transition-transform active:scale-95 group focus:ring-2 focus:ring-blue-500/50 outline-none"
+        className="relative bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 active:scale-95 group focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
       >
         <FiBell className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
       </button>

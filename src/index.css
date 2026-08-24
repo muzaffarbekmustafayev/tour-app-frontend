@@ -37,8 +37,8 @@ body,
   --gradient-hero: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
   --gradient-bg: radial-gradient(circle at top right, #f1f5f9 0%, #fcfcfd 100%);
   --gradient-card: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 100%);
-  --sidebar-w: 256px;
-  --sidebar-w-lg: 288px;
+  --sidebar-w: 280px;
+  --sidebar-w-lg: 320px;
 }
 
 .dark {
@@ -128,17 +128,20 @@ body {
   overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: all 0.25s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .premium-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
 }
 
+.premium-card:active {
+  transform: scale(0.985);
+}
 
 .card-hover {
-  transition: all 0.25s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   background: var(--bg-card);
   border: 1px solid var(--border);
   backdrop-filter: blur(12px);
@@ -148,11 +151,13 @@ body {
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.08);
   border-color: var(--primary);
 }
 
+.card-hover:active {
+  transform: scale(0.985);
+}
 
 /* ─── Text Gradient ────────────────────────────────────── */
 
@@ -169,14 +174,13 @@ body {
   background: var(--gradient-main);
   color: white;
   border: none;
-  transition: all 0.3s ease;
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   box-shadow: var(--shadow-colored);
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
   box-shadow: 0 10px 24px -6px rgba(79, 70, 229, 0.45);
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .dark .btn-primary:hover {
@@ -184,7 +188,7 @@ body {
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 /* Tailwind handles coloring dynamically */

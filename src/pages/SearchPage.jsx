@@ -119,9 +119,9 @@ const AccordionGroup = ({ group, filters, onToggle, openGroups, onToggleGroup })
         <div className="px-4 pb-4 pt-1 flex flex-col gap-2.5"
           style={{ borderTop: '1px solid var(--border)' }}>
           {group.options.map(opt => (
-            <label key={opt.key} className="flex items-center gap-3 cursor-pointer group transition-all hover:translate-x-1">
+            <label key={opt.key} className="flex items-center gap-3 cursor-pointer group transition-all">
               <div
-                className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all group-hover:scale-110"
+                className="w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-all"
                 style={{
                   background: filters.access[opt.key] ? 'var(--primary)' : 'var(--bg-main)',
                   border: `2px solid ${filters.access[opt.key] ? 'var(--primary)' : 'var(--border)'}`,

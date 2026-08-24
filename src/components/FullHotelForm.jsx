@@ -29,11 +29,11 @@ const securityList = [
   'Signalizatsiya', 'Kodli qulf', 'Elektron kalit', 'Video domofon'
 ];
 
-// Navoiy viloyatining barcha tuman va shaharlari — maskan aynan shulardan biriga tegishli bo'lishi shart
 export const HOTEL_DISTRICTS = [
-  'Navoiy shahri', 'Zarafshon shahri', 'G\'ozg\'on shahri',
-  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
-  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+  'Navoiy shahri',
+  'Nurota',
+  'Xatirchi',
+  'Qiziltepa'
 ];
 
 export const emptyHotelTemplate = {

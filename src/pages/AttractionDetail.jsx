@@ -8,7 +8,7 @@ import HotelCard from '../components/HotelCard';
 import { fetchAttraction, fetchNearbyStays, addAttractionReview } from '../services/attractions';
 import { imgSrc, resolveMediaUrl } from '../utils/media';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+import { Navigation, Pagination, Thumbs, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -175,21 +175,48 @@ const AttractionDetail = () => {
         {/* Header */}
         <div className="mb-5 flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2.5 mb-3">
-              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">
-                <LuLandmark className="w-3 h-3" /> Tarixiy obida
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 shadow-xs">
+                <LuLandmark className="w-3.5 h-3.5" /> {a.category ? a.category.toUpperCase() : 'OBYEKT'}
               </span>
               {a.district && (
-                <span className="flex items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1 text-xs font-bold text-slate-600 dark:text-slate-400">
                   <FiMapPin className="w-3.5 h-3.5 text-rose-500" /> {a.district === 'Navoiy' ? 'Navoiy viloyati' : `${a.district} tumani`}
                 </span>
               )}
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 leading-tight">{a.name}</h1>
             {a.address && (
-              <p className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm font-semibold">
+              <p className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm font-semibold mb-2">
                 <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> {a.address}
               </p>
+            )}
+
+            {/* Aloqa va Ish vaqti */}
+            {(a.phone || a.workingHours || a.emergencyContact) && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {a.phone && (
+                  <a
+                    href={`tel:${a.phone}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200/80 dark:border-blue-800 hover:bg-blue-100 transition-colors"
+                  >
+                    <span>📞 {a.phone}</span>
+                  </a>
+                )}
+                {a.workingHours && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/80 dark:border-emerald-800">
+                    <FiClock className="w-3.5 h-3.5 text-emerald-500" /> {a.workingHours}
+                  </span>
+                )}
+                {a.emergencyContact && (
+                  <a
+                    href={`tel:${a.emergencyContact}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200/80 dark:border-rose-800 hover:bg-rose-100 transition-colors"
+                  >
+                    <span>🚨 Tezkor: {a.emergencyContact}</span>
+                  </a>
+                )}
+              </div>
             )}
           </div>
           {a.rating > 0 && (
@@ -209,12 +236,13 @@ const AttractionDetail = () => {
         <div className="mb-4">
           <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm gallery-swiper-main">
             <Swiper
-              modules={[Navigation, Pagination, Thumbs]}
+              modules={[Navigation, Pagination, Thumbs, Autoplay]}
               navigation={{ nextEl: '.attr-next', prevEl: '.attr-prev' }}
               pagination={{ clickable: true, dynamicBullets: true }}
               thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
               onSlideChange={(s) => setActiveImg(s.realIndex)}
               loop={images.length > 1}
+              autoplay={{ delay: 2000, disableOnInteraction: false }}
               className="w-full"
               style={{ '--swiper-pagination-color': '#f59e0b', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
             >
@@ -274,7 +302,7 @@ const AttractionDetail = () => {
         </div>
 
         {/* ── Virtual sayohat video tugmasi ── */}
-        {hasVideo && (
+        {hasVideo && a.video360?.url?.trim() !== '' && (
           <button onClick={() => setVideoOpen(true)}
             className="w-full mb-6 flex items-center justify-between gap-3 px-5 py-4 rounded-2xl text-white shadow-lg active:scale-[0.99] transition-transform"
             style={{ background: 'linear-gradient(135deg,#4F46E5 0%,#7C3AED 60%,#8B5CF6 100%)' }}>
@@ -283,57 +311,59 @@ const AttractionDetail = () => {
                 <FiPlayCircle className="w-6 h-6" />
               </span>
               <span className="text-left min-w-0">
-                <span className="block font-black text-[15px] leading-tight">Virtual sayohat</span>
+                <span className="block font-black text-[15px] leading-tight">Virtual sayohat (360°)</span>
                 <span className="block text-[12px] text-white/80 truncate">Bormasdan turib joyni his eting</span>
               </span>
             </span>
             <span className="flex items-center gap-2 shrink-0">
-              {a.video360.captioned && <span className="bg-white/20 text-[10px] font-black px-1.5 py-0.5 rounded">CC</span>}
+              {a.video360?.captioned && <span className="bg-white/20 text-[10px] font-black px-1.5 py-0.5 rounded">CC</span>}
               <span className="text-xs font-bold bg-white/15 px-3 py-1.5 rounded-xl hidden sm:inline">Ko'rish</span>
             </span>
           </button>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <div className={`flex flex-col ${nearby.length > 0 ? 'lg:flex-row gap-6 lg:gap-8' : ''}`}>
           <div className="flex-1 min-w-0">
 
+            {/* Joy haqida — faqat ma'lumot bo'lsa chiqadi */}
             {hasAbout && (
               <Section title="Joy haqida" icon={<FiAward />}>
-              {a.descriptionShort && (
-                <p className="text-slate-800 dark:text-slate-100 text-[15px] font-semibold leading-relaxed mb-3">{a.descriptionShort}</p>
-              )}
-              {a.description && (
-                <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{a.description}</p>
-              )}
-              <div className="flex flex-wrap gap-2 mt-5">
-                {a.entryFee && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/30">
-                    <FiDollarSign className="w-3.5 h-3.5" /> Kirish: {a.entryFee}
-                  </span>
+                {a.descriptionShort?.trim() && (
+                  <p className="text-slate-800 dark:text-slate-100 text-[15px] font-semibold leading-relaxed mb-3">{a.descriptionShort}</p>
                 )}
-                {a.bestSeason && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border border-sky-200/60 dark:border-sky-900/30">
-                    <FiSun className="w-3.5 h-3.5" /> {a.bestSeason}
-                  </span>
+                {a.description?.trim() && (
+                  <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line">{a.description}</p>
                 )}
-              </div>
-              {addedDate && (
-                <p className="text-[11px] font-semibold text-slate-400 mt-4 flex items-center gap-1.5">
-                  <FiCalendar className="w-3.5 h-3.5" /> Qo'shilgan: {addedDate}
-                </p>
-              )}
+                {(a.entryFee?.trim() || a.bestSeason?.trim()) && (
+                  <div className="flex flex-wrap gap-2 mt-5">
+                    {a.entryFee?.trim() && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/30">
+                        <FiDollarSign className="w-3.5 h-3.5" /> Kirish: {a.entryFee}
+                      </span>
+                    )}
+                    {a.bestSeason?.trim() && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border border-sky-200/60 dark:border-sky-900/30">
+                        <FiSun className="w-3.5 h-3.5" /> {a.bestSeason}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {addedDate && (
+                  <p className="text-[11px] font-semibold text-slate-400 mt-4 flex items-center gap-1.5">
+                    <FiCalendar className="w-3.5 h-3.5" /> Qo'shilgan: {addedDate}
+                  </p>
+                )}
               </Section>
             )}
 
-            {/* Joylashuv — xarita + havolalar */}
+            {/* Joylashuv — faqat koordinata bo'lsa chiqadi */}
             {hasGeo && (
               <Section title="Joylashuv" icon={<FiMapPin />}>
-                {a.address && (
+                {a.address?.trim() && (
                   <p className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                    <FiMapPin className="w-4 h-4 text-rose-500 shrink-0" /> {a.address}
+                    <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> {a.address}
                   </p>
                 )}
-                {/* Ilova ichidagi xaritada marshrutni ochish (foydalanuvchidan shu joygacha) */}
                 <button
                   onClick={() => navigate('/map', { state: { targetAttractionId: a._id } })}
                   className="w-full mb-4 py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
@@ -369,7 +399,7 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Panorama ko'rinishlari */}
+            {/* Panorama ko'rinishlari — faqat mavjud bo'lsa chiqadi */}
             {panoramas.length > 0 && (
               <Section title="Panorama ko'rinishlari" icon={<FiImage />}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -383,8 +413,8 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Atrofda nima bor */}
-            {a.thingsToSeeAround?.length > 0 && (
+            {/* Atrofda nima bor — faqat mavjud bo'lsa chiqadi */}
+            {a.thingsToSeeAround && a.thingsToSeeAround.length > 0 && (
               <Section title="Atrofda aylanishga arzigulik" icon={<FiNavigation />}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {a.thingsToSeeAround.map((t, i) => (
@@ -405,29 +435,29 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Atmosfera */}
+            {/* Atmosfera — faqat kiritilgan bo'lsa chiqadi */}
             {hasAtmosphere && (
               <Section title="Joy atmosferasi" icon={<FiFeather />}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {a.atmosphere.mood && (
+                  {a.atmosphere?.mood?.trim() && (
                     <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80">
                       <span className="text-xl shrink-0">🌿</span>
                       <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Kayfiyat</p><p className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.atmosphere.mood}</p></div>
                     </div>
                   )}
-                  {a.atmosphere.bestTimeOfDay && (
+                  {a.atmosphere?.bestTimeOfDay?.trim() && (
                     <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80">
                       <span className="text-xl shrink-0">🕐</span>
                       <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Eng yaxshi vaqt</p><p className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.atmosphere.bestTimeOfDay}</p></div>
                     </div>
                   )}
-                  {a.atmosphere.soundscape && (
+                  {a.atmosphere?.soundscape?.trim() && (
                     <div className="flex items-start gap-3 bg-indigo-50/50 dark:bg-indigo-950/10 rounded-xl p-4 border border-indigo-100/30 dark:border-indigo-900/10 md:col-span-2">
                       <span className="text-xl shrink-0">🎵</span>
                       <div><p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider mb-1">Ovoz manzarasi</p><p className="text-sm italic font-medium text-slate-700 dark:text-slate-300 leading-relaxed">"{a.atmosphere.soundscape}"</p></div>
                     </div>
                   )}
-                  {a.atmosphere.localTip && (
+                  {a.atmosphere?.localTip?.trim() && (
                     <div className="flex items-start gap-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-xl p-4 border border-amber-100/30 dark:border-amber-900/10 md:col-span-2">
                       <span className="text-xl shrink-0">💡</span>
                       <div><p className="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">Mahalliy maslahat</p><p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{a.atmosphere.localTip}</p></div>
@@ -437,23 +467,23 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Pik va tinch vaqtlar */}
+            {/* Pik va tinch vaqtlar — faqat kiritilgan bo'lsa chiqadi */}
             {hasPeak && (
               <Section title="Qachon borish qulay" icon={<FiCalendar />}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {a.peakInfo.quiet && (
+                  {a.peakInfo?.quiet?.trim() && (
                     <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
                       <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-1.5">😌 Tinch vaqt</p>
                       <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.peakInfo.quiet}</p>
                     </div>
                   )}
-                  {a.peakInfo.peak && (
+                  {a.peakInfo?.peak?.trim() && (
                     <div className="p-4 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30">
                       <p className="text-[10px] font-black text-rose-500 uppercase tracking-wider mb-1.5">🔥 Gavjum (pik) vaqt</p>
                       <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.peakInfo.peak}</p>
                     </div>
                   )}
-                  {a.peakInfo.note && (
+                  {a.peakInfo?.note?.trim() && (
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 sm:col-span-2">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">ℹ️ Izoh</p>
                       <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{a.peakInfo.note}</p>
@@ -463,7 +493,7 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Inklyuziv qulayliklar */}
+            {/* Inklyuziv qulayliklar — faqat kamida 1 ta belgilangan bo'lsa chiqadi */}
             {accFeatures.length > 0 && (
               <Section title="Inklyuziv qulayliklar" icon={<MdAccessible />}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700 dark:text-slate-300 font-medium">
@@ -476,7 +506,7 @@ const AttractionDetail = () => {
               </Section>
             )}
 
-            {/* Reviews */}
+            {/* Sayohatchilar fikri (Reviews) */}
             <Section title="Sayohatchilar fikri" icon={<FiStar />}>
               <form onSubmit={submitReview} className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-3">
@@ -525,16 +555,16 @@ const AttractionDetail = () => {
             </Section>
           </div>
 
-          {/* Right column: nearby stays */}
-          <div className="w-full lg:w-[340px] shrink-0">
-            <div className="lg:sticky lg:top-6">
-              <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-                <h3 className="font-black text-slate-800 dark:text-white mb-1 text-[11px] uppercase tracking-wider flex items-center gap-2">
-                  <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin tunash joylari
-                </h3>
-                <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari. Eng yaqini avtomatik tanlangan.</p>
+          {/* Right column: nearby stays — faqat yaqin mehmonxona bo'lsa chiqadi */}
+          {nearby.length > 0 && (
+            <div className="w-full lg:w-[340px] shrink-0">
+              <div className="lg:sticky lg:top-6">
+                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
+                  <h3 className="font-black text-slate-800 dark:text-white mb-1 text-[11px] uppercase tracking-wider flex items-center gap-2">
+                    <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin tunash joylari
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari.</p>
 
-                {nearby.length > 0 ? (
                   <div className="space-y-4">
                     <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5">
                       <div className="flex items-center justify-between gap-2 mb-2 px-1">
@@ -566,12 +596,10 @@ const AttractionDetail = () => {
                       </>
                     )}
                   </div>
-                ) : (
-                  <p className="text-sm text-slate-400 italic py-4 text-center">Yaqin atrofda tunash maskani topilmadi.</p>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* 360 Video Modal */}

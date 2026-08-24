@@ -5,9 +5,10 @@
 import api from './api';
 
 export const DISTRICTS = [
-  'Navoiy shahri', 'Zarafshon shahri', "G'ozg'on shahri",
-  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
-  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+  'Navoiy shahri',
+  'Nurota',
+  'Xatirchi',
+  'Qiziltepa'
 ];
 
 // Public

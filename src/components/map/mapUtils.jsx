@@ -3,26 +3,77 @@ import { FiStar } from 'react-icons/fi';
 
 export const NAVOIY_CENTER = [40.0842, 65.3791];
 
-export const CATEGORY_COLORS = { hotel: '#6366f1', resort: '#10b981', hostel: '#f59e0b', attraction: '#d97706' };
-export const CATEGORY_LABELS = { attraction: 'Tarixiy joy', hotel: 'Mehmonxona', resort: 'Dam olish maskani', hostel: 'Hostel' };
+export const CATEGORY_COLORS = {
+  // Hotels
+  hotel: '#6366f1',       // indigo
+  resort: '#10b981',      // emerald
+  hostel: '#f59e0b',      // amber
+  guesthouse: '#f97316',  // orange
+  boutique: '#ec4899',    // pink
+
+  // Attractions & Civic
+  tarixiy: '#d97706',        // amber (qadimiy obida)
+  ziyoratgoh: '#059669',     // emerald (ziyoratgoh)
+  madaniy: '#7c3aed',        // violet (madaniy / muzey)
+  tabiat: '#16a34a',         // green (tabiat / sharshara)
+  istirohat_bogi: '#0284c7', // sky (bog' / ko'l)
+  kasalxona: '#dc2626',      // red (kasalxona / tez yordam)
+  iib: '#2563eb',            // blue (xavfsiz turizm / IIB)
+  hokimiyat: '#475569',      // slate (hokimiyat)
+  transport: '#0891b2',      // cyan (aeroport / vokzal)
+  bozor: '#ea580c',          // orange (dehqon bozori)
+  supermarket: '#e11d48',    // rose (supermarket)
+  mall: '#9333ea',           // purple (mall)
+  boshqa: '#64748b',
+  attraction: '#d97706',
+};
+
+export const CATEGORY_LABELS = {
+  hotel: 'Mehmonxona',
+  resort: 'Dam olish maskani',
+  hostel: 'Hostel',
+  guesthouse: 'Mehmon uyi / O\'tov',
+  boutique: 'Boutique Hotel',
+
+  tarixiy: 'Tarixiy obida',
+  ziyoratgoh: 'Ziyoratgoh',
+  madaniy: 'Madaniy maskan / Muzey',
+  tabiat: 'Tabiat / Tog\' / Sharshara',
+  istirohat_bogi: 'Istirohat bog\'i',
+  kasalxona: 'Shoshilinch tibbiy yordam',
+  iib: 'IIB / Xavfsiz turizm',
+  hokimiyat: 'Hokimiyat',
+  transport: 'Vokzal / Aeroport',
+  bozor: 'Dehqon bozori',
+  supermarket: 'Supermarket',
+  mall: 'Savdo majmuasi (Mall)',
+  boshqa: 'Obyekt',
+  attraction: 'Tarixiy joy',
+};
 
 // Tarixiy/diqqatga sazovor joy markeri rangi (amber)
 export const ATTRACTION_COLOR = '#d97706';
 
-// Tur (kategoriya) filtri — tarixiy joylar ham qo'shildi
+// Tur (kategoriya) filtri — barcha toifalar
 export const FILTERS = [
-  { key: 'all',        label: 'Barchasi' },
-  { key: 'attraction', label: 'Tarixiy joylar' },
-  { key: 'hotel',      label: 'Mehmonxonalar' },
-  { key: 'resort',     label: 'Dam olish maskanlari' },
-  { key: 'hostel',     label: 'Hostellar' },
+  { key: 'all',            label: 'Barchasi' },
+  { key: 'tarixiy',        label: 'Tarixiy obidalar' },
+  { key: 'ziyoratgoh',     label: 'Ziyoratgohlar' },
+  { key: 'tabiat',         label: 'Tabiat va Daralar' },
+  { key: 'istirohat_bogi', label: 'Bog\'lar va Ko\'llar' },
+  { key: 'hotel',          label: 'Mehmonxonalar' },
+  { key: 'resort',         label: 'Resort va Plyajlar' },
+  { key: 'kasalxona',      label: 'Kasalxonalar' },
+  { key: 'iib',            label: 'IIB / Xavfsizlik' },
+  { key: 'transport',      label: 'Vokzal va Aeroport' },
+  { key: 'savdo',          label: 'Bozor va Supermarketlar' },
 ];
 
-// Navoiy viloyatining barcha tuman va shaharlari
 export const DISTRICTS = [
-  'Navoiy shahri', 'Zarafshon shahri', 'G\'ozg\'on shahri',
-  'Karmana', 'Qiziltepa', 'Navbahor', 'Nurota', 
-  'Tomdi', 'Uchquduq', 'Xatirchi', 'Konimex'
+  'Navoiy shahri',
+  'Nurota',
+  'Xatirchi',
+  'Qiziltepa'
 ];
 export const DISTRICT_FILTERS = [
   { key: 'all', label: 'Barcha tumanlar' },

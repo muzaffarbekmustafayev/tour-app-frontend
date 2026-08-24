@@ -35,8 +35,7 @@ const AppContent = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-
-        <div className="flex-grow scroll-smooth main-container relative">
+        <div className="flex-grow scroll-smooth main-container relative md:pl-[260px] lg:pl-[280px] pb-24 md:pb-8 w-full min-w-0 overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<SearchPage />} />
