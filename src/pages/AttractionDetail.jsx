@@ -193,30 +193,12 @@ const AttractionDetail = () => {
               </p>
             )}
 
-            {/* Aloqa va Ish vaqti */}
-            {(a.phone || a.workingHours || a.emergencyContact) && (
+            {/* Ish vaqti */}
+            {a.workingHours && (
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {a.phone && (
-                  <a
-                    href={`tel:${a.phone}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200/80 dark:border-blue-800 hover:bg-blue-100 transition-colors"
-                  >
-                    <span>📞 {a.phone}</span>
-                  </a>
-                )}
-                {a.workingHours && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/80 dark:border-emerald-800">
-                    <FiClock className="w-3.5 h-3.5 text-emerald-500" /> {a.workingHours}
-                  </span>
-                )}
-                {a.emergencyContact && (
-                  <a
-                    href={`tel:${a.emergencyContact}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200/80 dark:border-rose-800 hover:bg-rose-100 transition-colors"
-                  >
-                    <span>🚨 Tezkor: {a.emergencyContact}</span>
-                  </a>
-                )}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/80 dark:border-emerald-800">
+                  <FiClock className="w-3.5 h-3.5 text-emerald-500" /> {a.workingHours}
+                </span>
               </div>
             )}
           </div>
