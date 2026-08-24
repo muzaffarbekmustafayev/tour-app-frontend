@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
+import { CATEGORY_META } from '../components/AttractionCard';
 
 const Section = ({ title, icon, children, className = '' }) => (
   <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-5 md:p-7 rounded-2xl mb-5 shadow-sm ${className}`}>
@@ -266,9 +267,18 @@ const AttractionDetail = () => {
               )}
 
               <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2.5 py-1 rounded-full uppercase tracking-wider bg-amber-600/90 backdrop-blur-sm">
-                  <LuLandmark className="w-3 h-3" /> Tarixiy obida
-                </span>
+                {(() => {
+                  const catMeta = CATEGORY_META[a.category] || CATEGORY_META.tarixiy;
+                  const CatIcon = catMeta.icon;
+                  return (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-[11px] font-black text-white px-3 py-1 rounded-full uppercase tracking-wider shadow-sm backdrop-blur-sm"
+                      style={{ background: catMeta.color }}
+                    >
+                      <CatIcon className="w-3.5 h-3.5" /> {catMeta.label}
+                    </span>
+                  );
+                })()}
                 {hasVideo && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
                     <FiPlayCircle className="w-3 h-3" /> Video
@@ -311,8 +321,8 @@ const AttractionDetail = () => {
                 <FiPlayCircle className="w-6 h-6" />
               </span>
               <span className="text-left min-w-0">
-                <span className="block font-black text-[15px] leading-tight">Virtual sayohat (360°)</span>
-                <span className="block text-[12px] text-white/80 truncate">Bormasdan turib joyni his eting</span>
+                <span className="block font-black text-[15px] leading-tight">Video lavha</span>
+                <span className="block text-[12px] text-white/80 truncate">Joy haqida video ko'rish</span>
               </span>
             </span>
             <span className="flex items-center gap-2 shrink-0">

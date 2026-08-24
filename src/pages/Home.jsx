@@ -85,7 +85,7 @@ const Home = () => {
     <>
       <Helmet>
         <title>Tourism for Everyone — Navoiy Viloyati Inklyuziv Turizm Markazi</title>
-        <meta name="description" content="Navoiy shahri, Nurota, Xatirchi va Qiziltepa tumanlaridagi barcha tarixiy obidalar, ziyoratgohlar, shifoxonalar, 360° virtual turlar va mehmonxonalar." />
+        <meta name="description" content="Navoiy shahri, Nurota, Xatirchi va Qiziltepa tumanlaridagi barcha tarixiy obidalar, ziyoratgohlar, shifoxonalar va qulay mehmonxonalar." />
       </Helmet>
 
       <div className="pb-24 md:pb-12 overflow-x-hidden">
@@ -134,7 +134,7 @@ const Home = () => {
 
             {/* Subtitle */}
             <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 max-w-2xl font-medium mb-8 leading-relaxed animate-fade-in">
-              Navoiy shahri, Nurota, Xatirchi va Qiziltepadagi tarixiy obidalar, 360° virtual sayohatlar, qulay mehmonxonalar va shoshilinch xizmatlar.
+              Navoiy shahri, Nurota, Xatirchi va Qiziltepadagi tarixiy obidalar, ziyoratgohlar, qulay mehmonxonalar va shoshilinch xizmatlar.
             </p>
 
             {/* Search Bar Shortcut */}
@@ -164,8 +164,8 @@ const Home = () => {
                 <span>4 ta Asosiy Hudud</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <FiPlayCircle className="text-indigo-400" />
-                <span>360° Virtual Turlar</span>
+                <FiMapPin className="text-indigo-400" />
+                <span>70+ Sayyohlik Maskani</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
                 <LuHospital className="text-rose-400" />

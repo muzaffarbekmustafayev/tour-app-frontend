@@ -7,8 +7,8 @@ import { fetchAttractions, DISTRICTS } from '../services/attractions';
 import {
   FiMapPin, FiFrown, FiAlertTriangle, FiSearch, FiLayers, FiX
 } from 'react-icons/fi';
-import { LuLandmark, LuHospital, LuStore, LuTrees } from 'react-icons/lu';
-import { FaMosque, FaMountain, FaShoppingBag, FaShieldAlt } from 'react-icons/fa';
+import { LuLandmark, LuHospital, LuTrees, LuBuilding2 } from 'react-icons/lu';
+import { FaMosque, FaMountain, FaShoppingBag, FaShieldAlt, FaTheaterMasks, FaPlane } from 'react-icons/fa';
 
 const Skeleton = () => (
   <div className="glass-panel overflow-hidden animate-pulse rounded-2xl">
@@ -25,9 +25,13 @@ const CATEGORY_TABS = [
   { key: 'all', label: 'Barchasi', icon: FiLayers },
   { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark },
   { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque },
+  { key: 'madaniy', label: 'Madaniy Markazlar', icon: FaTheaterMasks },
   { key: 'tabiat', label: 'Tabiat & Tog\'lar', icon: FaMountain },
+  { key: 'istirohat_bogi', label: 'Bog\'lar & Ko\'llar', icon: LuTrees },
   { key: 'kasalxona', label: 'Kasalxona (24/7)', icon: LuHospital },
   { key: 'iib', label: 'IIB / Xavfsizlik', icon: FaShieldAlt },
+  { key: 'hokimiyat', label: 'Hokimiyat', icon: LuBuilding2 },
+  { key: 'transport', label: 'Vokzal & Aeroport', icon: FaPlane },
   { key: 'savdo', label: 'Bozor & Savdo', icon: FaShoppingBag },
 ];
 

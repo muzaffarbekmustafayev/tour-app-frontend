@@ -76,7 +76,7 @@ const MapAttractionPanel = ({
                   <LuLandmark className="w-3 h-3" /> {attraction.category ? (attraction.category.charAt(0).toUpperCase() + attraction.category.slice(1).replace('_', ' ')) : 'Tarixiy joy'}
                 </span>
                 {attraction.video360?.url && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-black/40 text-white"><FiPlayCircle className="w-3 h-3" /> 360°</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-black/40 text-white"><FiPlayCircle className="w-3 h-3" /> Video</span>
                 )}
               </div>
               <h2 className="text-[20px] font-bold leading-tight mb-1">{attraction.name}</h2>

@@ -2,26 +2,26 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle, FiSun, FiNavigation, FiPhone, FiClock } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
-import { LuLandmark, LuHospital, LuStore, LuTrees } from 'react-icons/lu';
-import { FaMosque, FaMountain, FaShoppingBag, FaShieldAlt } from 'react-icons/fa';
+import { LuLandmark, LuHospital, LuTrees, LuBuilding2 } from 'react-icons/lu';
+import { FaMosque, FaMountain, FaShoppingBag, FaShoppingCart, FaShoppingBasket, FaShieldAlt, FaTheaterMasks, FaPlane } from 'react-icons/fa';
 import { imgSrc } from '../utils/media';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800';
 
-const CATEGORY_META = {
-  tarixiy:        { label: 'Tarixiy Obida',  icon: LuLandmark,   color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
-  ziyoratgoh:     { label: 'Ziyoratgoh',     icon: FaMosque,     color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
-  madaniy:        { label: 'Madaniy Markaz', icon: LuLandmark,   color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },
-  tabiat:         { label: 'Tabiat & Tog\'', icon: FaMountain,   color: '#059669', bg: 'rgba(5,150,105,0.15)' },
-  istirohat_bogi: { label: 'Istirohat Bog\'i',icon: LuTrees,      color: '#06b6d4', bg: 'rgba(6,182,212,0.15)' },
-  kasalxona:      { label: 'Kasalxona (24/7)',icon: LuHospital,   color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
-  iib:            { label: 'IIB / Xavfsizlik',icon: FaShieldAlt,  color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
-  hokimiyat:      { label: 'Hokimiyat',      icon: LuLandmark,   color: '#6366f1', bg: 'rgba(99,102,241,0.15)' },
-  transport:      { label: 'Transport',      icon: LuStore,      color: '#0284c7', bg: 'rgba(2,132,199,0.15)' },
-  bozor:          { label: 'Dehqon Bozori',  icon: LuStore,      color: '#d97706', bg: 'rgba(217,119,6,0.15)' },
-  supermarket:    { label: 'Supermarket',    icon: FaShoppingBag,color: '#2563eb', bg: 'rgba(37,99,235,0.15)' },
-  mall:           { label: 'Savdo Majmuasi', icon: FaShoppingBag,color: '#7c3aed', bg: 'rgba(124,58,237,0.15)' },
-  boshqa:         { label: 'Obyekt',         icon: LuLandmark,   color: '#64748b', bg: 'rgba(100,116,139,0.15)' },
+export const CATEGORY_META = {
+  tarixiy:        { label: 'Tarixiy Obida',  icon: LuLandmark,         color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
+  ziyoratgoh:     { label: 'Ziyoratgoh',     icon: FaMosque,           color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
+  madaniy:        { label: 'Madaniy Markaz', icon: FaTheaterMasks,     color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },
+  tabiat:         { label: 'Tabiat & Tog\'', icon: FaMountain,         color: '#059669', bg: 'rgba(5,150,105,0.15)' },
+  istirohat_bogi: { label: 'Istirohat Bog\'i',icon: LuTrees,            color: '#06b6d4', bg: 'rgba(6,182,212,0.15)' },
+  kasalxona:      { label: 'Kasalxona (24/7)',icon: LuHospital,         color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+  iib:            { label: 'IIB / Xavfsizlik',icon: FaShieldAlt,        color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
+  hokimiyat:      { label: 'Hokimiyat',      icon: LuBuilding2,        color: '#6366f1', bg: 'rgba(99,102,241,0.15)' },
+  transport:      { label: 'Transport',      icon: FaPlane,            color: '#0284c7', bg: 'rgba(2,132,199,0.15)' },
+  bozor:          { label: 'Dehqon Bozori',  icon: FaShoppingBasket,   color: '#d97706', bg: 'rgba(217,119,6,0.15)' },
+  supermarket:    { label: 'Supermarket',    icon: FaShoppingCart,     color: '#2563eb', bg: 'rgba(37,99,235,0.15)' },
+  mall:           { label: 'Savdo Majmuasi', icon: FaShoppingBag,      color: '#7c3aed', bg: 'rgba(124,58,237,0.15)' },
+  boshqa:         { label: 'Obyekt',         icon: LuLandmark,         color: '#64748b', bg: 'rgba(100,116,139,0.15)' },
 };
 
 const AttractionCard = ({ attraction: a }) => {
@@ -64,7 +64,7 @@ const AttractionCard = ({ attraction: a }) => {
               className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white shadow-sm"
               style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)' }}
             >
-              <FiPlayCircle className="w-3.5 h-3.5 animate-pulse" /> 360° VR
+              <FiPlayCircle className="w-3.5 h-3.5" /> Video
             </div>
           )}
         </div>
