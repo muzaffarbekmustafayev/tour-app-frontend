@@ -1402,6 +1402,21 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Universal Confirm Dialog */}
+          <ConfirmDialog
+            open={!!confirmState}
+            title={confirmState?.title}
+            message={confirmState?.message}
+            loading={!!actionLoading}
+            onConfirm={async () => {
+              if (confirmState?.onConfirm) {
+                await confirmState.onConfirm();
+              }
+              setConfirmState(null);
+            }}
+            onClose={() => setConfirmState(null)}
+          />
+
         </main>
       </div>
     </div>
