@@ -43,7 +43,7 @@ const Attractions = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const queryPayload = {};
+      const queryPayload = { limit: 100 };
       if (district) queryPayload.district = district;
       if (category && category !== 'all') queryPayload.category = category;
       const res = await fetchAttractions(queryPayload);

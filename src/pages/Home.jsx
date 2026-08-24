@@ -63,7 +63,7 @@ const Home = () => {
   const fetchHotels = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await api.get('/hotels');
+      const res = await api.get('/hotels?limit=100');
       setHotels(Array.isArray(res.data) ? res.data : (res.data.data || []));
     } catch {
       setError('Mehmonxonalarni yuklashda xatolik yuz berdi.');
