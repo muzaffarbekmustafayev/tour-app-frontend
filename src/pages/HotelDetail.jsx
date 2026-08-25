@@ -68,6 +68,15 @@ const StarRow = ({ rating, size = 'sm' }) => (
   </div>
 );
 
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11)
+    ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`
+    : url;
+};
+
 const HotelDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -844,15 +853,6 @@ const HotelDetail = () => {
     </div>
     </>
   );
-};
-
-const getYouTubeEmbedUrl = (url) => {
-  if (!url) return '';
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11)
-    ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`
-    : url;
 };
 
 export default HotelDetail;

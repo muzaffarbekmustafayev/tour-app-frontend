@@ -193,7 +193,7 @@ const HotelsMap = () => {
     setRouteCoords([]);
     setRouteInfo(null);
 
-    const useFallback = (msg) => {
+    const applyFallback = (msg) => {
       const fallbackPos = NAVOIY_CENTER;
       setUserPos(fallbackPos);
       setGeoLoading(false);
@@ -204,12 +204,12 @@ const HotelsMap = () => {
     };
 
     if (!navigator.geolocation) {
-      useFallback('Qurilmangizda geolokatsiya xizmati aniqlanmadi.');
+      applyFallback('Qurilmangizda geolokatsiya xizmati aniqlanmadi.');
       return;
     }
 
     const timer = setTimeout(
-      () => useFallback("Hozirgi joylashuvingizni aniqlab bo'lmadi. Navoiy shahar markazidan yo'nalish chizilmoqda."),
+      () => applyFallback("Hozirgi joylashuvingizni aniqlab bo'lmadi. Navoiy shahar markazidan yo'nalish chizilmoqda."),
       8000 // Increased timeout for better GPS lock
     );
 
@@ -226,7 +226,7 @@ const HotelsMap = () => {
       },
       (err) => {
         clearTimeout(timer);
-        useFallback(
+        applyFallback(
           err.code === 1 ? "Joylashuvni aniqlashga ruxsat berilmadi. Navoiy shahar markazidan yo'nalish chizilmoqda." : "Hozirgi joylashuvingizni aniqlab bo'lmadi. Navoiy shahar markazidan yo'nalish chizilmoqda."
         );
       },

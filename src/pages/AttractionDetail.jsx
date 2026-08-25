@@ -19,7 +19,7 @@ import 'swiper/css/free-mode';
 import {
   FiMapPin, FiStar, FiFrown, FiPlayCircle, FiX, FiClock, FiFeather,
   FiAward, FiSun, FiNavigation, FiHome, FiCheck, FiCalendar, FiDollarSign,
-  FiImage, FiExternalLink, FiMaximize2,
+  FiImage, FiExternalLink, FiMaximize2, FiChevronRight,
 } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
