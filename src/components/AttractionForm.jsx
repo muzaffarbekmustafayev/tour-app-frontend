@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import MapPickerModal from './MapPickerModal';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_ATTRACTION } from '../utils/media';
+import SafeImage from './SafeImage';
 import { parseLocationInput } from '../utils/geo';
 import {
   FiEdit3, FiMapPin, FiImage, FiPlus, FiTrash2, FiX, FiVideo,
@@ -377,7 +378,13 @@ const AttractionForm = ({ form, setForm }) => {
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {(form.images || []).filter(Boolean).map((img, idx) => (
                   <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group">
-                    <img src={imgSrc(img)} alt={`rasm-${idx}`} className="w-full h-full object-cover" />
+                    <SafeImage
+                      src={img}
+                      fallback={FALLBACK_ATTRACTION}
+                      alt={`rasm-${idx}`}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover"
+                    />
                     <button
                       type="button"
                       onClick={() => removeImage(idx)}

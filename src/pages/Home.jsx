@@ -1,18 +1,14 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import HotelCard from '../components/HotelCard';
 import AttractionCard from '../components/AttractionCard';
-import AIRecommendations from '../components/AIRecommendations';
 import AccessibilityBanner from '../components/AccessibilityBanner';
-import api from '../services/api';
 import { fetchAttractions } from '../services/attractions';
-import { imgSrc } from '../utils/media';
 import heroBg from '../assets/hero.png';
 import {
   FiSearch, FiMapPin, FiMap, FiStar,
-  FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
-  FiArrowRight, FiChevronRight, FiPlayCircle, FiShield, FiCompass
+  FiArrowRight, FiChevronRight, FiPlayCircle, FiShield, FiCompass,
+  FiFilter, FiLayers, FiCheck
 } from 'react-icons/fi';
 import { LuLandmark, LuHospital, LuStore, LuBuilding2, LuTrees } from 'react-icons/lu';
 import { FaMosque, FaMountain, FaShoppingBag, FaTheaterMasks } from 'react-icons/fa';
@@ -30,27 +26,29 @@ const Skeleton = () => (
 );
 
 const DISTRICT_INFO = [
-  { name: 'Navoiy shahri', desc: 'Zamonaviy shahar, parklar, savdo majmualari', color: '#6366f1', gradient: 'from-indigo-500/20 to-indigo-600/10' },
-  { name: 'Nurota', desc: 'Chashma, Nur qal\'asi, ziyorat va tabiat', color: '#f59e0b', gradient: 'from-amber-500/20 to-amber-600/10' },
-  { name: 'Xatirchi', desc: 'Qadimiy obidalar, ziyoratgohlar va bog\'lar', color: '#10b981', gradient: 'from-emerald-500/20 to-emerald-600/10' },
-  { name: 'Qiziltepa', desc: 'Raboti Malik, Sardoba va tarixiy meros', color: '#8b5cf6', gradient: 'from-violet-500/20 to-violet-600/10' },
+  { name: 'Navoiy shahri', desc: 'Zamonaviy shahar, teatrlar, istirohat bog\'lari va savdo majmualari', color: '#6366f1' },
+  { name: 'Nurota', desc: 'Nur qal\'asi, Chashma majmuasi, Nurota tog\'lari va qadimiy ziyoratgohlar', color: '#f59e0b' },
+  { name: 'Xatirchi', desc: 'Qadimiy obidalar, ziyoratgohlar, sharsharalar va yashil bog\'lar', color: '#10b981' },
+  { name: 'Qiziltepa', desc: 'Raboti Malik karvonsaroyi, Sardoba va qadimiy madaniy meros', color: '#8b5cf6' },
 ];
 
-const CATEGORY_QUICK_EXPLORER = [
-  { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark, color: '#f59e0b', to: '/attractions?category=tarixiy' },
-  { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque, color: '#10b981', to: '/attractions?category=ziyoratgoh' },
-  { key: 'tabiat', label: 'Tabiat & Tog\'lar', icon: FaMountain, color: '#059669', to: '/attractions?category=tabiat' },
-  { key: 'istirohat_bogi', label: 'Bog\'lar & Dam Olish', icon: LuTrees, color: '#0284c7', to: '/attractions?category=istirohat_bogi' },
-  { key: 'madaniy', label: 'Muzey & Teatr', icon: FaTheaterMasks, color: '#8b5cf6', to: '/attractions?category=madaniy' },
-  { key: 'hotels', label: 'Mehmonxonalar', icon: LuBuilding2, color: '#6366f1', to: '/search' },
-  { key: 'savdo', label: 'Bozor & Savdo', icon: FaShoppingBag, color: '#ec4899', to: '/attractions?category=savdo' },
+const ATTRACTION_CATEGORIES = [
+  { key: 'all', label: 'Barcha Joylar', icon: FiLayers, color: '#6366f1' },
+  { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark, color: '#f59e0b' },
+  { key: 'madaniy', label: 'Teatr & Muzeylar', icon: FaTheaterMasks, color: '#8b5cf6' },
+  { key: 'istirohat_bogi', label: 'Istirohat Bog\'lari', icon: LuTrees, color: '#0284c7' },
+  { key: 'tabiat', label: 'Tog\' & Sharsharalar', icon: FaMountain, color: '#059669' },
+  { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque, color: '#10b981' },
+  { key: 'savdo', label: 'Savdo Majmualari', icon: FaShoppingBag, color: '#ec4899' },
 ];
 
 const Home = () => {
-  const [hotels, setHotels] = useState([]);
   const [attractions, setAttractions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showTop, setShowTop] = useState(false);
   const navigate = useNavigate();
 
@@ -60,43 +58,63 @@ const Home = () => {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const fetchHotels = useCallback(async () => {
-    setLoading(true); setError(null);
-    try {
-      const res = await api.get('/hotels?limit=100');
-      setHotels(Array.isArray(res.data) ? res.data : (res.data.data || []));
-    } catch {
-      setError('Mehmonxonalarni yuklashda xatolik yuz berdi.');
-      setHotels([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchHotels(); }, [fetchHotels]);
-
   useEffect(() => {
+    setLoading(true);
     fetchAttractions({ limit: 100 })
-      .then((res) => setAttractions(Array.isArray(res) ? res : (res.data || [])))
-      .catch(() => setAttractions([]));
+      .then((res) => {
+        const list = Array.isArray(res) ? res : (res.data || []);
+        setAttractions(list);
+      })
+      .catch(() => {
+        setError("Ma'lumotlarni yuklashda xatolik yuz berdi.");
+        setAttractions([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  // Filtered attractions
+  const filteredAttractions = useMemo(() => {
+    return attractions.filter((a) => {
+      // Category filter
+      if (selectedCategory !== 'all') {
+        if (selectedCategory === 'savdo') {
+          if (!['bozor', 'supermarket', 'mall', 'savdo'].includes(a.category)) return false;
+        } else if (a.category !== selectedCategory) {
+          return false;
+        }
+      }
+      // District filter
+      if (selectedDistrict !== 'all' && a.district !== selectedDistrict) {
+        return false;
+      }
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = a.name?.toLowerCase().includes(q);
+        const matchesDist = a.district?.toLowerCase().includes(q);
+        const matchesDesc = (a.descriptionShort || a.description || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesDist && !matchesDesc) return false;
+      }
+      return true;
+    });
+  }, [attractions, selectedCategory, selectedDistrict, searchQuery]);
 
   return (
     <>
       <Helmet>
-        <title>Tourism for Everyone — Navoiy Viloyati Inklyuziv Turizm Markazi</title>
-        <meta name="description" content="Navoiy shahri, Nurota, Xatirchi va Qiziltepa tumanlaridagi barcha tarixiy obidalar, ziyoratgohlar, shifoxonalar va qulay mehmonxonalar." />
+        <title>Tourism for Everyone — Navoiy Tarixiy va Madaniy Joylar Portali</title>
+        <meta name="description" content="Navoiy shahri, Nurota, Xatirchi va Qiziltepadagi barcha tarixiy obidalar, teatrlar, istirohat bog'lari, tog' va sharsharalar hamda yaqin dam olish maskanlari." />
       </Helmet>
 
       <div className="pb-24 md:pb-12 overflow-x-hidden">
         {/* ══════════════════════════════════════════
-            1. HERO SECTION — PREMIUM NAVOIY VIBE
+            1. HERO SECTION — NAVOIY MADANIYAT VA MEROS
         ══════════════════════════════════════════ */}
-        <header className="relative w-full overflow-hidden min-h-[520px] sm:min-h-[600px] flex items-center justify-center">
+        <header className="relative w-full overflow-hidden min-h-[500px] sm:min-h-[580px] flex items-center justify-center">
           {/* Background Image */}
           <img
             src={heroBg}
-            alt="Navoiy viloyati"
+            alt="Navoiy viloyati obidalari"
             className="absolute inset-0 w-full h-full object-cover object-center transform scale-105"
             loading="eager"
           />
@@ -105,7 +123,7 @@ const Home = () => {
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(170deg, rgba(10,8,45,0.78) 0%, rgba(20,15,60,0.55) 45%, rgba(6,4,28,0.95) 100%)'
+              background: 'linear-gradient(170deg, rgba(10,8,45,0.82) 0%, rgba(20,15,60,0.6) 45%, rgba(6,4,28,0.96) 100%)'
             }}
           />
 
@@ -125,51 +143,59 @@ const Home = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-4 sm:mb-6 animate-fade-in">
-              Qadimiy Meros va Zamonaviy <br className="hidden sm:inline" />
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-4 sm:mb-5 animate-fade-in">
+              Qadimiy Meros, Madaniyat <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-violet-400 bg-clip-text text-transparent">
-                Dam Olish Maskani
+                va Tabiat Maskani
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 max-w-2xl font-medium mb-8 leading-relaxed animate-fade-in">
-              Navoiy shahri, Nurota, Xatirchi va Qiziltepadagi tarixiy obidalar, ziyoratgohlar, qulay mehmonxonalar va shoshilinch xizmatlar.
+              Tarixiy obidalar, teatr va muzeylar, istirohat bog'lari, tog' va sharsharalar, ziyoratgohlar hamda savdo majmualari. Joy tafsilotlarida eng yaqin mehmonxonalar tavsiya etiladi.
             </p>
 
-            {/* Search Bar Shortcut */}
+            {/* Search Input Bar */}
             <div className="w-full max-w-xl animate-fade-in">
-              <div
-                onClick={() => navigate('/search')}
-                className="w-full flex items-center gap-3 p-2 sm:p-2.5 rounded-2xl bg-white/15 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/25 shadow-2xl cursor-pointer hover:bg-white/20 transition-all duration-200 active:scale-[0.99]"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <div className="w-full flex items-center gap-3 p-2 sm:p-2.5 rounded-2xl bg-white/15 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/25 shadow-2xl transition-all duration-200 focus-within:bg-white/25">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shrink-0">
                   <FiSearch className="w-4 h-4" />
                 </div>
-                <div className="text-left flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white/90 truncate">Obida, ziyoratgoh yoki mehmonxona qidirish...</p>
-                  <p className="text-[10px] text-white/60">Tuman, toifa yoki nomi bo'yicha</p>
-                </div>
-                <div className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl font-black text-xs transition-colors shrink-0 flex items-center gap-1.5">
-                  <span>Qidirish</span>
-                  <FiArrowRight className="w-3.5 h-3.5" />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Obida, teatr, bog' yoki tog' nomini izlang..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-white placeholder-white/60 text-xs sm:text-sm font-semibold outline-none border-none"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-colors shrink-0"
+                  >
+                    Tozalash
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Quick Live Stats Ticker */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-white/80 text-xs font-bold animate-fade-in">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <FiCompass className="text-amber-400" />
-                <span>4 ta Asosiy Hudud</span>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-white/85 text-xs font-bold animate-fade-in">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md">
+                <LuLandmark className="text-amber-400" />
+                <span>Tarixiy Obidalar</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <FiMapPin className="text-indigo-400" />
-                <span>70+ Sayyohlik Maskani</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md">
+                <FaTheaterMasks className="text-purple-300" />
+                <span>Teatr & Madaniyat</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <LuHospital className="text-rose-400" />
-                <span>24/7 Shoshilinch Xizmatlar</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md">
+                <LuTrees className="text-emerald-400" />
+                <span>Istirohat Bog'lari</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md">
+                <FaMountain className="text-teal-300" />
+                <span>Tog' & Sharsharalar</span>
               </div>
             </div>
           </div>
@@ -181,20 +207,28 @@ const Home = () => {
         {/* ══════════════════════════════════════════
             2. MAIN CONTENT WRAPPER
         ══════════════════════════════════════════ */}
-        <main className="px-4 max-w-7xl mx-auto space-y-12 sm:space-y-16 -mt-8 relative z-20">
+        <main className="px-4 max-w-7xl mx-auto space-y-10 sm:space-y-14 -mt-8 relative z-20">
 
           {/* ── 2.1. 4 TA ASOSIY HUDUD KARTALARI ── */}
           <section>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {DISTRICT_INFO.map((d) => {
-                const hCount = hotels.filter(h => (h.district || h.city) === d.name).length;
-                const aCount = attractions.filter(a => (a.district || a.city) === d.name).length;
+                const count = attractions.filter(a => (a.district || a.city) === d.name).length;
+                const isSelected = selectedDistrict === d.name;
                 return (
                   <button
                     key={d.name}
                     type="button"
-                    onClick={() => navigate(`/attractions?district=${encodeURIComponent(d.name)}`)}
-                    className="glass-panel p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 hover:shadow-lg active:scale-[0.98] border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between group"
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedDistrict('all');
+                      } else {
+                        setSelectedDistrict(d.name);
+                      }
+                    }}
+                    className={`glass-panel p-4 sm:p-5 rounded-2xl text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98] border flex flex-col justify-between group ${
+                      isSelected ? 'ring-2 ring-indigo-500 shadow-lg scale-[1.02]' : 'border-slate-200/80 dark:border-slate-800'
+                    }`}
                     style={{ borderTop: `4px solid ${d.color}` }}
                   >
                     <div>
@@ -202,14 +236,18 @@ const Home = () => {
                         <span className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-xs" style={{ background: d.color }}>
                           <FiMapPin className="w-4 h-4" />
                         </span>
-                        <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                        {isSelected ? (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-600 text-white">Tanlangan</span>
+                        ) : (
+                          <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                        )}
                       </div>
                       <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white mb-1">{d.name}</h3>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">{d.desc}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{d.desc}</p>
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      <span>{aCount > 0 ? `${aCount} ta maskan` : "Ko'rish"}</span>
-                      <span>{hCount > 0 ? `${hCount} hotel` : ''}</span>
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                      <span className="text-indigo-600 dark:text-indigo-400">{count > 0 ? `${count} ta maskan` : "Barcha joylar"}</span>
+                      <span>{isSelected ? "Barchasi" : "Filtrlash"}</span>
                     </div>
                   </button>
                 );
@@ -217,43 +255,75 @@ const Home = () => {
             </div>
           </section>
 
-          {/* ── 2.2. TOIFALAR BO'YICHA TEZKOR EXPLORER ── */}
-          <section className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
+          {/* ── 2.2. TOIFALAR BO'YICHA TEZKOR EXPLORER VA FILTR ── */}
+          <section className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
-                <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <FiCompass className="text-indigo-500" /> Sayohat va Hordiq Yo'nalishlari
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <FiCompass className="text-amber-500 w-5 h-5" /> Sayohat va Madaniyat Yo'nalishlari
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">Navoiy viloyatining sara obidalari, ziyoratgohlari va dam olish maskanlari</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Tarixiy obidalar, teatrlar, istirohat bog'lari, tog' va sharsharalar, savdo majmualari
+                </p>
               </div>
+
+              {(selectedCategory !== 'all' || selectedDistrict !== 'all' || searchQuery) && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedDistrict('all');
+                    setSearchQuery('');
+                  }}
+                  className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-100 transition-colors"
+                >
+                  Filtrlarni tozalash
+                </button>
+              )}
             </div>
 
+            {/* Category Buttons */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-              {CATEGORY_QUICK_EXPLORER.map((cat) => {
+              {ATTRACTION_CATEGORIES.map((cat) => {
                 const CatIcon = cat.icon;
+                const isActive = selectedCategory === cat.key;
+                const count = cat.key === 'all'
+                  ? attractions.length
+                  : cat.key === 'savdo'
+                    ? attractions.filter(a => ['bozor', 'supermarket', 'mall', 'savdo'].includes(a.category)).length
+                    : attractions.filter(a => a.category === cat.key).length;
+
                 return (
                   <button
                     key={cat.key}
                     type="button"
-                    onClick={() => navigate(cat.to)}
-                    className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200 active:scale-95 flex flex-col items-center text-center group"
+                    onClick={() => setSelectedCategory(cat.key)}
+                    className={`p-3.5 rounded-2xl border transition-all duration-200 flex flex-col items-center text-center group active:scale-95 ${
+                      isActive
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md scale-[1.02]'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 text-slate-800 dark:text-slate-200'
+                    }`}
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 shadow-xs transition-transform group-hover:scale-110"
-                      style={{ background: `${cat.color}15`, color: cat.color }}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 shadow-xs transition-transform group-hover:scale-110 ${
+                        isActive ? 'bg-white/20 text-white' : ''
+                      }`}
+                      style={!isActive ? { background: `${cat.color}15`, color: cat.color } : {}}
                     >
                       <CatIcon className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate w-full">{cat.label}</span>
+                    <span className="text-xs font-bold truncate w-full">{cat.label}</span>
+                    <span className={`text-[10px] mt-0.5 font-bold ${isActive ? 'text-white/80' : 'text-slate-400'}`}>
+                      {count} ta joy
+                    </span>
                   </button>
                 );
               })}
             </div>
 
-            {/* 2-darajali shoshilinch va ma'muriy xizmatlar (Kasalxona, IIB, Hokimiyat) */}
+            {/* Shoshilinch va Ma'muriy Xizmatlar */}
             <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2.5 text-xs">
               <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium flex items-center gap-1.5">
-                <FiShield className="text-indigo-500" /> Zarur bo'lganda shoshilinch xizmatlar:
+                <FiShield className="text-indigo-500" /> Zarur bo'lganda shoshilinch yordam:
               </span>
               <div className="flex flex-wrap items-center gap-1.5">
                 <button
@@ -281,7 +351,59 @@ const Home = () => {
             </div>
           </section>
 
-          {/* ── 2.3. INTERAKTIV 3D XARITA BANNERI ── */}
+          {/* ── 2.3. DIQQATGA SAZOVOR JOYLAR RO'YXATI ── */}
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <LuLandmark className="text-amber-500 w-6 h-6" /> Diqqatga Sazovor Maskanlar
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                  {selectedDistrict !== 'all' ? `${selectedDistrict} bo'yicha: ` : ''}
+                  {filteredAttractions.length} ta maskan topildi. Har bir joy ichida eng yaqin mehmonxonalar tavsiya etiladi.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/attractions')}
+                className="text-xs sm:text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 shrink-0"
+              >
+                Barchasini ko'rish ({attractions.length}) <FiChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} />)}
+              </div>
+            ) : filteredAttractions.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                {filteredAttractions.map((a) => (
+                  <AttractionCard key={a._id} attraction={a} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6">
+                <LuLandmark className="mx-auto w-12 h-12 mb-3 text-slate-300 dark:text-slate-600" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Mos joylar topilmadi</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+                  Tanlangan toifa yoki qidiruv so'rovi bo'yicha ma'lumot topilmadi. Boshqa toifani tanlab ko'ring.
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedDistrict('all');
+                    setSearchQuery('');
+                  }}
+                  className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold text-white"
+                >
+                  Filtrlarni tozalash
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* ── 2.4. INTERAKTIV 3D XARITA BANNERI ── */}
           <section>
             <div
               onClick={() => navigate('/map')}
@@ -297,9 +419,9 @@ const Home = () => {
                   </div>
                   <div>
                     <span className="text-[10.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Interaktiv Xarita</span>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">Navoiy Viloyatining Barcha Joylari Bir Xaritada</h3>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">Navoiy Viloyatining Barcha Maskanlari Xaritada</h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
-                      Obidalar, ziyoratgohlar, shifoxonalar va eng yaqin mehmonxonalarni 3D xaritada filtrlang va masofasini ko'ring.
+                      Obidalar, teatrlar, bog'lar, tog'lar va ularning atrofidagi eng yaqin mehmonxonalarni 3D xaritada ko'ring va marshrut tuzing.
                     </p>
                   </div>
                 </div>
@@ -312,84 +434,8 @@ const Home = () => {
             </div>
           </section>
 
-          {/* ── 2.4. DIQQATGA SAZOVOR JOYLAR VA 360° VR ── */}
-          {attractions.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <LuLandmark className="text-amber-500 w-6 h-6" /> Diqqatga Sazovor Obyektlar
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Tarixiy obidalar, ziyoratgohlar va tabiat maskanlari
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/attractions')}
-                  className="text-xs font-black text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
-                >
-                  Barchasini ko'rish ({attractions.length}) <FiChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {attractions.slice(0, 6).map((a) => (
-                  <AttractionCard key={a._id} attraction={a} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ── 2.5. INKLYUZIVLIK BANNERI & AI TAVSIYALAR ── */}
+          {/* ── 2.5. INKLYUZIVLIK BANNERI ── */}
           <AccessibilityBanner />
-          <AIRecommendations />
-
-          {/* ── 2.6. MASHHUR MEHMONXONALAR ── */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <FiTrendingUp className="text-rose-500 w-5 h-5" /> Qulay Mehmonxonalar & Turar Joylar
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Sayohat davomida qulay hordiq chiqarish uchun maskanlar
-                </p>
-              </div>
-              {!loading && hotels.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => navigate('/search')}
-                  className="text-xs font-black text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-                >
-                  Barchasi <FiChevronRight className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {error && (
-              <div className="rounded-2xl p-4 mb-6 flex items-start gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 text-rose-600">
-                <FiAlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-                <p className="text-sm font-bold">{error}</p>
-              </div>
-            )}
-
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {[1, 2, 3].map(i => <Skeleton key={i} />)}
-              </div>
-            ) : hotels.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {hotels.slice(0, 6).map(hotel => <HotelCard key={hotel._id} hotel={hotel} />)}
-              </div>
-            ) : !error ? (
-              <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-                <FiFrown className="mx-auto w-12 h-12 mb-3 text-slate-300 dark:text-slate-600" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Mehmonxonalar topilmadi</h3>
-                <p className="text-xs text-slate-400">Admin paneldan yangi mehmonxona qo'shishingiz mumkin.</p>
-              </div>
-            ) : null}
-          </section>
         </main>
 
         {/* Scroll To Top */}
@@ -399,7 +445,7 @@ const Home = () => {
             className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 bg-gradient-to-r from-indigo-600 to-violet-600"
             aria-label="Yuqoriga"
           >
-            <FiArrowUp className="w-5 h-5" strokeWidth={2.5} />
+            <FiChevronRight className="w-5 h-5 -rotate-90" />
           </button>
         )}
       </div>

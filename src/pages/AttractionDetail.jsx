@@ -6,7 +6,9 @@ import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import HotelCard from '../components/HotelCard';
 import { fetchAttraction, fetchNearbyStays, addAttractionReview } from '../services/attractions';
-import { imgSrc, resolveMediaUrl } from '../utils/media';
+import { imgSrc, resolveMediaUrl, FALLBACK_ATTRACTION } from '../utils/media';
+import SafeImage from '../components/SafeImage';
+import ImageLightboxModal from '../components/ImageLightboxModal';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -17,7 +19,7 @@ import 'swiper/css/free-mode';
 import {
   FiMapPin, FiStar, FiFrown, FiPlayCircle, FiX, FiClock, FiFeather,
   FiAward, FiSun, FiNavigation, FiHome, FiCheck, FiCalendar, FiDollarSign,
-  FiImage, FiExternalLink,
+  FiImage, FiExternalLink, FiMaximize2,
 } from 'react-icons/fi';
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark } from 'react-icons/lu';
@@ -62,10 +64,13 @@ const AttractionDetail = () => {
 
   const [a, setA] = useState(null);
   const [nearby, setNearby] = useState([]);
+  const [nearbyAttractions, setNearbyAttractions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [videoOpen, setVideoOpen] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -76,8 +81,11 @@ const AttractionDetail = () => {
       try {
         const data = await fetchAttraction(id);
         setA(data);
-        const near = await fetchNearbyStays(id);
-        setNearby(Array.isArray(near) ? near : (near.data || []));
+        const nearRes = await fetchNearbyStays(id);
+        const stays = Array.isArray(nearRes) ? nearRes : (nearRes.data || []);
+        const otherAttractions = nearRes.nearbyAttractions || [];
+        setNearby(stays);
+        setNearbyAttractions(otherAttractions);
       } catch {
         setError("Ma'lumotni yuklashda xatolik yuz berdi.");
       } finally {
@@ -114,7 +122,7 @@ const AttractionDetail = () => {
     </div>
   );
 
-  const images = (a.images?.length ? a.images : ['https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=1000']).filter(Boolean);
+  const images = (a.images?.length ? a.images : [FALLBACK_ATTRACTION]).filter(Boolean);
   const hasVideo = !!a.video360?.url;
   const accFeatures = Object.entries({
     wheelchairAccessible: 'Aravacha uchun qulay',
@@ -137,6 +145,11 @@ const AttractionDetail = () => {
   const panoramas = (a.panoramas || []).filter((p) => p && p.url);
   const addedDate = a.createdAt ? new Date(a.createdAt).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
   const hasAbout = a.descriptionShort || a.description || a.entryFee || a.bestSeason;
+
+  const openLightbox = (index) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   return (
     <>
@@ -216,8 +229,8 @@ const AttractionDetail = () => {
         </div>
 
         {/* ── Rasm karuseli (bir nechta rasm) ── */}
-        <div className="mb-4">
-          <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm gallery-swiper-main">
+        <div className="mb-6">
+          <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-md gallery-swiper-main group">
             <Swiper
               modules={[Navigation, Pagination, Thumbs, Autoplay]}
               navigation={{ nextEl: '.attr-next', prevEl: '.attr-prev' }}
@@ -225,30 +238,40 @@ const AttractionDetail = () => {
               thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
               onSlideChange={(s) => setActiveImg(s.realIndex)}
               loop={images.length > 1}
-              autoplay={{ delay: 2000, disableOnInteraction: false }}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
               className="w-full"
               style={{ '--swiper-pagination-color': '#f59e0b', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
             >
               {images.map((img, i) => (
                 <SwiperSlide key={i}>
-                  <img src={imgSrc(img)} alt={`${a.name} - ${i + 1}`}
-                    className="w-full h-[260px] sm:h-[420px] object-cover"
-                    loading={i === 0 ? 'eager' : 'lazy'} />
+                  <div
+                    onClick={() => openLightbox(i)}
+                    className="cursor-pointer relative w-full h-[260px] sm:h-[380px] md:h-[460px] overflow-hidden"
+                  >
+                    <SafeImage
+                      src={img}
+                      fallback={FALLBACK_ATTRACTION}
+                      alt={`${a.name} - ${i + 1}`}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover"
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
 
               {images.length > 1 && (
                 <>
-                  <button className="attr-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
-                    <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                  <button className="attr-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-lg border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-5 h-5 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
                   </button>
-                  <button className="attr-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
-                    <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  <button className="attr-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-lg border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-5 h-5 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </>
               )}
 
-              <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-2 pointer-events-none">
                 {(() => {
                   const catMeta = CATEGORY_META[a.category] || CATEGORY_META.tarixiy;
                   const CatIcon = catMeta.icon;
@@ -262,29 +285,39 @@ const AttractionDetail = () => {
                   );
                 })()}
                 {hasVideo && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
-                    <FiPlayCircle className="w-3 h-3" /> Video
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-white px-2.5 py-1 rounded-full bg-indigo-600/90 backdrop-blur-sm">
+                    <FiPlayCircle className="w-3.5 h-3.5" /> Video
                   </span>
                 )}
               </div>
 
-              {images.length > 1 && (
-                <div className="absolute top-3 right-3 z-10 bg-black/50 text-white text-[11px] font-bold px-2 py-1 rounded-full backdrop-blur-sm">
-                  {activeImg + 1} / {images.length}
-                </div>
-              )}
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); openLightbox(activeImg); }}
+                  className="bg-black/50 hover:bg-black/80 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm flex items-center gap-1 transition-colors"
+                >
+                  <FiMaximize2 className="w-3 h-3" />
+                  <span>Kattalashtirish</span>
+                </button>
+                {images.length > 1 && (
+                  <div className="bg-black/50 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                    {activeImg + 1} / {images.length}
+                  </div>
+                )}
+              </div>
             </Swiper>
           </div>
 
           {/* Thumbnail qatori */}
           {images.length > 1 && (
-            <div className="mt-2">
+            <div className="mt-3">
               <Swiper modules={[FreeMode, Thumbs]} onSwiper={setThumbsSwiper}
-                spaceBetween={6} slidesPerView="auto" freeMode watchSlidesProgress className="thumb-swiper">
+                spaceBetween={8} slidesPerView="auto" freeMode watchSlidesProgress className="thumb-swiper">
                 {images.map((img, i) => (
-                  <SwiperSlide key={i} style={{ width: '72px', height: '52px' }}>
-                    <div className={`w-full h-full rounded-md overflow-hidden cursor-pointer border-2 transition-all ${activeImg === i ? 'border-amber-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}>
-                      <img src={imgSrc(img)} alt={`thumb-${i}`} className="w-full h-full object-cover" loading="lazy" />
+                  <SwiperSlide key={i} style={{ width: '84px', height: '60px' }}>
+                    <div className={`w-full h-full rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${activeImg === i ? 'border-amber-500 opacity-100 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'}`}>
+                      <SafeImage src={img} fallback={FALLBACK_ATTRACTION} alt={`thumb-${i}`} className="w-full h-full" imgClassName="w-full h-full object-cover" loading="lazy" />
                     </div>
                   </SwiperSlide>
                 ))}
@@ -292,6 +325,17 @@ const AttractionDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Fullscreen Lightbox Modal */}
+        <ImageLightboxModal
+          images={images}
+          currentIndex={lightboxIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onChangeIndex={setLightboxIndex}
+          fallback={FALLBACK_ATTRACTION}
+          title={a.name}
+        />
 
         {/* ── Virtual sayohat video tugmasi ── */}
         {hasVideo && a.video360?.url?.trim() !== '' && (
@@ -397,7 +441,14 @@ const AttractionDetail = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {panoramas.map((p, i) => (
                     <figure key={i} className="rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/40">
-                      <img src={imgSrc(p.url)} alt={p.caption || `${a.name} panorama ${i + 1}`} className="w-full h-44 object-cover" loading="lazy" />
+                      <SafeImage
+                        src={p.url}
+                        fallback={FALLBACK_ATTRACTION}
+                        alt={p.caption || `${a.name} panorama ${i + 1}`}
+                        className="w-full h-44"
+                        imgClassName="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                       {p.caption && <figcaption className="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">{p.caption}</figcaption>}
                     </figure>
                   ))}
@@ -547,51 +598,110 @@ const AttractionDetail = () => {
             </Section>
           </div>
 
-          {/* Right column: nearby stays — faqat yaqin mehmonxona bo'lsa chiqadi */}
-          {nearby.length > 0 && (
-            <div className="w-full lg:w-[340px] shrink-0">
-              <div className="lg:sticky lg:top-6">
-                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-                  <h3 className="font-black text-slate-800 dark:text-white mb-1 text-[11px] uppercase tracking-wider flex items-center gap-2">
-                    <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin tunash joylari
-                  </h3>
-                  <p className="text-[11px] text-slate-500 mb-4">10 km radiusdagi dam olish maskanlari.</p>
+          {/* Right column: nearby stays & nearby attractions */}
+          <div className="w-full lg:w-[360px] shrink-0 space-y-6">
+            <div className="lg:sticky lg:top-6 space-y-6">
+              
+              {/* ── 1. Yaqin mehmonxonalar va tunash maskanlari ── */}
+              {nearby.length > 0 && (
+                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-black text-slate-800 dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                      <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin mehmonxonalar
+                    </h3>
+                    <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full">
+                      {nearby.length} ta maskan
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-4">Bu joyga eng yaqin dam olish maskanlari va mehmon uylari.</p>
 
                   <div className="space-y-4">
-                    <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5">
+                    {/* Eng yaqin mehmonxona */}
+                    <div className="rounded-2xl border-2 border-indigo-300 dark:border-indigo-700/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-3 shadow-xs">
                       <div className="flex items-center justify-between gap-2 mb-2 px-1">
                         <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-600 text-white flex items-center gap-1">
                           <FiStar className="w-2.5 h-2.5 fill-current" /> Eng yaqin
                         </span>
                         {Number.isFinite(nearby[0].distanceKm) && (
                           <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                            <FiNavigation className="w-3 h-3" /> {nearby[0].distanceKm} km
+                            <FiNavigation className="w-3 h-3" /> {nearby[0].distanceKm} km masofada
                           </span>
                         )}
                       </div>
                       <HotelCard hotel={nearby[0]} />
                     </div>
 
+                    {/* Boshqa yaqin mehmonxonalar */}
                     {nearby.length > 1 && (
                       <>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1 ml-1">Boshqa yaqin joylar</p>
-                        {nearby.slice(1).map((h) => (
-                          <div key={h._id}>
-                            <HotelCard hotel={h} />
-                            {Number.isFinite(h.distanceKm) && (
-                              <p className="text-[11px] font-bold text-indigo-500 mt-1.5 ml-1 flex items-center gap-1">
-                                <FiNavigation className="w-3 h-3" /> Taxminan {h.distanceKm} km uzoqlikda
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1 ml-1">Boshqa yaqin maskanlar</p>
+                        <div className="space-y-3">
+                          {nearby.slice(1).map((h) => (
+                            <div key={h._id} className="space-y-1">
+                              <HotelCard hotel={h} />
+                              {Number.isFinite(h.distanceKm) && (
+                                <p className="text-[11px] font-bold text-indigo-500 ml-1 flex items-center gap-1">
+                                  <FiNavigation className="w-3 h-3" /> Taxminan {h.distanceKm} km uzoqlikda
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </>
                     )}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* ── 2. Atrofdagi boshqa tarixiy va madaniy maskanlar ── */}
+              {nearbyAttractions.length > 0 && (
+                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+                  <h3 className="font-black text-slate-800 dark:text-white mb-1 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <LuLandmark className="text-amber-500 w-4 h-4 shrink-0" /> Atrofdagi boshqa joylar
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mb-3.5">Shu hududdagi boshqa diqqatga sazovor maskanlar.</p>
+
+                  <div className="space-y-2.5">
+                    {nearbyAttractions.map((na) => (
+                      <div
+                        key={na._id}
+                        onClick={() => {
+                          navigate(`/attraction/${na._id}`);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 border border-slate-100 dark:border-slate-800/80 cursor-pointer transition-all active:scale-[0.98] flex items-center gap-3 group"
+                      >
+                        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-slate-200 dark:bg-slate-700">
+                          <SafeImage
+                            src={na.images?.[0]}
+                            fallback={FALLBACK_ATTRACTION}
+                            alt={na.name}
+                            className="w-full h-full"
+                            imgClassName="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                            {na.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                            {na.district}
+                          </p>
+                          {Number.isFinite(na.distanceKm) && (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                              <FiNavigation className="w-2.5 h-2.5" /> {na.distanceKm} km masofada
+                            </span>
+                          )}
+                        </div>
+                        <FiChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-500 transition-colors shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
-          )}
+          </div>
         </div>
 
         {/* 360 Video Modal */}

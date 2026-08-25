@@ -8,7 +8,9 @@ import { ChatContext } from '../context/ChatContext';
 import BackButton from '../components/BackButton';
 import Loader from '../components/Loader';
 import ComingSoonModal from '../components/ComingSoonModal';
-import { resolveMediaUrl } from '../utils/media';
+import SafeImage from '../components/SafeImage';
+import ImageLightboxModal from '../components/ImageLightboxModal';
+import { resolveMediaUrl, imgSrc, FALLBACK_HOTEL } from '../utils/media';
 import { LuLandmark } from 'react-icons/lu';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, FreeMode, Autoplay } from 'swiper/modules';
@@ -22,7 +24,7 @@ import {
   FiBriefcase, FiMap, FiCheckCircle, FiShield, FiFrown,
   FiUsers, FiStar, FiCheck, FiPhone, FiMail,
   FiVolume2, FiX, FiCalendar, FiAward,
-  FiRotateCw, FiMaximize, FiExternalLink, FiFeather,
+  FiRotateCw, FiMaximize, FiMaximize2, FiExternalLink, FiFeather,
   FiSun, FiMusic, FiNavigation, FiMessageCircle
 } from 'react-icons/fi';
 import {
@@ -76,6 +78,8 @@ const HotelDetail = () => {
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState(null);
   const [activeImg, setActiveImg]       = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [reviewForm, setReviewForm]     = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting]     = useState(false);
@@ -362,7 +366,7 @@ const HotelDetail = () => {
         {/* ── Gallery (Swiper Carousel) ── */}
         <div className="mb-8">
           {/* Main Swiper */}
-          <div className="gallery-swiper-main relative rounded-xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm">
+          <div className="gallery-swiper-main relative rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-md group">
             <Swiper
               modules={[Navigation, Pagination, Thumbs, Autoplay]}
               navigation={{
@@ -373,32 +377,62 @@ const HotelDetail = () => {
               thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
               onSlideChange={(s) => setActiveImg(s.activeIndex)}
               loop={images.length > 1}
-              autoplay={{ delay: 2000, disableOnInteraction: false }}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
               className="w-full h-full"
-              style={{ '--swiper-pagination-color': '#2563eb', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
+              style={{ '--swiper-pagination-color': '#4f46e5', '--swiper-pagination-bullet-inactive-color': '#fff', '--swiper-pagination-bullet-inactive-opacity': '0.6' }}
             >
               {images.map((img, i) => (
                 <SwiperSlide key={i}>
-                  <img
-                    src={imgSrc(img)}
-                    alt={`${name} - ${i + 1}`}
-                    className="w-full h-full object-cover"
-                    loading={i === 0 ? 'eager' : 'lazy'}
-                  />
+                  <div
+                    onClick={() => {
+                      setLightboxIndex(i);
+                      setLightboxOpen(true);
+                    }}
+                    className="cursor-pointer relative w-full h-[260px] sm:h-[380px] md:h-[460px] overflow-hidden"
+                  >
+                    <SafeImage
+                      src={img}
+                      fallback={FALLBACK_HOTEL}
+                      alt={`${name} - ${i + 1}`}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover"
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
 
               {/* Nav buttons */}
-              <button className="gallery-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
-                <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
-              </button>
-              <button className="gallery-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-md border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
-                <svg className="w-4 h-4 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-              </button>
+              {images.length > 1 && (
+                <>
+                  <button className="gallery-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-lg border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-5 h-5 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                  </button>
+                  <button className="gallery-next absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center shadow-lg border border-gray-200 dark:border-slate-700 hover:bg-white transition-all active:scale-95">
+                    <svg className="w-5 h-5 text-gray-700 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </>
+              )}
 
-              {/* Rasm soni badge */}
-              <div className="absolute top-3 right-3 z-10 bg-black/50 text-white text-[11px] font-bold px-2 py-1 rounded-full backdrop-blur-sm">
-                {activeImg + 1} / {images.length}
+              {/* Rasm soni & Zoom badge */}
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex(activeImg);
+                    setLightboxOpen(true);
+                  }}
+                  className="bg-black/50 hover:bg-black/80 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm flex items-center gap-1 transition-colors"
+                >
+                  <FiMaximize2 className="w-3 h-3" />
+                  <span>Kattalashtirish</span>
+                </button>
+                {images.length > 1 && (
+                  <div className="bg-black/50 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                    {activeImg + 1} / {images.length}
+                  </div>
+                )}
               </div>
 
               {/* Media tugmalari */}
@@ -406,7 +440,7 @@ const HotelDetail = () => {
                 {hotel.videoTour?.url && (
                   <button
                     onClick={() => setVideoModal(true)}
-                    className="bg-white/90 text-blue-600 px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-lg border border-gray-200 transition active:scale-95 hover:bg-white"
+                    className="bg-white/90 text-blue-600 px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-lg border border-gray-200 transition active:scale-95 hover:bg-white backdrop-blur-md"
                   >
                     <FiRotateCw className="w-3.5 h-3.5" />
                     Video tur
@@ -418,7 +452,7 @@ const HotelDetail = () => {
                 {hotel.panoramas?.length > 0 && (
                   <button
                     onClick={() => setPanoramaModal(0)}
-                    className="bg-white/90 text-indigo-600 px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-lg border border-gray-200 transition active:scale-95 hover:bg-white"
+                    className="bg-white/90 text-indigo-600 px-3 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-lg border border-gray-200 transition active:scale-95 hover:bg-white backdrop-blur-md"
                   >
                     <FiMaximize className="w-3.5 h-3.5" />
                     Panoramik ko'rinish
@@ -430,20 +464,20 @@ const HotelDetail = () => {
 
           {/* Thumbnail Swiper — 2 va undan ko'p rasm bo'lsa ko'rsatiladi */}
           {images.length > 1 && (
-            <div className="mt-2">
+            <div className="mt-3">
               <Swiper
                 modules={[FreeMode, Thumbs]}
                 onSwiper={setThumbsSwiper}
-                spaceBetween={6}
+                spaceBetween={8}
                 slidesPerView="auto"
                 freeMode
                 watchSlidesProgress
                 className="thumb-swiper"
               >
                 {images.map((img, i) => (
-                  <SwiperSlide key={i} style={{ width: '72px', height: '52px' }}>
-                    <div className={`w-full h-full rounded-md overflow-hidden cursor-pointer border-2 transition-all ${activeImg === i ? 'border-blue-600 opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}>
-                      <img src={imgSrc(img)} alt={`thumb-${i}`} className="w-full h-full object-cover" loading="lazy" />
+                  <SwiperSlide key={i} style={{ width: '84px', height: '60px' }}>
+                    <div className={`w-full h-full rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${activeImg === i ? 'border-indigo-600 opacity-100 shadow-md' : 'border-transparent opacity-60 hover:opacity-90'}`}>
+                      <SafeImage src={img} fallback={FALLBACK_HOTEL} alt={`thumb-${i}`} className="w-full h-full" imgClassName="w-full h-full object-cover" loading="lazy" />
                     </div>
                   </SwiperSlide>
                 ))}
@@ -451,6 +485,17 @@ const HotelDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Fullscreen Lightbox Modal */}
+        <ImageLightboxModal
+          images={images}
+          currentIndex={lightboxIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onChangeIndex={setLightboxIndex}
+          fallback={FALLBACK_HOTEL}
+          title={name}
+        />
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Left Column ── */}
@@ -756,10 +801,13 @@ const HotelDetail = () => {
               <button onClick={() => setPanoramaModal(null)} className="absolute top-4 right-4 z-[510] bg-white/10 text-white w-10 h-10 rounded-full flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-all">
                 <FiX className="text-xl" />
               </button>
-              <img
-                src={imgSrc(hotel.panoramas[panoramaModal].url)}
+              <SafeImage
+                src={hotel.panoramas[panoramaModal].url}
+                fallback={FALLBACK_HOTEL}
                 alt={hotel.panoramas[panoramaModal].caption || '360° panorama'}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-[75vh] rounded-2xl overflow-hidden shadow-2xl"
+                imgClassName="max-w-full max-h-[75vh] object-contain"
+                hoverZoom={false}
               />
               {hotel.panoramas[panoramaModal].caption && (
                 <div className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs font-semibold px-4 py-2 rounded-full">
@@ -774,8 +822,8 @@ const HotelDetail = () => {
               <div className="flex gap-2 justify-center pb-6 px-4 overflow-x-auto" onClick={e => e.stopPropagation()}>
                 {hotel.panoramas.map((p, i) => (
                   <button key={i} onClick={() => setPanoramaModal(i)}
-                    className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === panoramaModal ? 'border-white scale-105' : 'border-white/20 opacity-60 hover:opacity-100'}`}>
-                    <img src={imgSrc(p.url)} alt={p.caption || `${i+1}-panorama`} className="w-full h-full object-cover" />
+                    className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === panoramaModal ? 'border-indigo-500 scale-105 shadow-md' : 'border-white/20 opacity-60 hover:opacity-100'}`}>
+                    <SafeImage src={p.url} fallback={FALLBACK_HOTEL} alt={p.caption || `${i+1}-panorama`} className="w-full h-full" imgClassName="w-full h-full object-cover" hoverZoom={false} />
                   </button>
                 ))}
               </div>

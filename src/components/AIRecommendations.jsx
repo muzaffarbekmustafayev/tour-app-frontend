@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuLandmark } from 'react-icons/lu';
 import api from '../services/api';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_HOTEL } from '../utils/media';
+import SafeImage from './SafeImage';
 
 const SkeletonCard = () => (
   <div className="animate-pulse bg-white/10 rounded-2xl p-4 border border-white/20">
@@ -55,9 +56,13 @@ const AIRecommendations = () => {
                 </span>
                 <span className="text-xs font-bold text-yellow-300">★ {hotel.rating?.toFixed(1) || '—'}</span>
               </div>
-              {hotel.images?.[0] && (
-                <img src={imgSrc(hotel.images[0])} alt={hotel.name} className="w-full h-20 object-cover rounded-xl mb-2 opacity-90" />
-              )}
+              <SafeImage
+                src={hotel.images?.[0] || hotel.image}
+                fallback={FALLBACK_HOTEL}
+                alt={hotel.name}
+                className="w-full h-24 rounded-xl mb-2.5 overflow-hidden"
+                imgClassName="w-full h-full object-cover"
+              />
               <h3 className="font-bold text-sm mb-1 line-clamp-1">{hotel.name}</h3>
               <p className="text-xs text-white/70 flex items-center gap-1 truncate">
                 <span className="truncate">{hotel.city}</span>

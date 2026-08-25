@@ -5,7 +5,8 @@ import BackButton from '../components/BackButton';
 import { FiHeart, FiTrash2, FiSearch, FiMapPin, FiStar, FiZap } from 'react-icons/fi';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_HOTEL } from '../utils/media';
+import SafeImage from '../components/SafeImage';
 
 /* ── Skeleton card ── */
 const SkeletonCard = () => (
@@ -23,36 +24,28 @@ const SkeletonCard = () => (
 const FavCard = ({ hotel, onRemove }) => {
   const name = (hotel.name || 'Nomi yo\'q');
 
-  const img = imgSrc(hotel.images?.[0]);
-
   return (
     <article
-      className="glass-panel overflow-hidden flex flex-col group relative"
-      style={{ borderRadius: '2rem', transition: 'all 0.35s cubic-bezier(0.25,1,0.5,1)' }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-8px)';
-        e.currentTarget.style.boxShadow = '0 24px 48px -12px rgba(99,102,241,0.22)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'var(--shadow)';
-      }}
+      className="glass-panel overflow-hidden flex flex-col group relative h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      style={{ borderRadius: '1.75rem' }}
     >
       {/* Image */}
-      <div className="relative overflow-hidden" style={{ height: 200 }}>
-        <img
-          src={img}
+      <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[4/3] w-full shrink-0">
+        <SafeImage
+          src={hotel.images?.[0] || hotel.image}
+          fallback={FALLBACK_HOTEL}
           alt={name}
-          className="w-full h-full object-cover"
+          className="w-full h-full"
+          imgClassName="w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="absolute inset-0"
+        <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,8,30,0.75) 100%)' }} />
 
         {/* Rating */}
         {hotel.rating > 0 && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl"
-            style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(10px)' }}>
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)' }}>
             <div className="w-5 h-5 rounded-md flex items-center justify-center bg-amber-400">
               <FiStar className="w-3 h-3 text-white fill-current" />
             </div>
@@ -62,7 +55,7 @@ const FavCard = ({ hotel, onRemove }) => {
 
         {/* Stars */}
         {hotel.stars > 0 && (
-          <div className="absolute top-3 left-3 flex items-center gap-0.5">
+          <div className="absolute top-3 left-3 flex items-center gap-0.5 pointer-events-none">
             {Array.from({ length: hotel.stars }).map((_, i) => (
               <FiStar key={i} className="w-3 h-3 text-amber-400 fill-current" style={{ fill: '#fbbf24' }} />
             ))}
@@ -152,7 +145,7 @@ const Favorites = () => {
   };
 
   return (
-    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen lg:pl-32">
+    <div className="pb-28 md:pb-8 pt-4 px-4 max-w-7xl mx-auto min-h-screen">
 
       {/* Header */}
       <div className="mb-8">
@@ -181,14 +174,14 @@ const Favorites = () => {
 
       {/* Loading skeletons */}
       {loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
         </div>
       )}
 
       {/* Cards */}
       {!loading && hotels.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {hotels.map(hotel => (
             <FavCard key={hotel._id} hotel={hotel} onRemove={handleRemove} />
           ))}

@@ -2,7 +2,8 @@ import React from 'react';
 import { FiMapPin, FiX, FiClock, FiNavigation, FiLoader, FiExternalLink, FiChevronRight, FiStar, FiImage } from 'react-icons/fi';
 import { CATEGORY_COLORS, CATEGORY_LABELS, Stars, fmtDist, fmtTime } from './mapUtils';
 import { calcAccessibilityScore, getScoreStyle } from '../../utils/accessibilityScore';
-import { resolveMediaUrl } from '../../utils/media';
+import { imgSrc, FALLBACK_HOTEL } from '../../utils/media';
+import SafeImage from '../SafeImage';
 
 const MapHotelPanel = ({
   selected,
@@ -28,9 +29,8 @@ const MapHotelPanel = ({
       <div
         className="fixed inset-0 z-[600]"
         style={{
-          background: 'rgba(15, 23, 42, 0.4)',
-          backdropFilter: 'blur(4px)',
           background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(4px)',
           opacity: showPanel ? 1 : 0,
           transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           pointerEvents: showPanel ? 'auto' : 'none',
@@ -40,13 +40,13 @@ const MapHotelPanel = ({
 
       {/* ── Bottom Sheet / Floating Card ── */}
       <div
-        className="fixed left-0 right-0 bottom-0 md:left-1/2 md:-translate-x-1/2 md:bottom-6 md:w-[420px] z-[650] overflow-hidden flex flex-col md:rounded-2xl bg-white dark:bg-slate-900 md:shadow-xl md:border md:border-slate-200 dark:border-slate-800"
+        className="fixed left-0 right-0 bottom-0 md:left-1/2 md:-translate-x-1/2 md:bottom-6 md:w-[440px] z-[650] overflow-hidden flex flex-col md:rounded-3xl bg-white dark:bg-slate-900 md:shadow-2xl md:border md:border-slate-200/80 dark:border-slate-800"
         style={{
-          borderTopLeftRadius: '1.5rem',
-          borderTopRightRadius: '1.5rem',
+          borderTopLeftRadius: '1.75rem',
+          borderTopRightRadius: '1.75rem',
           borderTop: '1px solid var(--border)',
           maxHeight: '85dvh',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+          boxShadow: '0 -4px 25px rgba(0,0,0,0.15)',
           transform: showPanel ? 'translateY(0)' : 'translateY(120%)',
           transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
@@ -61,19 +61,16 @@ const MapHotelPanel = ({
 
           {/* ── Header Image ── */}
           <div className="relative w-full h-[180px] sm:h-[220px] shrink-0 bg-slate-200 dark:bg-slate-800">
-            {selected.images?.length > 0 || selected.image ? (
-              <img
-                src={resolveMediaUrl(selected.images?.[0] || selected.image)}
-                alt={selected.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                <FiImage className="w-8 h-8 opacity-50" />
-              </div>
-            )}
+            <SafeImage
+              src={selected.images?.[0] || selected.image}
+              fallback={FALLBACK_HOTEL}
+              alt={selected.name}
+              className="w-full h-full"
+              imgClassName="w-full h-full object-cover"
+              loading="eager"
+            />
             {/* Soft gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
             {/* Close button inside image */}
             <button

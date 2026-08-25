@@ -4,9 +4,8 @@ import { FiMapPin, FiStar, FiArrowRight, FiPlayCircle, FiSun, FiNavigation, FiPh
 import { MdAccessible } from 'react-icons/md';
 import { LuLandmark, LuHospital, LuTrees, LuBuilding2 } from 'react-icons/lu';
 import { FaMosque, FaMountain, FaShoppingBag, FaShoppingCart, FaShoppingBasket, FaShieldAlt, FaTheaterMasks, FaPlane } from 'react-icons/fa';
-import { imgSrc } from '../utils/media';
-
-const FALLBACK = 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&q=80&w=800';
+import { imgSrc, FALLBACK_ATTRACTION } from '../utils/media';
+import SafeImage from './SafeImage';
 
 export const CATEGORY_META = {
   tarixiy:        { label: 'Tarixiy Obida',  icon: LuLandmark,         color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
@@ -35,23 +34,27 @@ const AttractionCard = ({ attraction: a }) => {
   const CatIcon = catMeta.icon;
 
   return (
-    <article className="premium-card group relative flex flex-col h-full overflow-hidden transition-all duration-300" aria-label={`${name} obyekt kartochkasi`}>
+    <article
+      className="premium-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      aria-label={`${name} obyekt kartochkasi`}
+    >
       {/* ── Image Header ── */}
-      <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[4/3] w-full">
-        <div className="absolute inset-0 shimmer" aria-hidden="true" />
-        <img
-          src={imgSrc(a.images?.[0], FALLBACK)}
+      <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[4/3] w-full shrink-0">
+        <SafeImage
+          src={a.images?.[0]}
+          fallback={FALLBACK_ATTRACTION}
           alt={`${name}`}
-          className="w-full h-full object-cover relative z-10"
+          className="w-full h-full"
+          imgClassName="w-full h-full object-cover"
           loading="lazy"
         />
         <div
-          className="absolute inset-0 z-20"
+          className="absolute inset-0 z-20 pointer-events-none"
           style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 40%, rgba(0,0,0,0.75) 100%)' }}
         />
 
         {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 z-30 flex flex-wrap items-center gap-1.5">
+        <div className="absolute top-2.5 left-2.5 z-30 flex flex-wrap items-center gap-1.5 pointer-events-none">
           <div
             className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-black text-white shadow-sm"
             style={{ background: catMeta.color, backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}
@@ -70,10 +73,10 @@ const AttractionCard = ({ attraction: a }) => {
         </div>
 
         {/* Bottom District & Rating */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between">
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between pointer-events-none">
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl"
-            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.12)' }}
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)' }}
           >
             <FiMapPin className="w-3 h-3 text-rose-400" />
             <span className="text-xs font-black text-white">{a.district}</span>
@@ -82,7 +85,7 @@ const AttractionCard = ({ attraction: a }) => {
           {a.rating > 0 && (
             <div
               className="flex items-center gap-1 px-2.5 py-1 rounded-xl"
-              style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.12)' }}
+              style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               <FiStar className="w-3 h-3 text-amber-400 fill-current" />
               <span className="text-xs font-black text-white">{a.rating?.toFixed?.(1) ?? a.rating}</span>
@@ -136,10 +139,12 @@ const AttractionCard = ({ attraction: a }) => {
         <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
           <Link
             to={`/attraction/${a._id}`}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-200 active:scale-95 shadow-xs"
+            className="w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-200 active:scale-95 shadow-xs group/btn"
           >
-            <span>Batafsil ma'lumot</span>
-            <FiArrowRight className="w-3.5 h-3.5" />
+            <span className="flex items-center gap-1.5">
+              <span>Batafsil & Yaqin maskanlar</span>
+            </span>
+            <FiArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       </div>

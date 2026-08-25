@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { FiEdit3, FiMapPin, FiNavigation, FiMap, FiClock, FiImage, FiFile, FiRotateCw, FiBell, FiCheck, FiCommand, FiLock, FiHome, FiPlus, FiTrash2, FiEye, FiX, FiLink } from 'react-icons/fi';
 import api from '../services/api';
 import MapPickerModal from './MapPickerModal';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_HOTEL } from '../utils/media';
+import SafeImage from './SafeImage';
 import { parseLocationInput } from '../utils/geo';
 
 // Oilaviy/madaniy muhitga mos qulayliklar (spa, bar kabilar olib tashlandi)
@@ -667,7 +668,13 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
                   {(form.images || []).filter(Boolean).map((img, idx) => (
                     <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-fade-in">
-                      <img src={imgSrc(img)} alt={`Rasm ${idx + 1}`} className="w-full h-full object-cover" />
+                      <SafeImage
+                        src={img}
+                        fallback={FALLBACK_HOTEL}
+                        alt={`Rasm ${idx + 1}`}
+                        className="w-full h-full"
+                        imgClassName="w-full h-full object-cover"
+                      />
                       {idx === 0 && (
                         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black shadow">MUQOVA</span>
                       )}

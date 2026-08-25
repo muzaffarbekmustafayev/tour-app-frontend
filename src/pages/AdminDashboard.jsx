@@ -29,7 +29,8 @@ import {
   CIVIC_SERVICE_TEMPLATES, 
   HOTEL_TEMPLATES 
 } from '../utils/datasetTemplates';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_ATTRACTION, FALLBACK_HOTEL } from '../utils/media';
+import SafeImage from '../components/SafeImage';
 
 // React-icons xaritasi
 export const CATEGORY_ICON_MAP = {
@@ -951,12 +952,14 @@ const AdminDashboard = () => {
                       <div>
                         {/* Image Header */}
                         <div className="w-full h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 overflow-hidden relative">
-                          {a.images && a.images.length > 0 ? (
-                            <img src={imgSrc(a.images[0])} alt={a.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><LuLandmark className="w-10 h-10" /></div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                          <SafeImage
+                            src={a.images?.[0]}
+                            fallback={FALLBACK_ATTRACTION}
+                            alt={a.name}
+                            className="w-full h-full"
+                            imgClassName="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none" />
                           <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
                             <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-black/40 backdrop-blur-md text-white border border-white/10">
                               {a.district}
@@ -1113,12 +1116,14 @@ const AdminDashboard = () => {
                     <div>
                       {/* Image Header */}
                       <div className="w-full h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 overflow-hidden relative">
-                        {h.images && h.images.length > 0 ? (
-                          <img src={imgSrc(h.images[0])} alt={h.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><FiHome className="w-10 h-10" /></div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                        <SafeImage
+                          src={h.images?.[0] || h.image}
+                          fallback={FALLBACK_HOTEL}
+                          alt={h.name}
+                          className="w-full h-full"
+                          imgClassName="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none" />
                         <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
                           <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-black/40 backdrop-blur-md text-white border border-white/10">
                             {h.district || h.city || 'Navoiy'}

@@ -204,17 +204,17 @@ const Attractions = () => {
 
         {/* Results Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <Skeleton key={i} />)}
           </div>
         ) : filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             {filteredItems.map((a) => (
               <AttractionCard key={a._id} attraction={a} />
             ))}
           </div>
         ) : !error ? (
-          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6">
             <FiFrown className="mx-auto w-14 h-14 mb-3 text-slate-300 dark:text-slate-600" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Mos obyekt topilmadi</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">

@@ -7,7 +7,8 @@ import {
 } from 'react-icons/md';
 import { TbWheelchair, TbEar, TbBraille, TbHandStop } from 'react-icons/tb';
 import { calcAccessibilityScore, getScoreStyle } from '../utils/accessibilityScore';
-import { imgSrc } from '../utils/media';
+import { imgSrc, FALLBACK_HOTEL } from '../utils/media';
+import SafeImage from './SafeImage';
 
 const HotelCard = ({ hotel }) => {
   const { user, favorites, toggleFavorite } = useContext(AuthContext);
@@ -64,7 +65,7 @@ const HotelCard = ({ hotel }) => {
 
   return (
     <article
-      className="premium-card group relative flex flex-col"
+      className="premium-card group relative flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
       aria-label={`${name} mehmonxonasi`}
       aria-describedby={srText ? `sr-${hotel._id}` : undefined}
     >
@@ -72,29 +73,31 @@ const HotelCard = ({ hotel }) => {
         <p id={`sr-${hotel._id}`} className="sr-only">{srText}</p>
       )}
       {/* ── Image ── */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: '4/3', minHeight: 0 }}>
-        {/* Skeleton */}
-        <div className="absolute inset-0 shimmer" aria-hidden="true" />
-        <img
-          src={imgSrc(hotel.image || hotel.images?.[0])}
+      <div className="relative overflow-hidden aspect-[16/10] sm:aspect-[4/3] w-full shrink-0">
+        <SafeImage
+          src={hotel.image || hotel.images?.[0]}
+          fallback={FALLBACK_HOTEL}
           alt={`${name} mehmonxonasi`}
-          className="w-full h-full object-cover relative z-10"
+          className="w-full h-full"
+          imgClassName="w-full h-full object-cover"
           loading="lazy"
         />
         {/* Gradient */}
-        <div className="absolute inset-0 z-20"
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 40%, rgba(0,0,0,0.65) 100%)' }} />
+        <div
+          className="absolute inset-0 z-20 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 40%, rgba(0,0,0,0.75) 100%)' }}
+        />
 
         {/* Top-left badges */}
-        <div className="absolute top-2.5 left-2.5 z-30 flex flex-col gap-1.5">
+        <div className="absolute top-2.5 left-2.5 z-30 flex flex-col gap-1.5 pointer-events-none">
           {accessCount > 0 && (
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
-              style={{ background: 'rgba(79,70,229,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              style={{ background: 'rgba(79,70,229,0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)' }}>
               <MdAccessible className="w-3 h-3" />
               {accessCount} qulaylik
             </div>
           )}
-          {/* Reja 6: Accessibility skori badge */}
+          {/* Accessibility skori badge */}
           {accScore > 0 && (
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
@@ -113,7 +116,7 @@ const HotelCard = ({ hotel }) => {
             aria-pressed={isFav}
             className="absolute top-2.5 right-2.5 z-30 w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{
-              background: isFav ? '#ef4444' : 'rgba(255,255,255,0.2)',
+              background: isFav ? '#ef4444' : 'rgba(0,0,0,0.4)',
               backdropFilter: 'blur(12px)',
               border: `1px solid ${isFav ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.3)'}`,
               color: 'white',
@@ -124,16 +127,16 @@ const HotelCard = ({ hotel }) => {
         )}
 
         {/* Bottom row: rating */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between">
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between pointer-events-none">
           {hotel.rating > 0 && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl"
-              style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)' }}>
               <div className="w-4 h-4 rounded flex items-center justify-center" style={{ background: '#f59e0b' }}>
                 <FiStar className="w-2.5 h-2.5 text-white fill-current" />
               </div>
               <span className="text-sm font-black text-white">{hotel.rating?.toFixed?.(1)}</span>
               {hotel.reviewsCount > 0 && (
-                <span className="text-[10px] font-medium text-white/70">({hotel.reviewsCount})</span>
+                <span className="text-[10px] font-medium text-white/80">({hotel.reviewsCount})</span>
               )}
             </div>
           )}
