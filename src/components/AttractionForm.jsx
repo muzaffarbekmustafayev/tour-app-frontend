@@ -375,22 +375,32 @@ const AttractionForm = ({ form, setForm }) => {
             </div>
 
             {(form.images || []).filter(Boolean).length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {(form.images || []).filter(Boolean).map((img, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                  <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 group shadow-xs bg-slate-100 dark:bg-slate-800">
                     <SafeImage
                       src={img}
                       fallback={FALLBACK_ATTRACTION}
                       alt={`rasm-${idx}`}
                       className="w-full h-full"
                       imgClassName="w-full h-full object-cover"
+                      hoverZoom={false}
                     />
+                    {idx === 0 && (
+                      <span className="absolute top-2 left-2 z-30 px-2 py-0.5 rounded-md bg-amber-600 text-white text-[10px] font-black shadow-md">
+                        MUQOVA
+                      </span>
+                    )}
                     <button
                       type="button"
-                      onClick={() => removeImage(idx)}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeImage(idx);
+                      }}
+                      title="Rasmni o'chirish"
+                      className="absolute top-2 right-2 z-30 w-8 h-8 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-all active:scale-90 hover:scale-105"
                     >
-                      <FiX className="w-3.5 h-3.5" />
+                      <FiTrash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}

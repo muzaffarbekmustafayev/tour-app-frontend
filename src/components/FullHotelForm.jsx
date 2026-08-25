@@ -667,35 +667,44 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
               {(form.images || []).filter(Boolean).length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
                   {(form.images || []).filter(Boolean).map((img, idx) => (
-                    <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-fade-in">
+                    <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-fade-in shadow-xs">
                       <SafeImage
                         src={img}
                         fallback={FALLBACK_HOTEL}
                         alt={`Rasm ${idx + 1}`}
                         className="w-full h-full"
                         imgClassName="w-full h-full object-cover"
+                        hoverZoom={false}
                       />
                       {idx === 0 && (
-                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black shadow">MUQOVA</span>
+                        <span className="absolute top-2 left-2 z-30 px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[10px] font-black shadow-md">
+                          MUQOVA
+                        </span>
                       )}
-                      <div className="absolute top-2 right-2 flex items-center gap-1.5 transition-all">
+                      <div className="absolute top-2 right-2 z-30 flex items-center gap-1.5 transition-all">
                         {idx !== 0 && (
                           <button
                             type="button"
-                            onClick={() => setCoverImage(idx)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCoverImage(idx);
+                            }}
                             title="Muqova qilish"
-                            className="w-7 h-7 rounded-lg bg-slate-900/80 hover:bg-indigo-600 text-white flex items-center justify-center shadow-md"
+                            className="w-8 h-8 rounded-xl bg-slate-900/85 hover:bg-indigo-600 text-white flex items-center justify-center shadow-lg transition-all active:scale-90 hover:scale-105"
                           >
-                            <FiCheck className="w-3.5 h-3.5" />
+                            <FiCheck className="w-4 h-4" />
                           </button>
                         )}
                         <button
                           type="button"
-                          onClick={() => removeImage(idx)}
-                          title="O'chirish"
-                          className="w-7 h-7 rounded-lg bg-rose-500/90 hover:bg-rose-600 text-white flex items-center justify-center shadow-md"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeImage(idx);
+                          }}
+                          title="Rasmni o'chirish"
+                          className="w-8 h-8 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-all active:scale-90 hover:scale-105"
                         >
-                          <FiTrash2 className="w-3.5 h-3.5" />
+                          <FiTrash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

@@ -52,7 +52,7 @@ const SafeImage = ({
           setHasError(true);
           handleImageError(e, fallback);
         }}
-        className={`w-full h-full object-cover relative z-10 transition-all duration-500 ${
+        className={`w-full h-full object-cover transition-all duration-500 ${
           isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'
         } ${hoverZoom ? 'group-hover:scale-105' : ''} ${imgClassName}`}
         {...props}
