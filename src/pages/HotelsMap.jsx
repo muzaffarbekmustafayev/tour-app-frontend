@@ -60,7 +60,7 @@ const HotelsMap = () => {
         const list = Array.isArray(res.data) ? res.data : (res.data.data || res.data.hotels || []);
         return list.filter(coordOk);
       }).catch(() => []),
-      api.get('/attractions?limit=100').then((res) => {
+      api.get('/attractions?limit=200&includeUtility=true').then((res) => {
         const list = Array.isArray(res.data) ? res.data : (res.data.data || []);
         // Tarixiy joyning location'i geo'dan ham kelishi mumkin — normallashtiramiz
         return list.filter(coordOk).map((a) => ({

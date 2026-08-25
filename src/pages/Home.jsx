@@ -14,8 +14,8 @@ import {
   FiTrendingUp, FiFrown, FiAlertTriangle, FiArrowUp,
   FiArrowRight, FiChevronRight, FiPlayCircle, FiShield, FiCompass
 } from 'react-icons/fi';
-import { LuLandmark, LuHospital, LuStore, LuBuilding2 } from 'react-icons/lu';
-import { FaMosque, FaMountain, FaShoppingBag } from 'react-icons/fa';
+import { LuLandmark, LuHospital, LuStore, LuBuilding2, LuTrees } from 'react-icons/lu';
+import { FaMosque, FaMountain, FaShoppingBag, FaTheaterMasks } from 'react-icons/fa';
 
 /* ── Skeleton ── */
 const Skeleton = () => (
@@ -40,10 +40,10 @@ const CATEGORY_QUICK_EXPLORER = [
   { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark, color: '#f59e0b', to: '/attractions?category=tarixiy' },
   { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque, color: '#10b981', to: '/attractions?category=ziyoratgoh' },
   { key: 'tabiat', label: 'Tabiat & Tog\'lar', icon: FaMountain, color: '#059669', to: '/attractions?category=tabiat' },
+  { key: 'istirohat_bogi', label: 'Bog\'lar & Dam Olish', icon: LuTrees, color: '#0284c7', to: '/attractions?category=istirohat_bogi' },
+  { key: 'madaniy', label: 'Muzey & Teatr', icon: FaTheaterMasks, color: '#8b5cf6', to: '/attractions?category=madaniy' },
   { key: 'hotels', label: 'Mehmonxonalar', icon: LuBuilding2, color: '#6366f1', to: '/search' },
-  { key: 'kasalxona', label: 'Kasalxona (24/7)', icon: LuHospital, color: '#ef4444', to: '/attractions?category=kasalxona' },
-  { key: 'iib', label: 'IIB / Xavfsizlik', icon: FiShield, color: '#3b82f6', to: '/attractions?category=iib' },
-  { key: 'savdo', label: 'Bozor & Supermarket', icon: FaShoppingBag, color: '#ec4899', to: '/attractions?category=savdo' },
+  { key: 'savdo', label: 'Bozor & Savdo', icon: FaShoppingBag, color: '#ec4899', to: '/attractions?category=savdo' },
 ];
 
 const Home = () => {
@@ -222,9 +222,9 @@ const Home = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <FiCompass className="text-indigo-500" /> Qulay Yo'nalish Bo'yicha Qidiruv
+                  <FiCompass className="text-indigo-500" /> Sayohat va Hordiq Yo'nalishlari
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">O'zingizga kerakli turdagi obyektlarni bir bosishda toping</p>
+                <p className="text-xs text-slate-400 mt-0.5">Navoiy viloyatining sara obidalari, ziyoratgohlari va dam olish maskanlari</p>
               </div>
             </div>
 
@@ -248,6 +248,36 @@ const Home = () => {
                   </button>
                 );
               })}
+            </div>
+
+            {/* 2-darajali shoshilinch va ma'muriy xizmatlar (Kasalxona, IIB, Hokimiyat) */}
+            <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+              <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium flex items-center gap-1.5">
+                <FiShield className="text-indigo-500" /> Zarur bo'lganda shoshilinch xizmatlar:
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => navigate('/attractions?category=kasalxona')}
+                  className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1"
+                >
+                  <LuHospital className="w-3.5 h-3.5" /> Kasalxona (103)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/attractions?category=iib')}
+                  className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40 text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1"
+                >
+                  <FiShield className="w-3.5 h-3.5" /> IIB / Xavfsizlik (102)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/attractions?category=hokimiyat')}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1"
+                >
+                  <LuBuilding2 className="w-3.5 h-3.5" /> Hokimiyat & DXM
+                </button>
+              </div>
             </div>
           </section>
 

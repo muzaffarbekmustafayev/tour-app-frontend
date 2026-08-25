@@ -22,17 +22,17 @@ const Skeleton = () => (
 );
 
 const CATEGORY_TABS = [
-  { key: 'all', label: 'Barchasi', icon: FiLayers },
+  { key: 'all', label: 'Barchasi (Sayohat & Hordiq)', icon: FiLayers },
   { key: 'tarixiy', label: 'Tarixiy Obidalar', icon: LuLandmark },
   { key: 'ziyoratgoh', label: 'Ziyoratgohlar', icon: FaMosque },
-  { key: 'madaniy', label: 'Madaniy Markazlar', icon: FaTheaterMasks },
   { key: 'tabiat', label: 'Tabiat & Tog\'lar', icon: FaMountain },
   { key: 'istirohat_bogi', label: 'Bog\'lar & Ko\'llar', icon: LuTrees },
+  { key: 'madaniy', label: 'Madaniy Markazlar', icon: FaTheaterMasks },
+  { key: 'savdo', label: 'Bozor & Savdo', icon: FaShoppingBag },
   { key: 'kasalxona', label: 'Kasalxona (24/7)', icon: LuHospital },
   { key: 'iib', label: 'IIB / Xavfsizlik', icon: FaShieldAlt },
-  { key: 'hokimiyat', label: 'Hokimiyat', icon: LuBuilding2 },
+  { key: 'hokimiyat', label: 'Hokimiyat & DXM', icon: LuBuilding2 },
   { key: 'transport', label: 'Vokzal & Aeroport', icon: FaPlane },
-  { key: 'savdo', label: 'Bozor & Savdo', icon: FaShoppingBag },
 ];
 
 const Attractions = () => {
@@ -44,12 +44,13 @@ const Attractions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (search = '') => {
     setLoading(true); setError(null);
     try {
       const queryPayload = { limit: 100 };
       if (district) queryPayload.district = district;
       if (category && category !== 'all') queryPayload.category = category;
+      if (search.trim()) queryPayload.search = search.trim();
       const res = await fetchAttractions(queryPayload);
       setItems(Array.isArray(res) ? res : (res.data || []));
     } catch {
@@ -60,7 +61,12 @@ const Attractions = () => {
     }
   }, [district, category]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      load(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [load, searchQuery]);
 
   const setDistrict = (d) => {
     if (d) params.set('district', d); else params.delete('district');

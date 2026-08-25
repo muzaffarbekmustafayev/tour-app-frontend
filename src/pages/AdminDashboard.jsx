@@ -184,7 +184,7 @@ const AdminDashboard = () => {
           api.get('/admin/statistics'),
           api.get('/admin/users'),
           api.get('/admin/hotels'),
-          fetchAttractions({ limit: 100 }),
+          fetchAttractions({ limit: 300, includeUtility: true }),
         ]);
         setStats(statsRes.data);
         setUsers(usersRes.data);
