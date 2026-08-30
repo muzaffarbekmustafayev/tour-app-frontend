@@ -35,7 +35,7 @@ const AppContent = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-        <div className="flex-grow scroll-smooth main-container relative md:pl-[260px] lg:pl-[280px] pb-24 md:pb-8 w-full min-w-0 overflow-x-hidden">
+        <div className="flex-grow scroll-smooth main-container relative md:pl-[260px] lg:pl-[280px] pb-28 md:pb-8 w-full min-w-0 overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<SearchPage />} />
@@ -52,9 +52,9 @@ const AppContent = () => {
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
             <Route path="*" element={
               <div className="flex flex-col items-center justify-center min-h-[70vh]">
-                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">404</h1>
-                <p className="text-gray-500 mb-6">Sahifa topilmadi</p>
-                <Link to="/" className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition">Bosh sahifaga qaytish</Link>
+                <h1 className="text-5xl font-extrabold text-slate-900 dark:text-white mb-4 animate-slide-up">404</h1>
+                <p className="text-slate-500 mb-8 animate-fade-in text-lg">Kechirasiz, bu sahifa topilmadi</p>
+                <Link to="/" className="bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-primary-hover hover:shadow-glow transition-all active:scale-95 animate-scale-in">Bosh sahifaga qaytish</Link>
               </div>
             } />
           </Routes>

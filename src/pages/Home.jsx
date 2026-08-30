@@ -227,7 +227,7 @@ const Home = () => {
                       }
                     }}
                     className={`glass-panel p-4 sm:p-5 rounded-2xl text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98] border flex flex-col justify-between group ${
-                      isSelected ? 'ring-2 ring-indigo-500 shadow-lg scale-[1.02]' : 'border-slate-200/80 dark:border-slate-800'
+                      isSelected ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : 'border-glass-border'
                     }`}
                     style={{ borderTop: `4px solid ${d.color}` }}
                   >
@@ -256,7 +256,7 @@ const Home = () => {
           </section>
 
           {/* ── 2.2. TOIFALAR BO'YICHA TEZKOR EXPLORER VA FILTR ── */}
-          <section className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <section className="glass-panel p-5 sm:p-6 rounded-3xl border border-glass-border shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -297,10 +297,10 @@ const Home = () => {
                     key={cat.key}
                     type="button"
                     onClick={() => setSelectedCategory(cat.key)}
-                    className={`p-3.5 rounded-2xl border transition-all duration-200 flex flex-col items-center text-center group active:scale-95 ${
+                    className={`p-3.5 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center group active:scale-95 ${
                       isActive
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md scale-[1.02]'
-                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-600 text-slate-800 dark:text-slate-200'
+                        ? 'btn-primary shadow-md scale-[1.02]'
+                        : 'glass-panel hover:border-primary-light text-slate-800 dark:text-slate-200 hover:shadow-md'
                     }`}
                   >
                     <div
@@ -426,7 +426,7 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center gap-2 self-start sm:self-auto shrink-0 shadow-md shadow-indigo-500/25 group-hover:bg-indigo-700 transition-colors">
+                <div className="px-5 py-3 rounded-xl btn-primary flex items-center gap-2 self-start sm:self-auto shrink-0 transition-colors">
                   <span>Xaritani Ochish</span>
                   <FiArrowRight className="w-4 h-4" />
                 </div>

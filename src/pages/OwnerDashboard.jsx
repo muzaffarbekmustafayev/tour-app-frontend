@@ -43,7 +43,7 @@ const securityList = [
 const emptyHotel = {
   name: '', description: '', shortDescription: '',
   district: '', city: 'Navoiy', country: 'Uzbekistan', address: '',
-  category: 'hotel', basePricePerNight: 500000, roomsAvailable: 10, totalRooms: '', maxGuests: '',
+  category: 'hotel', roomsAvailable: 10, totalRooms: '', maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00',
   amenities: [], images: [''],
   videoTour: { url: '', captioned: false, durationSec: '' },
@@ -52,7 +52,7 @@ const emptyHotel = {
   nearbyPlaces: [], security: [],
   accessibility: {},
   location: { lat: '', lng: '' },
-  rooms: [{ name: 'Standart Xona', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 500000, totalRooms: 5, roomsAvailable: 5 }]
+  rooms: [{ name: 'Standart Xona', roomType: 'Double Room', category: 'Standard', capacity: 2, totalRooms: 5, roomsAvailable: 5 }]
 };
 
 
@@ -155,7 +155,7 @@ const OwnerDashboard = () => {
   const addRoomType = () => {
     setForm(prev => ({
       ...prev,
-      rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 500000, totalRooms: 1, roomsAvailable: 1 }]
+      rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, totalRooms: 1, roomsAvailable: 1 }]
     }));
   };
 
@@ -312,13 +312,8 @@ const OwnerDashboard = () => {
       return;
     }
 
-    const basePrice = Number(form.basePricePerNight || form.pricePerNight) || 500000;
-    const images = (form.images || []).filter(img => typeof img === 'string' && img.trim() !== '');
-
     const payload = {
       ...form,
-      pricePerNight: basePrice,
-      basePricePerNight: basePrice,
       roomsAvailable: Number(form.roomsAvailable || form.totalRooms) || 10,
       totalRooms: Number(form.totalRooms || form.roomsAvailable) || 10,
       stars: Number(form.stars) || 4,
@@ -332,7 +327,6 @@ const OwnerDashboard = () => {
         ...r,
         name: r.name || `${r.capacity || 2} kishilik ${r.category || 'Standard'}`,
         capacity: Number(r.capacity) || 2,
-        pricePerNight: Number(r.pricePerNight || basePrice) || basePrice,
         totalRooms: Number(r.totalRooms) || 1,
         roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
       }))
@@ -366,7 +360,7 @@ const OwnerDashboard = () => {
   if (showForm) {
     return (
       <div className="pb-28 md:pb-8 pt-6 px-4 max-w-5xl mx-auto min-h-screen">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm gap-4 sticky top-4 z-[50]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 glass-panel p-6 rounded-2xl border border-glass-border shadow-sm gap-4 sticky top-4 z-[50]">
           <div className="flex items-center gap-4">
             <BackButton onClick={() => { if (hotels.length > 0) setShowForm(false); else navigate(-1); }} />
             <div>
@@ -378,7 +372,7 @@ const OwnerDashboard = () => {
           <button
             onClick={(e) => handleSubmit(e)}
             disabled={formLoading}
-            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+            className="btn-primary px-8 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 text-white"
           >
             {formLoading ? 'Saqlanmoqda...' : 'O\'zgarishlarni Saqlash'}
           </button>
@@ -410,7 +404,7 @@ const OwnerDashboard = () => {
   return (
     <div className="pb-28 md:pb-8 pt-6 px-4 max-w-7xl mx-auto min-h-screen">
       {/* Dashboard Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 glass-panel p-6 rounded-2xl border border-glass-border shadow-sm gap-4">
         <div className="flex items-center gap-4">
           <BackButton />
           <div>
@@ -424,7 +418,7 @@ const OwnerDashboard = () => {
         </div>
         <button
           onClick={openAddForm}
-          className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+          className="btn-primary px-6 py-3 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-white"
         >
           <FiPlus className="w-5 h-5" />
           Yangi Mehmonxona
@@ -477,7 +471,7 @@ const OwnerDashboard = () => {
                 { label: "O'rtacha reyting", value: avgRating, color: 'bg-amber-500', icon: <FiStar className="w-5 h-5" /> },
               ];
             })().map((stat, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm group hover:shadow-md transition-all">
+              <div key={i} className="glass-panel p-6 rounded-2xl border border-glass-border shadow-sm group hover:shadow-md transition-all hover:border-primary-light">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 ${stat.color} text-white rounded-xl flex items-center justify-center shadow-sm`}>
                     {stat.icon}
@@ -505,7 +499,7 @@ const OwnerDashboard = () => {
           {/* Hotels List Cards */}
           <div className="space-y-4">
             {hotels.map(hotel => (
-              <div key={hotel._id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
+              <div key={hotel._id} className="glass-panel rounded-2xl p-6 border border-glass-border shadow-sm hover:shadow-md transition-all group hover:border-primary-light">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors truncate">
@@ -561,7 +555,7 @@ const OwnerDashboard = () => {
               </div>
             ))}
             {hotels.length === 0 && (
-              <div className="text-center p-12 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
+              <div className="text-center p-12 glass-panel border border-glass-border rounded-2xl">
                 <FiHome className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                   Hozircha mehmonxona qo'shilmagan.
@@ -580,8 +574,8 @@ const OwnerDashboard = () => {
 
       {/* ── TAB 2: KELGAN XABARLAR (ChatContext — socket bilan ishlaydi) ── */}
       {activeTab === 'messages' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
+        <div className="glass-panel rounded-3xl border border-glass-border shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-glass-border flex items-center justify-between">
             <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <FiMessageCircle className="text-indigo-600 dark:text-indigo-400" /> Muloqotlar
             </h3>

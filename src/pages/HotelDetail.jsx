@@ -49,7 +49,7 @@ const AMENITY_ICONS = {
 };
 
 const Section = ({ title, icon, children, className = '', id = '' }) => (
-  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-6 shadow-sm transition-all hover:shadow-md ${className}`} id={id}>
+  <div className={`glass-panel p-6 md:p-8 rounded-2xl mb-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary-light ${className}`} id={id}>
     {title && (
       <h2 className="flex items-center gap-3 text-[13px] font-black mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
         <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm">{icon}</span> {title}
@@ -678,7 +678,7 @@ const HotelDetail = () => {
              <div className="lg:sticky lg:top-6 space-y-6">
                 
                  {/* ── Bog'lanish va ma'lumot bloki ── */}
-                  <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="glass-panel rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary-light">
                      <h3 className="font-black text-slate-800 dark:text-white mb-5 text-[11px] uppercase tracking-wider flex items-center gap-2">
                        <FiPhone className="text-indigo-600 w-4 h-4 shrink-0" /> Bog'lanish
                      </h3>
@@ -696,8 +696,7 @@ const HotelDetail = () => {
                        return (
                          <button
                            onClick={handleChat}
-                           className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-4 transition-all active:scale-97 hover:shadow-lg"
-                           style={{ background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)' }}
+                           className="btn-primary flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-4 transition-all active:scale-97 hover:shadow-lg"
                          >
                            <FiMessageCircle className="w-4 h-4 shrink-0" /> Egasi bilan suhbat
                          </button>
@@ -707,8 +706,7 @@ const HotelDetail = () => {
                      {/* Telefon */}
                      {(hotel.contact?.phone || hotel.owner?.phone) && (
                        <a href={`tel:${hotel.contact?.phone || hotel.owner?.phone}`}
-                         className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-5 transition-all active:scale-97 hover:shadow-lg shadow-indigo-600/10"
-                         style={{ background: 'var(--gradient-main)', boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)' }}
+                         className="btn-primary flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-xs text-white mb-5 transition-all active:scale-97 hover:shadow-lg"
                        >
                          <FiPhone className="w-3.5 h-3.5 shrink-0" /> {hotel.contact?.phone || hotel.owner?.phone}
                        </a>
@@ -758,7 +756,7 @@ const HotelDetail = () => {
 
                   </div>
 
-                <div id="map-section" className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                <div id="map-section" className="glass-panel rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary-light">
                    <h3 className="font-black text-slate-800 dark:text-white mb-3 text-[11px] uppercase tracking-wider flex items-center gap-2">
                       <FiMapPin className="text-rose-500 w-4 h-4 shrink-0" /> Joylashuv
                    </h3>
@@ -767,8 +765,7 @@ const HotelDetail = () => {
                    </p>
                    <button
                      onClick={() => navigate('/map', { state: { targetHotelId: hotel._id } })}
-                     className="w-full py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
-                     style={{ background: 'var(--gradient-main)' }}
+                     className="btn-primary w-full py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
                    >
                      <FiNavigation className="w-4 h-4" /> Yo'nalishni ko'rish
                    </button>

@@ -26,7 +26,7 @@ import { LuLandmark } from 'react-icons/lu';
 import { CATEGORY_META } from '../components/AttractionCard';
 
 const Section = ({ title, icon, children, className = '' }) => (
-  <div className={`bg-white/95 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 p-5 md:p-7 rounded-2xl mb-5 shadow-sm ${className}`}>
+  <div className={`glass-panel p-5 md:p-7 rounded-2xl mb-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary-light ${className}`}>
     {title && (
       <h2 className="flex items-center gap-3 text-[13px] font-black mb-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-white uppercase tracking-wider">
         <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-sm">{icon}</span> {title}
@@ -402,8 +402,7 @@ const AttractionDetail = () => {
                 )}
                 <button
                   onClick={() => navigate('/map', { state: { targetAttractionId: a._id } })}
-                  className="w-full mb-4 py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
-                  style={{ background: 'linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)' }}
+                  className="btn-primary w-full mb-4 py-3.5 rounded-xl font-black text-xs text-white transition-all active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <FiNavigation className="w-4 h-4" /> Marshrutni ochish
                 </button>
@@ -604,7 +603,7 @@ const AttractionDetail = () => {
               
               {/* ── 1. Yaqin mehmonxonalar va tunash maskanlari ── */}
               {nearby.length > 0 && (
-                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+                <div className="glass-panel rounded-3xl p-5 shadow-sm transition-all duration-300 hover:border-primary-light">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-black text-slate-800 dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
                       <FiHome className="text-indigo-600 w-4 h-4 shrink-0" /> Yaqin mehmonxonalar
@@ -655,7 +654,7 @@ const AttractionDetail = () => {
 
               {/* ── 2. Atrofdagi boshqa tarixiy va madaniy maskanlar ── */}
               {nearbyAttractions.length > 0 && (
-                <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+                <div className="glass-panel rounded-3xl p-5 shadow-sm transition-all duration-300 hover:border-primary-light">
                   <h3 className="font-black text-slate-800 dark:text-white mb-1 text-xs uppercase tracking-wider flex items-center gap-2">
                     <LuLandmark className="text-amber-500 w-4 h-4 shrink-0" /> Atrofdagi boshqa joylar
                   </h3>

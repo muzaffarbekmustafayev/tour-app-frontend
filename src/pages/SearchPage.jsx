@@ -343,13 +343,9 @@ const SearchPage = () => {
             placeholder="Mehmonxona yoki shahar..."
             value={filters.search}
             onChange={e => set('search', e.target.value)}
-            className="w-full pl-11 pr-5 font-bold outline-none transition-all"
+            className="w-full pl-11 pr-5 font-bold outline-none transition-all bg-glass dark:bg-glass-dark backdrop-blur-md border border-glass-border shadow-sm text-slate-900 dark:text-white"
             style={{
               borderRadius: '2rem',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-sm)',
-              color: 'var(--text-main)',
               height: 50,
               fontSize: 15,
             }}
@@ -360,14 +356,10 @@ const SearchPage = () => {
         {/* Mobile filter button */}
         <button
           onClick={() => setShowFilters(true)}
-          className="md:hidden relative flex items-center justify-center gap-1.5 px-4 rounded-2xl font-bold text-sm shrink-0 transition-all active:scale-95 press-effect"
-          style={{
-            background: activeCount > 0 ? '#6366f1' : 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            color: activeCount > 0 ? 'white' : 'var(--text-main)',
-            height: 50,
-            minWidth: 50,
-          }}
+          className={`md:hidden relative flex items-center justify-center gap-1.5 px-4 rounded-2xl font-bold text-sm shrink-0 transition-all active:scale-95 press-effect ${
+            activeCount > 0 ? 'bg-primary text-white border-transparent shadow-md shadow-primary/30' : 'bg-glass dark:bg-glass-dark backdrop-blur-md border border-glass-border text-slate-800 dark:text-slate-200'
+          }`}
+          style={{ height: 50, minWidth: 50 }}
         >
           <FiFilter className="w-4 h-4" />
           {activeCount > 0 && (

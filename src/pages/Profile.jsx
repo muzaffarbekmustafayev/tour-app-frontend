@@ -72,7 +72,7 @@ const Profile = () => {
         </div>
 
         {/* Stats Section (Classic row format) */}
-        <div className="flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 flex divide-x divide-slate-100 dark:divide-slate-800 mb-6">
+        <div className="flex-shrink-0 glass-panel rounded-2xl shadow-sm border border-glass-border flex divide-x divide-slate-200/50 dark:divide-slate-700/50 mb-6">
           {stats.map((stat, idx) => (
              <div key={idx} className="flex-1 py-3 md:py-4 flex flex-col items-center justify-center">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -89,9 +89,9 @@ const Profile = () => {
            
            {/* Section 1: Menu Items */}
            {menuItems.length > 0 && (
-             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+             <div className="glass-panel rounded-2xl shadow-sm border border-glass-border overflow-hidden divide-y divide-slate-200/50 dark:divide-slate-700/50">
                 {menuItems.map((item, idx) => (
-                  <Link key={idx} to={item.path} className="flex items-center px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:bg-slate-100 dark:active:bg-slate-800">
+                  <Link key={idx} to={item.path} className="flex items-center px-4 py-3.5 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors active:bg-slate-200/50 dark:active:bg-slate-800">
                     {item.icon}
                     <span className="ml-3 flex-1 font-semibold text-sm md:text-base text-slate-900 dark:text-white">{item.label}</span>
                     <FiChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600" />
@@ -102,8 +102,8 @@ const Profile = () => {
 
 
            {/* Section 3: Logout Action */}
-           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 overflow-hidden">
-              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-4 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors active:bg-rose-100 dark:active:bg-rose-900/20 text-rose-500 font-bold text-sm md:text-base">
+           <div className="glass-panel rounded-2xl shadow-sm border border-glass-border overflow-hidden">
+              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-4 hover:bg-rose-50/50 dark:hover:bg-rose-900/10 transition-colors active:bg-rose-100/50 dark:active:bg-rose-900/20 text-rose-500 font-bold text-sm md:text-base">
                  <FiLogOut className="w-5 h-5" />
                  Tizimdan chiqish
               </button>

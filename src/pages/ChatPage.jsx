@@ -47,10 +47,10 @@ const timeAgo = (date) => {
 
 /* ─── Skeleton card ───────────────────────────────────── */
 const SkeletonCard = () => (
-  <div style={{
+  <div className="glass-panel" style={{
     display: 'flex', alignItems: 'center', gap: 12,
     padding: '13px 14px', borderRadius: '1rem',
-    background: 'var(--bg-card, #fff)',
+    border: '1px solid var(--border)',
     boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
   }}>
     <div style={{
@@ -126,7 +126,7 @@ const ChatPage = () => {
         .conv-card:active { transform: translateY(0) scale(0.99); }
       `}</style>
 
-      <div className="min-h-screen" style={{ background: 'var(--gradient-bg)' }}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
         <div className="max-w-lg mx-auto pt-4 pb-24 px-4">
 
           {/* ── Header ── */}
@@ -166,25 +166,7 @@ const ChatPage = () => {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Suhbat qidirish…"
-              style={{
-                width: '100%',
-                paddingLeft: '2.6rem', paddingRight: '1rem',
-                paddingTop: '0.72rem', paddingBottom: '0.72rem',
-                background: 'var(--bg-card, #fff)',
-                border: '1.5px solid var(--border)',
-                borderRadius: '0.875rem',
-                outline: 'none', color: 'var(--text-main)',
-                fontSize: '0.875rem', fontFamily: 'inherit',
-                transition: 'border-color 0.15s, box-shadow 0.15s',
-              }}
-              onFocus={e => {
-                e.target.style.borderColor = '#6366F1';
-                e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)';
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = 'var(--border)';
-                e.target.style.boxShadow = 'none';
-              }}
+              className="glass-panel border-glass-border w-full pl-10 pr-4 py-3 rounded-2xl outline-none text-slate-800 dark:text-slate-100 text-sm transition-all focus:border-indigo-400 dark:focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
             />
           </div>
 
@@ -205,12 +187,12 @@ const ChatPage = () => {
             }}>
               {search ? (
                 <>
-                  <div style={{
+                  <div className="glass-panel border-glass-border" style={{
                     width: 64, height: 64, borderRadius: '50%',
-                    background: 'var(--bg-card, #fff)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     marginBottom: 14,
                     boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                    borderWidth: '1px'
                   }}>
                     <FiSearch size={26} style={{ opacity: 0.35 }} />
                   </div>
@@ -258,19 +240,9 @@ const ChatPage = () => {
                 return (
                   <button
                     key={conv._id}
-                    className="conv-card"
+                    className={`conv-card glass-panel w-full flex items-center gap-3 p-3 rounded-2xl cursor-pointer text-left transition-all border ${hasUnread ? 'border-l-4 border-l-indigo-500 shadow-md border-glass-border' : 'border-glass-border hover:border-indigo-200 dark:hover:border-indigo-800'}`}
                     onClick={() => openConversation(conv, false)}
                     style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '12px 14px', borderRadius: '1rem',
-                      border: 'none', cursor: 'pointer',
-                      background: 'var(--bg-card, #fff)',
-                      textAlign: 'left',
-                      boxShadow: hasUnread
-                        ? '0 2px 12px rgba(99,102,241,0.13)'
-                        : '0 1px 5px rgba(0,0,0,0.06)',
-                      borderLeft: `3px solid ${hasUnread ? '#6366F1' : 'transparent'}`,
-                      transition: 'transform 0.15s, box-shadow 0.15s',
                       animation: `fadeSlideUp 0.3s ease ${idx * 0.04}s both`,
                     }}
                   >

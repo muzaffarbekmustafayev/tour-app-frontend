@@ -139,12 +139,11 @@ const AttractionCard = ({ attraction: a }) => {
         <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
           <Link
             to={`/attraction/${a._id}`}
-            className="w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-200 active:scale-95 shadow-xs group/btn"
+            className="btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm transition-all"
+            style={{ minHeight: 46, textDecoration: 'none' }}
           >
-            <span className="flex items-center gap-1.5">
-              <span>Batafsil & Yaqin maskanlar</span>
-            </span>
-            <FiArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+            Batafsil ko'rish
+            <FiArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
           </Link>
         </div>
       </div>

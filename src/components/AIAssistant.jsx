@@ -16,13 +16,10 @@ import { resolveMediaUrl } from '../utils/media';
 
 const WELCOME = {
   role: 'bot',
-  reply: "Salom! 👋 Men NavaiTour AI yordamchisiman.\nNarx, qulayliklar, tarixiy joylar, sayohat rejasi va boshqa savollarga javob beraman. Quyidagilarni so'rab ko'ring:",
-  suggestions: ['Nima qila olasan?', 'Arzon mehmonxona', 'Bepul Wi-Fi bormi?', '3 kunlik plan yoz'],
+  reply: "Salom! 👋 Men NavaiTour AI yordamchisiman.\nQulayliklar, tarixiy joylar, sayohat rejasi va boshqa savollarga javob beraman. Quyidagilarni so'rab ko'ring:",
+  suggestions: ['Nima qila olasan?', 'Tarixiy joylar', 'Bepul Wi-Fi bormi?', '3 kunlik plan yoz'],
 };
 
-// 720000 → "720 000 so'm"
-const fmtSom = (n) =>
-  Number.isFinite(n) ? `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm` : null;
 
 const AttractionMini = ({ a, onClick }) => (
   <button
@@ -91,11 +88,7 @@ const HotelMini = ({ h, onClick }) => (
         <FiMapPin className="w-3 h-3" />{h.district || h.city}{h.category ? ` · ${h.category}` : ''}
         {Number.isFinite(h.stars) && <span className="text-amber-500">{' · '}{'★'.repeat(h.stars)}</span>}
       </p>
-      {Number.isFinite(h.price) && (
-        <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-          {fmtSom(h.price)}<span className="font-medium text-slate-400"> / kecha</span>
-        </p>
-      )}
+
       {Number.isFinite(h.distanceKm) && (
         <p className="text-[11px] font-bold text-indigo-500 dark:text-indigo-400 flex items-center gap-1 mt-0.5">
           <FiNavigation className="w-3 h-3" /> ~{h.distanceKm} km uzoqlikda
@@ -189,7 +182,7 @@ const AIAssistant = () => {
       {/* Chat oynasi */}
       {open && (
         <div
-          className="ai-anim fixed z-[402] flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden"
+          className="ai-anim fixed z-[402] flex flex-col glass-panel overflow-hidden"
           style={{
             bottom: 0, right: 0,
             width: 'min(404px, 100vw)', height: 'min(624px, 100dvh)',
@@ -234,7 +227,7 @@ const AIAssistant = () => {
                   } : undefined}>
                   {m.role === 'bot' ? (
                     <div className="space-y-2">
-                      <div className="px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line shadow-sm leading-relaxed"
+                      <div className="px-4 py-3 glass-panel border border-glass-border text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line shadow-sm leading-relaxed"
                         style={{ borderRadius: '6px 18px 18px 18px' }}>
                         {m.reply}
                       </div>
@@ -269,7 +262,7 @@ const AIAssistant = () => {
             ))}
             {loading && (
               <div className="flex justify-start ai-msg-in">
-                <div className="px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm" style={{ borderRadius: '6px 18px 18px 18px' }}>
+                <div className="px-4 py-3 glass-panel border border-glass-border shadow-sm" style={{ borderRadius: '6px 18px 18px 18px' }}>
                   <div className="flex gap-1.5">
                     {[0, 1, 2].map((i) => (
                       <span key={i} className="w-2 h-2 rounded-full bg-indigo-400" style={{ animation: `aiDot 1.2s ease-in-out ${i * 0.18}s infinite` }} />
@@ -284,14 +277,14 @@ const AIAssistant = () => {
           {/* Kiritish */}
           <form
             onSubmit={(e) => { e.preventDefault(); send(); }}
-            className="flex items-center gap-2 p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0"
+            className="flex items-center gap-2 p-3 border-t border-glass-border glass-panel shrink-0"
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Masalan: Qachon borish yaxshi?"
               aria-label="Xabar yozing"
-              className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 text-sm text-slate-800 dark:text-slate-100 outline-none transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-200/50 dark:bg-slate-800/50 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 text-sm text-slate-800 dark:text-slate-100 outline-none transition-colors"
             />
             <button type="submit" disabled={loading || !input.trim()}
               aria-label="Yuborish"

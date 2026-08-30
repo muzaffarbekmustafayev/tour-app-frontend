@@ -66,36 +66,24 @@ const NavItem = ({ item, active, mobile = false, unread = 0 }) => {
         to={to}
         aria-label={item.label}
         aria-current={active ? 'page' : undefined}
-        className="flex flex-col items-center justify-center gap-1 rounded-[1rem] transition-all active:scale-90 press-effect"
+        className="flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 active:scale-90 relative"
         style={{
-          minWidth: 56, padding: '7px 8px 6px',
-          background: active ? 'var(--gradient-main)' : 'transparent',
-          boxShadow: active ? 'var(--shadow-colored)' : 'none',
-          transform: active ? 'translateY(-1px)' : 'none',
-          transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
-          position: 'relative',
+          minWidth: 56, padding: '8px 4px',
+          background: active ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
         }}
       >
-        <div style={{ position: 'relative' }}>
-          <Icon style={{ width: 20, height: 20, color: active ? 'white' : 'var(--text-muted)', transition: 'color 0.2s ease' }} />
+        {active && (
+           <div className="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-xl -z-10 animate-scale-in"></div>
+        )}
+        <div className="relative">
+          <Icon className={`w-5 h-5 transition-colors duration-300 ${active ? 'text-primary dark:text-primary-light' : 'text-slate-500 dark:text-slate-400'}`} />
           {badge && (
-            <span style={{
-              position: 'absolute', top: -5, right: -7,
-              background: '#ef4444', color: '#fff',
-              borderRadius: '50%', minWidth: 16, height: 16,
-              fontSize: '0.58rem', fontWeight: 800,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '0 3px', border: '1.5px solid var(--bg-card,#fff)',
-            }}>
+            <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white rounded-full min-w-[16px] h-[16px] text-[10px] font-bold flex items-center justify-center px-1 border-2 border-white dark:border-slate-900 shadow-sm animate-pulse-slow">
               {unread > 99 ? '99+' : unread}
             </span>
           )}
         </div>
-        <span style={{
-          fontSize: 9, fontWeight: 700, letterSpacing: '0.01em',
-          color: active ? 'white' : 'var(--text-muted)',
-          whiteSpace: 'nowrap', lineHeight: 1.2, transition: 'color 0.2s ease',
-        }}>
+        <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${active ? 'text-primary dark:text-primary-light' : 'text-slate-500 dark:text-slate-400'}`}>
           {item.label}
         </span>
       </Link>
@@ -133,12 +121,11 @@ const BottomNav = () => {
     <>
       {/* ── Mobile Bottom Nav (< md) ── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 w-full z-[200] border-t border-slate-200/40 dark:border-slate-800/60"
+        className="md:hidden fixed bottom-4 left-4 right-4 z-[200] animate-slide-up"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Mobil navigatsiya"
       >
-        <div className="flex items-center justify-around px-1 py-1.5 bg-white/97 dark:bg-[#0B1120]/97 backdrop-blur-2xl"
-          style={{ boxShadow: '0 -4px 24px -6px rgba(0,0,0,0.1)' }}>
+        <div className="flex items-center justify-around px-2 py-2 bg-glass dark:bg-glass-dark backdrop-blur-2xl rounded-2xl border border-white/20 dark:border-white/10 shadow-glass dark:shadow-glass-dark">
           {mobileItems.map((item, i) => (
             <NavItem key={i} item={item} active={isActive(item)} mobile unread={unreadTotal} />
           ))}

@@ -192,8 +192,7 @@ const Favorites = () => {
       {!loading && hotels.length === 0 && (
         <div className="flex flex-col items-center justify-center mt-16 px-4">
           <div
-            className="w-28 h-28 rounded-full flex items-center justify-center mb-6"
-            style={{ background: 'rgba(244,63,94,0.08)', border: '2px dashed rgba(244,63,94,0.25)' }}
+            className="w-28 h-28 rounded-full flex items-center justify-center mb-6 glass-panel border-2 border-dashed border-rose-500/30 bg-rose-500/5 dark:bg-rose-500/10"
           >
             <FiHeart className="w-12 h-12 text-rose-300" strokeWidth={1.5} />
           </div>

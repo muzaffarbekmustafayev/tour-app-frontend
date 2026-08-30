@@ -40,7 +40,7 @@ export const HOTEL_DISTRICTS = [
 export const emptyHotelTemplate = {
   name: '', description: '', shortDescription: '',
   district: '', city: 'Navoiy', country: 'Uzbekistan', address: '',
-  category: 'hotel', stars: 4, basePricePerNight: 500000, pricePerNight: 500000, roomsAvailable: 10, totalRooms: 10, maxGuests: '',
+  category: 'hotel', stars: 4, roomsAvailable: 10, totalRooms: 10, maxGuests: '',
   checkInTime: '14:00', checkOutTime: '12:00', checkIn: '14:00', checkOut: '12:00',
   contact: { phone: '', email: '', website: '' },
   amenities: [],
@@ -51,7 +51,7 @@ export const emptyHotelTemplate = {
   nearbyPlaces: [], security: [], owner: '',
   accessibility: {},
   location: { lat: '', lng: '' },
-  rooms: [{ name: 'Standart Xona', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 500000, totalRooms: 5, roomsAvailable: 5 }]
+  rooms: [{ name: 'Standart Xona', roomType: 'Double Room', category: 'Standard', capacity: 2, totalRooms: 5, roomsAvailable: 5 }]
 };
 
 const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
@@ -92,7 +92,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
 
   const addRoomType = () => {
     setForm(prev => ({
-      ...prev, rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, pricePerNight: 0, totalRooms: 1, roomsAvailable: 1 }]
+      ...prev, rooms: [...prev.rooms, { name: '', roomType: 'Double Room', category: 'Standard', capacity: 2, totalRooms: 1, roomsAvailable: 1 }]
     }));
   };
 
@@ -262,21 +262,7 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div>
-                  <label className={LabelClass}>Boshlang'ich Narx (1 kecha, so'mda) *</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.basePricePerNight || form.pricePerNight || ''}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      setForm(p => ({ ...p, basePricePerNight: val, pricePerNight: val }));
-                    }}
-                    className={InputClass}
-                    placeholder="500000"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={LabelClass}>Yulduzlar (1-5)</label>
                   <select
@@ -537,17 +523,6 @@ const FullHotelForm = ({ form, setForm, onSubmit, loading, users, isEdit }) => {
                       <select value={room.category || 'Standard'} onChange={e => handleRoomFieldChange(idx, 'category', e.target.value)} className={InputClass}>
                         {['Standard', 'Comfort', 'Deluxe', 'Suite', 'Luxury / VIP'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-                    </div>
-                    <div>
-                      <label className={LabelClass}>Xona Narxi (1 kecha uchun, so'mda)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={room.pricePerNight || ''}
-                        onChange={e => handleRoomFieldChange(idx, 'pricePerNight', Number(e.target.value))}
-                        className={InputClass}
-                        placeholder="500000"
-                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>

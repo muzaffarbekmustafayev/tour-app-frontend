@@ -205,17 +205,12 @@ const HotelCard = ({ hotel }) => {
         )}
 
         {/* CTA */}
-        <div className="mt-auto pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800/60">
           <Link
             to={`/hotel/${hotel._id}`}
             aria-label={`${name} mehmonxonasini batafsil ko'rish`}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 active:opacity-90 hover:brightness-110 press-effect"
-            style={{
-              background: 'var(--gradient-main)',
-              boxShadow: '0 4px 14px -4px rgba(99,102,241,0.4)',
-              textDecoration: 'none',
-              minHeight: 46,
-            }}
+            className="btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm transition-all"
+            style={{ minHeight: 46, textDecoration: 'none' }}
           >
             Batafsil ko'rish
             <FiArrowRight className="w-4 h-4" />

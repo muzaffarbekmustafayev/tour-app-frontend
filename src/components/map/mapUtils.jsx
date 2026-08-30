@@ -141,7 +141,6 @@ export async function fetchRoute(from, to, profile = 'driving') {
 
 export const fmtDist = m => m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`;
 export const fmtTime = s => s < 60 ? `${Math.round(s)} sek` : s < 3600 ? `${Math.round(s / 60)} daq` : `${Math.floor(s / 3600)}s ${Math.round((s % 3600) / 60)}d`;
-export const fmtPrice = p => p ? new Intl.NumberFormat('uz-UZ').format(p) : null;
 
 export const Stars = ({ count = 0, size = 'sm' }) => (
   <span className="flex items-center gap-0.5">
@@ -157,4 +156,3 @@ export const Stars = ({ count = 0, size = 'sm' }) => (
   </span>
 );
 
-export const getMinPrice = h => h.basePricePerNight || (h.rooms?.length ? Math.min(...h.rooms.map(r => r.pricePerNight || 0)) : null);

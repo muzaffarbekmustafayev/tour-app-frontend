@@ -176,14 +176,14 @@ const MapPickerModal = ({ open, onClose, value, onChange, title = 'Joylashuvni b
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl border border-slate-200/70 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden max-h-[92vh] animate-scale-in"
+        className="glass-panel w-full max-w-2xl flex flex-col overflow-hidden max-h-[92vh] animate-modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -284,8 +284,7 @@ const MapPickerModal = ({ open, onClose, value, onChange, title = 'Joylashuvni b
               Bekor
             </button>
             <button onClick={onClose} disabled={!hasCoords}
-              className="px-6 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-              style={{ background: hasCoords ? 'linear-gradient(135deg,#4F46E5,#8B5CF6)' : '#94a3b8' }}>
+              className={`px-6 py-2.5 flex items-center gap-2 ${hasCoords ? 'btn-primary' : 'bg-slate-400 text-white rounded-xl cursor-not-allowed'}`}>
               <FiCheck className="w-4 h-4" /> Tasdiqlash
             </button>
           </div>

@@ -317,7 +317,6 @@ const AdminDashboard = () => {
         } : undefined,
         rooms: (addHotelForm.rooms || []).map(r => ({
           ...r,
-          pricePerNight: Number(r.pricePerNight) || 500000,
           totalRooms: Number(r.totalRooms) || 1,
           roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
         }))
@@ -347,7 +346,6 @@ const AdminDashboard = () => {
         } : undefined,
         rooms: (editHotelForm.rooms || []).map(r => ({
           ...r,
-          pricePerNight: Number(r.pricePerNight) || 500000,
           totalRooms: Number(r.totalRooms) || 1,
           roomsAvailable: Number(r.roomsAvailable !== undefined ? r.roomsAvailable : r.totalRooms) || 1
         }))

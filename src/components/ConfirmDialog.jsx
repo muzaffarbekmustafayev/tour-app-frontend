@@ -46,14 +46,14 @@ const ConfirmDialog = ({
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
       onClick={() => !loading && onClose?.()}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+        className="glass-panel w-full max-w-sm overflow-hidden animate-modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 sm:p-7">
@@ -86,7 +86,9 @@ const ConfirmDialog = ({
               ref={confirmBtnRef}
               onClick={onConfirm}
               disabled={loading}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-50 ${accent.btn}`}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-50 ${
+                variant === 'danger' ? 'bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-500/30' : 'btn-primary'
+              }`}
             >
               {loading ? 'Bajarilmoqda...' : confirmText}
             </button>
